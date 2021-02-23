@@ -1,0 +1,60 @@
+{
+    "name": "server",
+    "version": "1.0.0",
+    "description": "API SITE E-COMMERCE",
+    "main": "dist/app.js",
+    "scripts": {
+        "start": "rimraf ./dist && tsc && node dist/src/app.js",
+        "dev": "nodemon src/app.ts",
+        "build": "tsc -p ./tsconfig.json",
+        "clean": "rimraf ./dist",
+        "test": "rimraf ./dist && tsc && jasmine",
+        "pm2": "rimraf ./dist && tsc && pm2 kill && pm2 start dist/src/app.js --watch && pm2 logs"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/MounirBlk/PROJET-EEDSI-SERVER.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/MounirBlk/PROJET-EEDSI-SERVER/issues"
+    },
+    "homepage": "https://github.com/MounirBlk/PROJET-EEDSI-SERVER#readme",
+    "dependencies": {
+        "@types/cors": "^2.8.10",
+        "@types/ejs": "^3.0.6",
+        "@types/jsonwebtoken": "^8.5.0",
+        "@types/lodash": "^4.14.168",
+        "@types/mongodb": "^3.6.8",
+        "@types/mongoose": "^5.10.3",
+        "body-parser": "^1.19.0",
+        "dotenv": "^8.2.0",
+        "ejs": "^3.1.6",
+        "express": "^4.17.1",
+        "lodash": "^4.17.21",
+        "mongoose": "^5.11.17",
+        "nodemailer": "^6.4.18",
+        "passport": "^0.4.1",
+        "pm2": "^4.5.4"
+    },
+    "devDependencies": {
+        "@types/body-parser": "^1.19.0",
+        "@types/express": "^4.17.11",
+        "@types/jasmine": "^3.6.4",
+        "@types/node": "^14.14.31",
+        "@types/nodemailer": "^6.4.0",
+        "@types/passport": "^1.0.6",
+        "@types/supertest": "^2.0.10",
+        "axios": "^0.21.1",
+        "cors": "^2.8.5",
+        "cron": "^1.8.2",
+        "jasmine": "^3.6.4",
+        "jasmine-ts-console-reporter": "^3.1.1",
+        "jsonwebtoken": "^8.5.1",
+        "rimraf": "^3.0.2",
+        "supertest": "^6.1.3",
+        "ts-node": "^9.1.1",
+        "typescript": "^4.1.5"
+    }
+}
