@@ -1,7 +1,6 @@
 import { Application, Request, Response, NextFunction, Errback } from "express";
+import { login } from "../controllers/user";
 
 export const commun = (app: Application): void => {
-    app.route('/test').get((req: Request, res: Response) => {
-        console.log(true)
-    })
+    app.route('/login').post(login)
 }
