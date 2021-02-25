@@ -8,7 +8,8 @@
         "dev": "nodemon src/app.ts",
         "build": "tsc -p ./tsconfig.json",
         "clean": "rimraf ./dist",
-        "test": "rimraf ./dist && tsc && jasmine",
+        "test:local": "rimraf ./dist && tsc && jasmine",
+        "test": "jasmine",
         "pm2": "rimraf ./dist && tsc && pm2 kill && pm2 start dist/src/app.js --watch && pm2 logs"
     },
     "repository": {

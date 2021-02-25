@@ -19,7 +19,7 @@ const dataResponse = (res: Response, status: number = 500, data: any = { error: 
 }
 
 /**
- *  Function qui supprime les données return initule
+ *  Function qui supprime les données return inutile
  *  @param {Object} data Data
  *  @param {string} mapperNameRoute? Nom de la route
  */ 
@@ -39,7 +39,7 @@ const exist = (data: string): Boolean => {
 }
 
 /**
- *  Function qui vérifie l'existence de toutes les datas d'un objet
+ *  Function qui vérifie l'existence de toutes les datas d'un objet (INUTILISABLE)
  */ 
 const existObject = (objectData: any): boolean => {
     let isValid = true;
@@ -239,5 +239,5 @@ const isValidDateCard = (data: any): boolean => {
     return isValidDate;
 }
 
-export { dataResponse, existObject, getCurrentDate, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
+export { dataResponse, existObject, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
 
