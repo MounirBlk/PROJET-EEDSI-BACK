@@ -3,7 +3,7 @@ import express, { Application, Request, Response, NextFunction, Errback } from '
 import bodyParser, { json } from 'body-parser';
 import cors from 'cors';
 import path from 'path';
-import { route } from './routes';
+import { route } from './src/routes';
 
 const app: Application = express();
 //app.use(json)
