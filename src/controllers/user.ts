@@ -6,7 +6,7 @@ import { dataResponse } from '../middlewares';
  *  @param {Request} req 
  *  @param {Response} res 
  */ 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response): Promise<void> => {
     const data = req.body;
     //TO DO
     return dataResponse(res, 200, { error: false, message: 'ok'});
