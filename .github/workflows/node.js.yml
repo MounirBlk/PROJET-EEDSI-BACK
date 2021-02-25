@@ -70,7 +70,7 @@ jobs:
       - name: build if present
         run: npm run build --if-present
       - name: kill && start && status
-        run: pm2 kill && pm2 start main.js
+        run: pm2 kill && pm2 start dist/src/app.js
       - name: test
         run: npm run test
       - name: kill
