@@ -1,0 +1,77 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Node.js CI test
+
+on:
+  schedule:
+    - cron: '0 */12 * * *'
+  #push:
+  #  branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Try merging pull requests belonging to a workflow run.
+  #workflow_run:
+  #  workflows:
+  #    - CI
+  #  types:
+  #    - completed
+
+  # Try merging pull requests belonging to a check suite.
+  #check_suite:
+  #  types:
+  #    - completed
+
+  # Try merging a pull request when it is approved.
+  pull_request_review:
+    types:
+      - submitted
+
+jobs:
+  test:
+    if: github.event.review.state == 'approved' || !github.event.review
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: [10.x, 12.x, 14.x, 15.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      #- name: Sleep for 1 mins
+      #  uses: jakejarvis/wait-action@master
+      #  with:
+      #    time: '1m'
+      #- name: Wait for build to succeed 
+      #  uses: fountainhead/action-wait-for-check@v1.0.0 
+      #  id: wait-for-build 
+      #  with: 
+      #    token: ${{ secrets.GITHUB_TOKEN }} 
+      #    checkName: build 
+      #    ref: ${{ github.event.pull_request.head.sha || github.sha }} 
+
+      #- name: Do something with a passing build 
+      #  if: steps.wait-for-build.outputs.conclusion == 'success'
+      #- uses: SFDigitalServices/wait-for-deployment-action@v1 
+      #  id: deployment 
+      #  with: 
+      #    github-token: ${{ github.token }} 
+      #    environment: Preview
+      - name: install pm2
+        run: npm install -g pm2
+      - name: install
+        run: npm install
+      - name: build if present
+        run: npm run build --if-present
+      - name: kill && start && status
+        run: pm2 kill && pm2 start main.js
+      - name: test
+        run: npm run test
+      - name: kill
+        run: pm2 kill
