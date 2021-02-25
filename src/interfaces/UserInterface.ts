@@ -1,4 +1,5 @@
 import { Document } from "mongoose"
+import { civiliteTypes } from "../types/civiliteTypes";
 import { roleTypes } from "../types/roleTypes";
 
 export default interface UserInterfaces extends Document {
@@ -7,14 +8,14 @@ export default interface UserInterfaces extends Document {
     password: string;
     lastname: string;
     firstname: string;
-    civilite: string;
+    civilite: civiliteTypes;
     dateNaissance: string;
     role: roleTypes;
-    createdAt?: Date;
-    updateAt?: Date;
-    lastLogin? : Date;
     portable: string;
     attempt: number;
     token?: string | null;
     idCustomer? : string;
+    createdAt?: Date;
+    updateAt?: Date;
+    lastLogin? : Date;
 }
