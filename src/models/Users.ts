@@ -2,7 +2,7 @@ import * as mongoose from 'mongoose';
 import UserInterface from '../interfaces/UserInterface';
 const bcrypt = require("mongoose-bcrypt");
 
-const UserSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema<UserInterface>({
     email: {
         trim: true,
         index: true,

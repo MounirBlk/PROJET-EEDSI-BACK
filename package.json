@@ -4,13 +4,14 @@
     "description": "API SITE E-COMMERCE",
     "main": "dist/app.js",
     "scripts": {
-        "start": "rimraf ./dist && tsc && node dist/src/app.js",
+        "start": "pm2 kill && rimraf ./dist && tsc -p ./tsconfig.json && npm run copy-assets && pm2 start dist/src/app.js --watch && pm2 logs",
+        "serve": "rimraf ./dist && tsc && node dist/src/app.js",
         "dev": "nodemon src/app.ts",
         "build": "tsc -p ./tsconfig.json",
         "clean": "rimraf ./dist",
         "test:local": "rimraf ./dist && tsc && jasmine",
         "test": "jasmine",
-        "pm2": "rimraf ./dist && tsc && pm2 kill && pm2 start dist/src/app.js --watch && pm2 logs"
+        "copy-assets": "ts-node copyAssets.ts"
     },
     "repository": {
         "type": "git",
@@ -47,6 +48,7 @@
         "@types/node": "^14.14.31",
         "@types/nodemailer": "^6.4.0",
         "@types/passport": "^1.0.6",
+        "@types/shelljs": "^0.8.8",
         "@types/supertest": "^2.0.10",
         "axios": "^0.21.1",
         "cors": "^2.8.5",
@@ -55,6 +57,7 @@
         "jasmine-ts-console-reporter": "^3.1.1",
         "jsonwebtoken": "^8.5.1",
         "rimraf": "^3.0.2",
+        "shelljs": "^0.8.4",
         "supertest": "^6.1.3",
         "ts-node": "^9.1.1",
         "typescript": "^4.1.5"
