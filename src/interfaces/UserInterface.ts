@@ -12,7 +12,7 @@ export default interface UserInterfaces extends Document {
     dateNaissance: string;
     role: roleTypes;
     portable: string;
-    attempt: number;
+    attempt?: number;
     token?: string | null;
     idCustomer? : string;
     createdAt?: Date;

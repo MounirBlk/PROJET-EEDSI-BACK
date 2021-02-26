@@ -1,4 +1,6 @@
 
+import fs from 'fs';
+
 /**
  *  Random name file 
  */ 
@@ -8,20 +10,37 @@ export const randomFileName = (): string => {
     var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
     var yyyy = today.getFullYear();
     var minSecMili = today.getMinutes() + '' + today.getSeconds() + '' + today.getMilliseconds()
-    return dd + '-' + mm + '-' + yyyy + '_' + minSecMili;
+    return dd + '.' + mm + '.' + yyyy + '.' + minSecMili;
 }
 
 /**
- *  Random char 
- *  @param {number} length? 
+ *  get timeout request (default: 60 sec)
+ *  @param {number} secondes ? 
+ */ 
+export const getTimeout = (secondes: number = 60): number => {
+    return secondes * 1000;
+}
+
+/**
+ *  Random number between min and max
+ *  @param {number} min  
+ *  @param {number} max  
+ */ 
+export const randNumber = (min: number, max: number): number => {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+/**
+ *  Random char (default taille 10)
+ *  @param {number} length ? 
  */ 
 export const randomChars = (length: number = 10): string => {
-    var result = '';
-    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    for (var i = 0; i < length; i++) {
+    let result = '';
+    let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    for (let i = 0; i < length; i++) {
         result += characters.charAt(Math.floor(Math.random() * characters.length));
     }
-    return result;
+    return result.trim().charAt(0).toUpperCase() + result.trim().substring(1).toLowerCase();// 1 lettre maj mini
 }
 
 /**

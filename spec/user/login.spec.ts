@@ -1,10 +1,13 @@
 import request from "supertest"
 import app from "../../app";
-import { convertToFormBody } from "../helpers";
+import { convertToFormBody, getTimeout } from "../helpers";
+import fs from 'fs';
 
-describe('Login test by rest API', () => {
+//TODELETE
+
+/*describe('Login test by rest API', () => {
     // test permettant de tester si les variables sont bien rempli ou non
-    it('Login fail email/password undefined', (done) => {
+    it('Login fail email/password undefined', (done: DoneFn) => {
         const data = {
             email: '',
             password: ''
@@ -15,10 +18,27 @@ describe('Login test by rest API', () => {
             //.send('email=fdfdf&password=dfd')
             //.field("email", "dfdf@ffd")
             //.field("password", "dfdfdf")
+            //.set('Authorization', `Bearer ${token}`) 
+            //.auth(auth.token, { type: 'bearer' })
             .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
             .expect(403, {
                 error: true,
                 message: "L'email/password est manquant"
             }, done);
-    }, 60000);
-})
+    }, getTimeout());
+
+    it('get users', (done: DoneFn) => {
+        request('https://dashboardmou.herokuapp.com')
+            .get('/users')
+            //.set('Authorization', `Bearer ${token}`) 
+            .auth(bearerToken, { type: 'bearer' })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .end((err: Error, res: any) => {
+                console.log(res.body)
+                return done();
+            })
+    }, getTimeout());
+})*/
