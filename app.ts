@@ -43,3 +43,5 @@ app.get('*', (req: Request, res: Response) => {
 app.listen(app.get("port"), () => {
     console.log("App is running on http://localhost:%d", app.get("port"));
 });
+
+export default app; //export to call app to test spec

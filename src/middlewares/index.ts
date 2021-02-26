@@ -238,6 +238,30 @@ const isValidDateCard = (data: any): boolean => {
     let isValidDate: boolean = data.year === year ? parseInt(data.month) >= parseInt(month) ? true : false : verifYear;
     return isValidDate;
 }
+/**
+ *  Random name file 
+ */ 
+const randFileName = (): string => {
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = today.getFullYear();
+    var minSecMili = today.getMinutes() + '' + today.getSeconds() + '' + today.getMilliseconds()
+    return dd + '-' + mm + '-' + yyyy + '_' + minSecMili;
+}
 
-export { dataResponse, existObject, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
+/**
+ *  Random char 
+ *  @param {number} length? 
+ */ 
+const randChars = (length: number = 10): string => {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+}
+
+export { dataResponse, existObject, randFileName, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
 
