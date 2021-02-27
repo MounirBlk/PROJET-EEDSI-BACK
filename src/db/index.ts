@@ -1,15 +1,25 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
+import bluebird from 'bluebird';
+//const mongoose = require("mongoose")
 
-//connect to mangodb
-mongoose.connect(String(process.env.MONGO_URL), {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
-    useCreateIndex: true
-});
+const mongooseConnect = () => {
+    const uri: string = String(process.env.MONGO_URL);
 
-mongoose.connection.on("connected", () => {
-    console.log("Connected !");
-});
+    //Perform promise in node
+    mongoose.Promise = bluebird;
 
-export default mongoose;
+    //connect to mangodb
+    mongoose.connect(uri, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useFindAndModify: false,
+        useCreateIndex: true
+    }).then(() => { 
+        console.log("Connected !");
+    }).catch((err: Error) => {
+        console.log(`MongoDB connection error. Please make sure MongoDB is running. ${err}`);
+    });
+}
+
+
+export default mongooseConnect;

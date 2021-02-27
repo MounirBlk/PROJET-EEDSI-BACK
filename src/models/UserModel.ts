@@ -31,6 +31,7 @@ const UserSchema = new mongoose.Schema<UserInterface>({
     portable: {
         default: null,
         type: String,
+        require: false
     },
     role: {
         type: String,
@@ -40,6 +41,7 @@ const UserSchema = new mongoose.Schema<UserInterface>({
     attempt: {
         default: 0,
         type: Number,
+        required: false
     },
     createdAt: {
         default: new Date(),
@@ -59,14 +61,17 @@ const UserSchema = new mongoose.Schema<UserInterface>({
     token: {
         default: null,
         type: String,
+        required: false
     },
     idCustomer: {
         default: null,
         type: String,
+        required: false
     }
 }, {
     collection: "users",
-    timestamps: true
+    timestamps: true,
+    autoCreate: true
 });
 
 UserSchema.plugin(bcrypt);
@@ -74,4 +79,4 @@ UserSchema.index({
     email: 1
 });
 
-export default mongoose.model<UserInterface>("Users", UserSchema);
+export default mongoose.model<UserInterface>("UserModel", UserSchema);

@@ -75,7 +75,8 @@ const dateFormatEn = (data: string): Boolean => {
  *  Function vérification de si l'email est dans le bon format
  */ 
 const emailFormat = (data: string): Boolean => {
-    let regexEmail = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i
+    //let regexEmail = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i
+    let regexEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     if (data.match(regexEmail) == null)
         return false
     else
@@ -192,14 +193,14 @@ const binaryToText = (idBinary: any) => {
 /**
  *  Function qui return la date du jour à la seconde près aaaa/mm/jj hh:mm:ss
  */ 
-const getCurrentDate = (dt: any = new Date()) => {
+const getCurrentDate = (dt: Date = new Date()) => {
     return `${dt.getFullYear().toString().padStart(4, '0')}-${(dt.getMonth()+1).toString().padStart(2, '0')}-${dt.getDate().toString().padStart(2, '0')} ${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}:${dt.getSeconds().toString().padStart(2, '0')}`   
 }
 
 /**
  *  Function qui return time en hh:mm:ss
  */ 
-const getTimeHourSecMin = (dt: any = new Date()) => {
+const getTimeHourSecMin = (dt: Date = new Date()) => {
     return `${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}:${dt.getSeconds().toString().padStart(2, '0')}`   
 }
 
@@ -238,6 +239,30 @@ const isValidDateCard = (data: any): boolean => {
     let isValidDate: boolean = data.year === year ? parseInt(data.month) >= parseInt(month) ? true : false : verifYear;
     return isValidDate;
 }
+/**
+ *  Random name file 
+ */ 
+const randFileName = (): string => {
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = today.getFullYear();
+    var minSecMili = today.getMinutes() + '' + today.getSeconds() + '' + today.getMilliseconds()
+    return dd + '-' + mm + '-' + yyyy + '_' + minSecMili;
+}
 
-export { dataResponse, existObject, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
+/**
+ *  Random char 
+ *  @param {number} length? 
+ */ 
+const randChars = (length: number = 10): string => {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+}
+
+export { dataResponse, existObject, renameKey, randFileName, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
 
