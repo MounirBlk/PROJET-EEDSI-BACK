@@ -11,18 +11,6 @@ on:
   pull_request:
     branches: [ main ]
 
-  # Try merging pull requests belonging to a workflow run.
-  #workflow_run:
-  #  workflows:
-  #    - CI
-  #  types:
-  #    - completed
-
-  # Try merging pull requests belonging to a check suite.
-  #check_suite:
-  #  types:
-  #    - completed
-
   # Try merging a pull request when it is approved.
   pull_request_review:
     types:
@@ -44,25 +32,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      #- name: Sleep for 1 mins
-      #  uses: jakejarvis/wait-action@master
-      #  with:
-      #    time: '1m'
-      #- name: Wait for build to succeed 
-      #  uses: fountainhead/action-wait-for-check@v1.0.0 
-      #  id: wait-for-build 
-      #  with: 
-      #    token: ${{ secrets.GITHUB_TOKEN }} 
-      #    checkName: build 
-      #    ref: ${{ github.event.pull_request.head.sha || github.sha }} 
 
-      #- name: Do something with a passing build 
-      #  if: steps.wait-for-build.outputs.conclusion == 'success'
-      #- uses: SFDigitalServices/wait-for-deployment-action@v1 
-      #  id: deployment 
-      #  with: 
-      #    github-token: ${{ github.token }} 
-      #    environment: Preview
       - name: install pm2
         run: npm install -g pm2
       - name: install deps
@@ -77,8 +47,8 @@ jobs:
       
       - name: build if present
         run: npm run build --if-present
-      - name: pm2 kill && pm2 start && pm2 status
-        run: pm2 kill && pm2 start dist/app.js
+      - name: echo test
+        run: echo $GMAIL_EMAIL
         env:
           GMAIL_EMAIL: ${{ secrets.GMAIL_EMAIL }}
           GMAIL_PWD: ${{ secrets.GMAIL_PWD }}
@@ -86,6 +56,8 @@ jobs:
           MONGO_URL: ${{ secrets.MONGO_URL }}
           STRIPE_PUBLIC_KEY: ${{ secrets.STRIPE_PUBLIC_KEY }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      - name: pm2 kill && pm2 start && pm2 status
+        run: pm2 kill && pm2 start dist/app.js
       - name: test unit
         run: npm test
       - name: pm2 kill
