@@ -26,6 +26,7 @@
     },
     "homepage": "https://github.com/MounirBlk/PROJET-EEDSI-SERVER#readme",
     "dependencies": {
+        "@types/async": "^3.2.5",
         "@types/cors": "^2.8.10",
         "@types/ejs": "^3.0.6",
         "@types/images": "^2.2.2",
@@ -33,6 +34,7 @@
         "@types/lodash": "^4.14.168",
         "@types/mongodb": "^3.6.8",
         "@types/mongoose": "^5.10.3",
+        "async": "^3.2.0",
         "bluebird": "^3.7.2",
         "body-parser": "^1.19.0",
         "cors": "^2.8.5",

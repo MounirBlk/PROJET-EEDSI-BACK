@@ -1,4 +1,6 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
+import UserModel from '../models/UserModel';
+import jwt from 'jsonwebtoken';
 //import { random } from "lodash";
 
 /**
@@ -264,5 +266,33 @@ const randChars = (length: number = 10): string => {
     return result;
 }
 
-export { dataResponse, existObject, renameKey, randFileName, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
+/**
+ *  Function qui test le token et recupere le payload du token
+ *  @param {Request} req 
+ *  @param {Response} res 
+ */ 
+const getJwtPayload = async(req: Request, res: Response): Promise < any | null > => {
+    try {
+        const tokenHeader: string | undefined = req.headers.authorization;
+        if (tokenHeader && tokenHeader !== undefined) {
+            const token = tokenHeader.replace(/^bearer/i, "").trim();
+            const jwtObject = jwt.verify(token, String(process.env.JWT_TOKEN_SECRET));
+            if (await UserModel.countDocuments({ token: token }) === 0) {
+                return null;
+            }else{
+                if (jwtObject && jwtObject !== null && jwtObject !== undefined) {
+                    return jwtObject;
+                }
+            }
+        }else{
+            return null;
+        }
+        return null;
+    } catch (err) {
+        //console.log(err)
+        return null;
+    }
+}
+
+export { dataResponse, existObject, getJwtPayload, renameKey, randFileName, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
 

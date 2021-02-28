@@ -1,19 +1,9 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
 import UserInterfaces from '../interfaces/UserInterface';
-import { dataResponse, dateFormatFr, emailFormat, exist, passwordFormat, textFormat } from '../middlewares';
+import { dataResponse, dateFormatFr, emailFormat, exist, getJwtPayload, passwordFormat, textFormat } from '../middlewares';
 import { mailRegister } from '../middlewares/sendMail';
 import UserModel from '../models/UserModel';
-
-/**
- *  Route login user
- *  @param {Request} req 
- *  @param {Response} res 
- */ 
-export const login = async (req: Request, res: Response): Promise<void> => {
-    const data = req.body;
-    //TO DO
-    return dataResponse(res, 200, { error: false, message: 'ok'});
-}
+import jwt from 'jsonwebtoken';
 
 /**
  *  Route register user
@@ -31,8 +21,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         (data.civilite.toLowerCase() !== "homme" && data.civilite.toLowerCase() !== "femme") || (data.role.toLowerCase() !== "administrateur" && data.role.toLowerCase() !== "commercial" && data.role.toLowerCase() !== "livreur" && data.role.toLowerCase() !== "client")){
             return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
         }else{
-            if(true !== true){// Email already exist
-
+            if(await UserModel.countDocuments({ email: data.email.trim().toLowerCase() }) !== 0){// Email already exist
+                return dataResponse(res, 409, { error: true, message: "Un compte utilisant cette adresse mail est déjà enregistré" });
             }else{
                 let toInsert = {
                     email: data.email.trim().toLowerCase(),
@@ -48,10 +38,81 @@ export const register = async (req: Request, res: Response): Promise<void> => {
                 await user.save().then(async(user: UserInterfaces) => {
                     await mailRegister(user.email, `${user.firstname} ${user.lastname}`);
                     return dataResponse(res, 201, { error: false, message: "L'utilisateur a bien été créé avec succès" });
-                }).catch((error) => {
-                    return dataResponse(res, 409, { error: true, message: "Un compte utilisant cette adresse mail est déjà enregistré" });
+                }).catch(() => {
+                    return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
                 });
             }
         }
     }
+}
+
+/**
+ *  Route login user
+ *  @param {Request} req 
+ *  @param {Response} res 
+ */ 
+export const login = async (req: Request, res: Response): Promise<void> => {
+    const data = req.body;
+    if(data === undefined || data === null) return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes'})
+    if(!exist(data.email) || !exist(data.password)){
+        return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
+    }else{
+        if(!emailFormat(data.email) || !passwordFormat(data.password)){
+            return dataResponse(res, 409, { error: true, message: 'Email/password incorrect' })
+        }else{
+            const user = await UserModel.findOne({ email: data.email.trim().toLowerCase() }); //verification email
+            if (user === null) {
+                return dataResponse(res, 409, { error: true, message: "Email/password incorrect" });
+            }else{
+                if (await user.verifyPasswordSync(data.password)) {// Password correct
+                    if (<number>user.attempt >= 5 && ((<any>new Date() - <any>user.updateAt) / 1000 / 60) <= 2){
+                        return dataResponse(res, 429, { error: true, message: "Trop de tentative sur l'email " + data.Email + " (5 max) - Veuillez patienter (2mins)"});
+                    }else{
+                        user.token = jwt.sign({
+                            id: user.get("_id"),
+                            role: user.role,
+                            exp: Math.floor(Date.now() / 1000) + (60 * 60) * 24 * 7 , // 7 jours
+                        }, String(process.env.JWT_TOKEN_SECRET));
+                        user.attempt = 0;
+                        user.updateAt = new Date();
+                        user.lastLogin = new Date();
+                        await user.save();
+                        return dataResponse(res, 200, { error: false, message: "L'utilisateur a été authentifié avec succès", token: user.token})
+                    }
+                }else{// Password incorrect
+                    if(<number>user.attempt >= 5 && ((<any>new Date() - <any>user.updateAt) / 1000 / 60) <= 2){
+                        return dataResponse(res, 429, { error: true, message: "Trop de tentative sur l'email " + data.email + " (5 max) - Veuillez patienter (2mins)"});
+                    }else if(<number>user.attempt >= 5 && ((<any>new Date() - <any>user.updateAt) / 1000 / 60) >= 2){
+                        user.updateAt = new Date();
+                        user.attempt = 1;
+                        await user.save();
+                        return dataResponse(res, 409, { error: true, message: 'Email/password incorrect'})
+                    }else{
+                        user.updateAt = new Date();
+                        user.attempt = <number>user.attempt + 1;
+                        await user.save();
+                        return dataResponse(res, 409, { error: true, message: 'Email/password incorrect'})
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ *  Route delete user
+ *  @param {Request} req 
+ *  @param {Response} res 
+ */ 
+export const deleteUser = async (req: Request, res: Response) : Promise <void> => {
+    await getJwtPayload(req, res).then(async (data) => {
+        if(data === null || data === undefined){
+            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+        }else{
+            await UserModel.findOneAndDelete({ _id : data.id });
+            return dataResponse(res, 200, { error: false, message: 'L\'utilisateur a été supprimé avec succès' })// to transform to disabled user
+        }
+    }).catch((error) => {
+        throw error;
+    });
 }

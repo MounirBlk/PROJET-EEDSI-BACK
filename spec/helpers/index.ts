@@ -22,6 +22,16 @@ export const getTimeout = (secondes: number = 60): number => {
 }
 
 /**
+ *  Function qui vérifie l'existence d'une data
+ */ 
+export const exist = (data: string): Boolean => {
+    if (data == undefined || data.trim().length == 0 || data == null)
+        return false
+    else
+        return true
+}
+
+/**
  *  Random number between min and max
  *  @param {number} min  
  *  @param {number} max  
@@ -41,6 +51,17 @@ export const randomChars = (length: number = 10): string => {
         result += characters.charAt(Math.floor(Math.random() * characters.length));
     }
     return result.trim().charAt(0).toUpperCase() + result.trim().substring(1).toLowerCase();// 1 lettre maj mini
+}
+
+/**
+ *  générator random Date
+ *  @param {Date} start début année (1950)
+ *  @param {Date} end fin année (today)
+ */ 
+export const randomDate = (start: Date = new Date(1950, 0, 1), end: Date = new Date()): string => {
+    let dt = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));//FORMAT DATE
+    return `${dt.getDate().toString().padStart(2, '0')}/${(dt.getMonth()+1).toString().padStart(2, '0')}/${dt.getFullYear().toString().padStart(4, '0')}`   
+
 }
 
 /**
