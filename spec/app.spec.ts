@@ -102,5 +102,5 @@ describe('TEST API E-COMMERCE', () => {
     registerUserSpec()
     loginUserSpec()
 
-    //afterAll(deleteUser(), getTimeout(60));// After all tests of specs
+    afterAll(deleteUser(), getTimeout(60));// After all tests of specs
 })

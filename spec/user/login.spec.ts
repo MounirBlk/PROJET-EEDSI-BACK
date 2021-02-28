@@ -76,8 +76,8 @@ export const loginUserSpec = () => {
         //return promiseList;
     }
     for(let i = 0; i < 10; i++){
-        let emailTest = fs.readFileSync(process.cwd() + '/logs/emailTest.txt', "utf-8");
         it('Test login: mot de passe incorrect', (done: DoneFn) => {
+            let emailTest = fs.readFileSync(process.cwd() + '/logs/emailTest.txt', "utf-8");
             testManyAuth(emailTest, i < 5 ? false : true, done);
             //async.parallel(testManyAuth(emailTest, isManyRequests, done), done);
         }, getTimeout());
