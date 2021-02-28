@@ -81,7 +81,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
                     }
                 }else{// Password incorrect
                     if(<number>user.attempt >= 5 && ((<any>new Date() - <any>user.updateAt) / 1000 / 60) <= 2){
-                        return dataResponse(res, 429, { error: true, message: "Trop de tentative sur l'email " + data.Email + " (5 max) - Veuillez patienter (2mins)"});
+                        return dataResponse(res, 429, { error: true, message: "Trop de tentative sur l'email " + data.email + " (5 max) - Veuillez patienter (2mins)"});
                     }else if(<number>user.attempt >= 5 && ((<any>new Date() - <any>user.updateAt) / 1000 / 60) >= 2){
                         user.updateAt = new Date();
                         user.attempt = 1;
@@ -110,7 +110,7 @@ export const deleteUser = async (req: Request, res: Response) : Promise <void> =
             return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             await UserModel.findOneAndDelete({ _id : data.id });
-            return dataResponse(res, 200, { error: false, message: 'L\'utilisateur a été supprimé avec succès' })
+            return dataResponse(res, 200, { error: false, message: 'L\'utilisateur a été supprimé avec succès' })// to transform to disabled user
         }
     }).catch((error) => {
         throw error;

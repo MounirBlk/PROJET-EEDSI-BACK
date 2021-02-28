@@ -1,8 +1,12 @@
 import request from "supertest"
 import app from "../app";
-import { convertToFormBody, exist, getTimeout, randNumber, randomChars, randomFileName } from "./helpers";
+import { convertToFormBody, exist, getTimeout, randNumber, randomChars, randomDate, randomFileName } from "./helpers";
 import fs from 'fs';
 import path from 'path';
+import { htmlSpec } from "./user/html.spec";
+import { deleteUserSpec } from "./user/deleteUser.spec";
+import { loginUserSpec } from "./user/login.spec";
+import { registerUserSpec } from "./user/register.spec";
 //const request = require('supertest');
 
 const role = ["Administrateur", "Commercial", "Livreur", "Client"]
@@ -15,7 +19,7 @@ const registerUser = () => {
             firstname: randomChars(randNumber(5,10)),
             lastname: randomChars(randNumber(5,10)),
             civilite: randNumber(0,1) === 0 ? "Homme" : "Femme",
-            dateNaissance: '17/05/1998',
+            dateNaissance: randomDate(),
             portable: '0651637929',
             role: role[randNumber(0,3)] 
         }        
@@ -28,7 +32,8 @@ const registerUser = () => {
                 error: false,
                 message: "L'utilisateur a bien été créé avec succès"
             })
-            .end((err: Error, res: any) => {
+            .end((err: any, res: any) => {
+                if (err) throw err;
                 !fs.existsSync(process.cwd() + '/logs') ? fs.mkdirSync(process.cwd() + '/logs') : null;
                 fs.writeFileSync(process.cwd() + '/logs/emailTest.txt', data.email)
                 fs.writeFileSync(process.cwd() + '/logs/passwordTest.txt', data.password)
@@ -39,7 +44,7 @@ const registerUser = () => {
 
 const loginUser = () => {
     return (done: DoneFn) => {
-        request(app)//app
+        request(app)
             .post('/login')
             .send(convertToFormBody({
                 email: fs.readFileSync(process.cwd() + '/logs/emailTest.txt', "utf-8"),
@@ -47,15 +52,21 @@ const loginUser = () => {
             }))
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .expect(201, {
-                error: false,
-                message: "L'utilisateur a été authentifié succès"
-            })
-            .end((err: Error, res: any) => {
-                const token: string = res.body.token;
+            .expect(200)
+            .then((response: any) => {
+                expect(response.status).toEqual(200)
+                expect(response.body).toEqual({
+                    error: false,
+                    message: "L'utilisateur a été authentifié avec succès",
+                    token: response.body.token
+                })
+                const token: string = response.body.token;
                 fs.writeFileSync(process.cwd() + '/logs/bearerToken.txt', token)
                 return done();
-            });
+            })
+            .catch(err => {
+                throw err;
+            })
     };
 };
 
@@ -65,43 +76,31 @@ const deleteUser = () => {
         request(app)//app
         .delete('/user')
         .set('Accept', 'application/json')
-        //.set('Authorization', `Bearer ${token}`) 
+        //.set('Authorization', `Bearer ${token}`) //fonctionne aussi normalement
         .auth(token, { type: 'bearer' })
         .expect('Content-Type', /json/)
         .expect(200, {
             error: false,
             message: 'L\'utilisateur a été supprimé avec succès'
         })
-        .end((err: Error, res: any) => {
+        .end((err: any, res: any) => {
+            if (err) throw err;
+            fs.existsSync(process.cwd() + '/logs') ? fs.rmdirSync(process.cwd() + '/logs', { recursive: true }) : null;
             return done();
         });
     };
 };
 
-describe('init beforeAll and afterAll / test index.html and error.html', () => {
+describe('TEST API E-COMMERCE', () => {
     beforeAll(registerUser(), getTimeout(120));// Before all tests of specs (register)
     beforeAll(loginUser(), getTimeout(120));// Before all tests of specs (login)
-
     //beforeEach(() => console.log(__dirname));
     //afterEach(() => console.log('Test passed'))
 
-    it('Test index.html', (done: DoneFn) => {
-        request(app)
-            .get('/')
-            .expect(200, done);
-    }, getTimeout());
+    htmlSpec()
+    deleteUserSpec()
+    registerUserSpec()
+    loginUserSpec()
 
-    it('Test index.html', (done: DoneFn) => {
-        request(app)
-            .get('')
-            .expect(200, done);
-    }, getTimeout());
-
-    it('Test error.html', (done: DoneFn) => {
-        request(app)
-            .get(`/${randomChars()}`)
-            .expect(404, done);
-    }, getTimeout());
-
-    afterAll(deleteUser(), getTimeout(60));// After all tests of specs
+    //afterAll(deleteUser(), getTimeout(60));// After all tests of specs
 })

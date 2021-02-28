@@ -54,6 +54,17 @@ export const randomChars = (length: number = 10): string => {
 }
 
 /**
+ *  générator random Date
+ *  @param {Date} start début année (1950)
+ *  @param {Date} end fin année (today)
+ */ 
+export const randomDate = (start: Date = new Date(1950, 0, 1), end: Date = new Date()): string => {
+    let dt = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));//FORMAT DATE
+    return `${dt.getDate().toString().padStart(2, '0')}/${(dt.getMonth()+1).toString().padStart(2, '0')}/${dt.getFullYear().toString().padStart(4, '0')}`   
+
+}
+
+/**
  *  Conversion to form body 
  *  @param {Object} data 
  */ 

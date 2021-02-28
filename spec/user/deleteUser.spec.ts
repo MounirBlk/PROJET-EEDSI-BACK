@@ -4,7 +4,7 @@ import { getTimeout, randomChars } from "../helpers";
 import fs from 'fs';
 import path from 'path';
 
-describe('Test delete user by rest API', () => {
+export const deleteUserSpec = () => {
     it('Test delete: token incorrect', (done: DoneFn) => {
         request(app)
             .delete('/user')
@@ -16,4 +16,4 @@ describe('Test delete user by rest API', () => {
                 message: 'Votre token n\'est pas correct'
             }, done);
     }, getTimeout());
-});
+};

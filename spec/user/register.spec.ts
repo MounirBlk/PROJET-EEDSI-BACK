@@ -1,8 +1,8 @@
 import request from "supertest"
 import app from "../../app";
-import { convertToFormBody, getTimeout, randNumber, randomChars, randomFileName } from "../helpers";
+import { convertToFormBody, getTimeout, randNumber, randomChars, randomDate, randomFileName } from "../helpers";
 
-describe('Test Register by rest API', () => {
+export const registerUserSpec = () => {
     const role = ["Administrateur", "Commercial", "Livreur", "Client"]
     it('Test Register: données manquantes', (done: DoneFn) => {
         const data = {}
@@ -24,7 +24,7 @@ describe('Test Register by rest API', () => {
             firstname: randomChars(randNumber(5,10)),
             lastname: randomChars(randNumber(5,10)),
             civilite: randNumber(0,1) === 0 ? "Homme" : "Femme",
-            dateNaissance: '17/05/1998',
+            dateNaissance: randomDate(),
             portable: '0651637929',
             role: role[randNumber(0,3)] 
         }        
@@ -46,7 +46,7 @@ describe('Test Register by rest API', () => {
             firstname: randomChars(randNumber(5,10)),
             lastname: randomChars(randNumber(5,10)),
             civilite: randNumber(0,1) === 0 ? "Homme" : "Femme",
-            dateNaissance: '17/05/1998',
+            dateNaissance: randomDate(),
             portable: '0651637929',
             role: role[randNumber(0,3)]
         }
@@ -60,4 +60,4 @@ describe('Test Register by rest API', () => {
                 message: "Un compte utilisant cette adresse mail est déjà enregistré"
             }, done);
     }, getTimeout());
-})
+};
