@@ -22,6 +22,16 @@ export const getTimeout = (secondes: number = 60): number => {
 }
 
 /**
+ *  Function qui vérifie l'existence d'une data
+ */ 
+export const exist = (data: string): Boolean => {
+    if (data == undefined || data.trim().length == 0 || data == null)
+        return false
+    else
+        return true
+}
+
+/**
  *  Random number between min and max
  *  @param {number} min  
  *  @param {number} max  

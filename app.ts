@@ -5,6 +5,7 @@ import cors from 'cors';
 import path from 'path';
 import { route } from './src/routes';
 import mongooseConnect from './src/db';
+import fs from 'fs';
 
 mongooseConnect()
 
