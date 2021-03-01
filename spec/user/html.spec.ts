@@ -1,10 +1,8 @@
+//const request = require('supertest');
 import request from "supertest"
 import { convertToFormBody, exist, getTimeout, randNumber, randomChars, randomDate, randomFileName } from "../helpers";
-import fs from 'fs';
-import path from 'path';
 import app from "../../app";
 
-//describe('Test html pages', () => {
 export const htmlSpec = () => {
     it('Test index.html', (done: DoneFn) => {
         request(app)
@@ -24,4 +22,3 @@ export const htmlSpec = () => {
             .expect(404, done);
     }, getTimeout());
 }
-//})

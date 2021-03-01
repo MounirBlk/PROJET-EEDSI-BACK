@@ -26,7 +26,15 @@ const dataResponse = (res: Response, status: number = 500, data: any = { error: 
  *  @param {string} mapperNameRoute? Nom de la route
  */ 
 const deleteMapper = (data: any, mapperNameRoute?: string): any => {
-    //delete data._id;
+    data._id  = null;
+    data.token = null;
+    data.attempt = null;
+    data.createdAt = null;
+    data.updateAt = null;
+    data.lastLogin = null;
+    data.password = null;
+    data.updatedAt = null;
+    data.__v = null;
     return data;
 }
 
@@ -153,7 +161,7 @@ const isValidPasswordLength = (password: string): boolean => {
 const renameKey = (object: any, key: any, newKey: any) => {
     const clonedObj = clone(object);
     const targetKey = clonedObj[key];
-    delete clonedObj[key];
+    clonedObj[key];
     clonedObj[newKey] = targetKey;
     return clonedObj;
 };

@@ -25,6 +25,7 @@ export const mailRegister = async (email: string, name: string): Promise<void> =
         });
     }).catch((error: Error) => {
         console.log(error);
+        throw error;
     });
 }
 
@@ -48,6 +49,7 @@ export const mailforgotPw = async (email: string, password: string): Promise<voi
         });
     }).catch((error: Error) => {
         console.log(error);
+        throw error;
     });
 }
 

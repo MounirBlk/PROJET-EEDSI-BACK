@@ -1,6 +1,6 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
 import UserInterfaces from '../interfaces/UserInterface';
-import { dataResponse, dateFormatFr, emailFormat, exist, getJwtPayload, passwordFormat, textFormat } from '../middlewares';
+import { dataResponse, dateFormatFr, deleteMapper, emailFormat, exist, getJwtPayload, passwordFormat, textFormat } from '../middlewares';
 import { mailRegister } from '../middlewares/sendMail';
 import UserModel from '../models/UserModel';
 import jwt from 'jsonwebtoken';
@@ -105,12 +105,51 @@ export const login = async (req: Request, res: Response): Promise<void> => {
  *  @param {Response} res 
  */ 
 export const deleteUser = async (req: Request, res: Response) : Promise <void> => {
-    await getJwtPayload(req, res).then(async (data) => {
-        if(data === null || data === undefined){
+    await getJwtPayload(req, res).then(async (payload) => {
+        if(payload === null || payload === undefined){
             return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
-            await UserModel.findOneAndDelete({ _id : data.id });
+            await UserModel.findOneAndDelete({ _id : payload.id });
             return dataResponse(res, 200, { error: false, message: 'L\'utilisateur a été supprimé avec succès' })// to transform to disabled user
+        }
+    }).catch((error) => {
+        throw error;
+    });
+}
+
+/**
+ *  Route recuperation user
+ *  @param {Request} req 
+ *  @param {Response} res 
+ */ 
+export const getUser = async (req: Request, res: Response) : Promise <void> => {
+    await getJwtPayload(req, res).then(async (payload) => {
+        if(payload === null || payload === undefined){
+            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+        }else{
+            await UserModel.findOne({ _id: payload.id }, (err: Error, results: Response) => {
+                if (err) {
+                    return dataResponse(res, 500, {
+                        error: true,
+                        message: "Erreur dans la requête !"
+                    });
+                }else if (results === undefined || results === null){// Si le resultat n'existe pas
+                    return dataResponse(res, 400, { error: false, message: "Aucun résultat pour la requête" });
+                } else {
+                    if (results) {
+                        return dataResponse(res, 200, {
+                            error: false,
+                            message: "Les informations ont bien été récupéré",
+                            user: deleteMapper(results) 
+                        });
+                    } else {
+                        return dataResponse(res, 401, {
+                            error: true,
+                            message: "La requête en base de donnée n'a pas fonctionné"
+                        });
+                    }
+                }
+            });
         }
     }).catch((error) => {
         throw error;
