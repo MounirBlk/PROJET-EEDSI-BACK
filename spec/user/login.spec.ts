@@ -4,6 +4,37 @@ import { convertToFormBody, getTimeout, randNumber, randomChars, randomFileName 
 import fs from 'fs';
 import async from 'async';
 
+export const loginUserTest = () => {
+    return (done: DoneFn) => {
+        request(app)
+            .post('/login')
+            .send(convertToFormBody({
+                //email: fs.readFileSync(process.cwd() + '/logs/emailTest.txt', "utf-8"),
+                //password: fs.readFileSync(process.cwd() + '/logs/passwordTest.txt', "utf-8")
+                email: globalThis.emailInfos,
+                password: globalThis.passwordInfos,
+            }))
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .then((response: any) => {
+                expect(response.status).toEqual(200)
+                expect(response.body).toEqual({
+                    error: false,
+                    message: "L'utilisateur a été authentifié avec succès",
+                    token: response.body.token
+                })
+                const token: string = response.body.token;
+                //fs.writeFileSync(process.cwd() + '/logs/bearerToken.txt', token)
+                globalThis.tokenInfos = token;
+                return done();
+            })
+            .catch(err => {
+                throw err;
+            })
+    };
+};
+
 export const loginUserSpec = () => {
     it('Test login: données manquantes', (done: DoneFn) => {
         const data = {}
@@ -77,8 +108,8 @@ export const loginUserSpec = () => {
     }
     for(let i = 0; i < 10; i++){
         it('Test login: mot de passe incorrect', (done: DoneFn) => {
-            let emailTest = fs.readFileSync(process.cwd() + '/logs/emailTest.txt', "utf-8");
-            testManyAuth(emailTest, i < 5 ? false : true, done);
+            //let emailTest = fs.readFileSync(process.cwd() + '/logs/emailTest.txt', "utf-8");
+            testManyAuth(globalThis.emailInfos, i < 5 ? false : true, done);
             //async.parallel(testManyAuth(emailTest, isManyRequests, done), done);
         }, getTimeout());
     }

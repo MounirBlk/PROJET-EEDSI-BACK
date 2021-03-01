@@ -18,6 +18,7 @@ export default interface UserInterfaces extends Document {
     createdAt?: Date;
     updateAt?: Date;
     lastLogin? : Date;
+    actif?: boolean;
 
     verifyPasswordSync: any;
 }

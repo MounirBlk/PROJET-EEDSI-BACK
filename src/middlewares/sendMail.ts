@@ -25,6 +25,7 @@ export const mailRegister = async (email: string, name: string): Promise<void> =
         });
     }).catch((error: Error) => {
         console.log(error);
+        throw error;
     });
 }
 
@@ -35,19 +36,19 @@ export const mailRegister = async (email: string, name: string): Promise<void> =
  */
 export const mailforgotPw = async (email: string, password: string): Promise<void> => {
     await templateRenderFile(__dirname + '/templates/forgotPassword.ejs', {
-        email: email,
-        name: password
+        password: password
     }).then((data: unknown) => {
         let transporter = getTransporterInfos();
         transporter.sendMail({
             from: String(process.env.GMAIL_EMAIL), // sender address
             to: email, // list of receivers
-            subject: "Mot de passe oublié", // Subject line
+            subject: "Réinitialisation du mot de passe", // Subject line
             //text: '',
             html: String(data)
         });
     }).catch((error: Error) => {
         console.log(error);
+        throw error;
     });
 }
 
