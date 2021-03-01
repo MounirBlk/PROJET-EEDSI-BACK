@@ -3,14 +3,14 @@ declare global {
     var emailInfos: string;
     var passwordInfos: string;
 }
-import { getTimeout } from "./helpers";
+import { getTimeout, randNumber } from "./helpers";
 import * as index from "./routes/index.spec";
 import { deleteUserTest } from "./user/deleteUser.spec";
 import { loginUserTest } from "./user/login.spec";
 import { registerUserTest } from "./user/register.spec";
 
 const role = ["Administrateur", "Commercial", "Livreur", "Client"]
-const iteratorTest = 1;
+const iteratorTest = randNumber(1, 3); // random number btw min and max pour le nbre d'iteration des tests
 
 for(let i = 0; i < iteratorTest; i++){
     describe('TEST API E-COMMERCE', () => {

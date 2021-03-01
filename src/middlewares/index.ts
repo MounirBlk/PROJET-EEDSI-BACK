@@ -35,6 +35,7 @@ const deleteMapper = (data: any, mapperNameRoute?: string): any => {
     data.password = null;
     data.updatedAt = null;
     data.__v = null;
+    data.active = null;
     return data;
 }
 
@@ -49,14 +50,15 @@ const exist = (data: string): Boolean => {
 }
 
 /**
- *  Function qui vérifie l'existence de toutes les datas d'un objet (INUTILISABLE)
+ *  Function qui vérifie si l'objet est vide
  */ 
-const existObject = (objectData: any): boolean => {
-    let isValid = true;
-    for(let o in objectData){
-        if(!exist(o)) isValid = false;
+const isEmptyObject = (objectData: any): boolean => {
+    for (let key in objectData) {
+        if (Object.prototype.hasOwnProperty.call(objectData, key)) {
+            return false;
+        }
     }
-    return isValid;
+    return true;
 }
 
 /**
@@ -262,16 +264,25 @@ const randFileName = (): string => {
 }
 
 /**
- *  Random char 
- *  @param {number} length? 
+ *  Random number between min and max
+ *  @param {number} min  
+ *  @param {number} max  
+ */ 
+const randomNumber = (min: number, max: number): number => {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+/**
+ *  Random char (default taille 10)
+ *  @param {number} length ? 
  */ 
 const randChars = (length: number = 10): string => {
-    var result = '';
-    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    for (var i = 0; i < length; i++) {
+    let result = '';
+    let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    for (let i = 0; i < length; i++) {
         result += characters.charAt(Math.floor(Math.random() * characters.length));
     }
-    return result;
+    return result.trim().charAt(0).toUpperCase() + result.trim().substring(1).toLowerCase();// 1 lettre maj mini
 }
 
 /**
@@ -302,5 +313,5 @@ const getJwtPayload = async(req: Request, res: Response): Promise < any | null >
     }
 }
 
-export { dataResponse, existObject, getJwtPayload, renameKey, randFileName, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
+export { dataResponse, isEmptyObject, getJwtPayload, renameKey, randFileName, randomNumber, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
 

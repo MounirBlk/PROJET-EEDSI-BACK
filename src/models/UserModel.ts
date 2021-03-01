@@ -67,6 +67,11 @@ const UserSchema = new mongoose.Schema<UserInterface>({
         default: null,
         type: String,
         required: false
+    },
+    actif: {
+        default: true,
+        type: Boolean,
+        required: false
     }
 }, {
     collection: "users",

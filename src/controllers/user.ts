@@ -1,9 +1,10 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
 import UserInterfaces from '../interfaces/UserInterface';
-import { dataResponse, dateFormatFr, deleteMapper, emailFormat, exist, getJwtPayload, passwordFormat, textFormat } from '../middlewares';
-import { mailRegister } from '../middlewares/sendMail';
+import { dataResponse, dateFormatFr, deleteMapper, emailFormat, exist, getJwtPayload, isEmptyObject, isValidLength, passwordFormat, randChars, randomNumber, textFormat } from '../middlewares';
+import { mailforgotPw, mailRegister } from '../middlewares/sendMail';
 import UserModel from '../models/UserModel';
 import jwt from 'jsonwebtoken';
+import { isError } from 'lodash';
 
 /**
  *  Route register user
@@ -12,12 +13,13 @@ import jwt from 'jsonwebtoken';
  */ 
 export const register = async (req: Request, res: Response): Promise<void> => {
     const data = req.body;
-    if(data === undefined || data === null) return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes'})
+    if(isEmptyObject(data)) return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes'})
     if(!exist(data.email) || !exist(data.password) || !exist(data.firstname) || !exist(data.lastname) || 
     !exist(data.dateNaissance) || !exist(data.civilite) || !exist(data.role)){
         return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
     }else{
-        if(!emailFormat(data.email) || !passwordFormat(data.password) || !textFormat(data.firstname) || !textFormat(data.lastname) || !dateFormatFr(data.dateNaissance) || 
+        let isError = exist(data.portable) ? isValidLength(data.portable, 1, 30) ? false : true : false;
+        if(isError || !emailFormat(data.email) || !passwordFormat(data.password) || !textFormat(data.firstname) || !textFormat(data.lastname) || !dateFormatFr(data.dateNaissance) || 
         (data.civilite.toLowerCase() !== "homme" && data.civilite.toLowerCase() !== "femme") || (data.role.toLowerCase() !== "administrateur" && data.role.toLowerCase() !== "commercial" && data.role.toLowerCase() !== "livreur" && data.role.toLowerCase() !== "client")){
             return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
         }else{
@@ -53,45 +55,49 @@ export const register = async (req: Request, res: Response): Promise<void> => {
  */ 
 export const login = async (req: Request, res: Response): Promise<void> => {
     const data = req.body;
-    if(data === undefined || data === null) return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes'})
+    if(isEmptyObject(data)) return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes'})
     if(!exist(data.email) || !exist(data.password)){
         return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
     }else{
         if(!emailFormat(data.email) || !passwordFormat(data.password)){
             return dataResponse(res, 409, { error: true, message: 'Email/password incorrect' })
         }else{
-            const user = await UserModel.findOne({ email: data.email.trim().toLowerCase() }); //verification email
-            if (user === null) {
+            const user: UserInterfaces | null  = await UserModel.findOne({ email: data.email.trim().toLowerCase() }); //verification email
+            if (user === null || user === undefined) {
                 return dataResponse(res, 409, { error: true, message: "Email/password incorrect" });
             }else{
-                if (await user.verifyPasswordSync(data.password)) {// Password correct
-                    if (<number>user.attempt >= 5 && ((<any>new Date() - <any>user.updateAt) / 1000 / 60) <= 2){
-                        return dataResponse(res, 429, { error: true, message: "Trop de tentative sur l'email " + data.Email + " (5 max) - Veuillez patienter (2mins)"});
-                    }else{
-                        user.token = jwt.sign({
-                            id: user.get("_id"),
-                            role: user.role,
-                            exp: Math.floor(Date.now() / 1000) + (60 * 60) * 24 * 7 , // 7 jours
-                        }, String(process.env.JWT_TOKEN_SECRET));
-                        user.attempt = 0;
-                        user.updateAt = new Date();
-                        user.lastLogin = new Date();
-                        await user.save();
-                        return dataResponse(res, 200, { error: false, message: "L'utilisateur a été authentifié avec succès", token: user.token})
-                    }
-                }else{// Password incorrect
-                    if(<number>user.attempt >= 5 && ((<any>new Date() - <any>user.updateAt) / 1000 / 60) <= 2){
-                        return dataResponse(res, 429, { error: true, message: "Trop de tentative sur l'email " + data.email + " (5 max) - Veuillez patienter (2mins)"});
-                    }else if(<number>user.attempt >= 5 && ((<any>new Date() - <any>user.updateAt) / 1000 / 60) >= 2){
-                        user.updateAt = new Date();
-                        user.attempt = 1;
-                        await user.save();
-                        return dataResponse(res, 409, { error: true, message: 'Email/password incorrect'})
-                    }else{
-                        user.updateAt = new Date();
-                        user.attempt = <number>user.attempt + 1;
-                        await user.save();
-                        return dataResponse(res, 409, { error: true, message: 'Email/password incorrect'})
+                if(!user.actif){
+                    return dataResponse(res, 400, { error: true, message: "Votre compte n'est pas actif" });
+                }else{
+                    if (await user.verifyPasswordSync(data.password)) {// Password correct
+                        if (<number>user.attempt >= 5 && ((<any>new Date() - <any>user.updateAt) / 1000 / 60) <= 2){
+                            return dataResponse(res, 429, { error: true, message: "Trop de tentative sur l'email " + data.Email + " (5 max) - Veuillez patienter (2mins)"});
+                        }else{
+                            user.token = jwt.sign({
+                                id: user.get("_id"),
+                                role: user.role,
+                                exp: Math.floor(Date.now() / 1000) + (60 * 60) * 24 * 7 , // 7 jours
+                            }, String(process.env.JWT_TOKEN_SECRET));
+                            user.attempt = 0;
+                            user.updateAt = new Date();
+                            user.lastLogin = new Date();
+                            await user.save();
+                            return dataResponse(res, 200, { error: false, message: "L'utilisateur a été authentifié avec succès", token: user.token})
+                        }
+                    }else{// Password incorrect
+                        if(<number>user.attempt >= 5 && ((<any>new Date() - <any>user.updateAt) / 1000 / 60) <= 2){
+                            return dataResponse(res, 429, { error: true, message: "Trop de tentative sur l'email " + data.email + " (5 max) - Veuillez patienter (2mins)"});
+                        }else if(<number>user.attempt >= 5 && ((<any>new Date() - <any>user.updateAt) / 1000 / 60) >= 2){
+                            user.updateAt = new Date();
+                            user.attempt = 1;
+                            await user.save();
+                            return dataResponse(res, 409, { error: true, message: 'Email/password incorrect'})
+                        }else{
+                            user.updateAt = new Date();
+                            user.attempt = <number>user.attempt + 1;
+                            await user.save();
+                            return dataResponse(res, 409, { error: true, message: 'Email/password incorrect'})
+                        }
                     }
                 }
             }
@@ -134,7 +140,7 @@ export const getUser = async (req: Request, res: Response) : Promise <void> => {
                         message: "Erreur dans la requête !"
                     });
                 }else if (results === undefined || results === null){// Si le resultat n'existe pas
-                    return dataResponse(res, 400, { error: false, message: "Aucun résultat pour la requête" });
+                    return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
                 } else {
                     if (results) {
                         return dataResponse(res, 200, {
@@ -154,4 +160,107 @@ export const getUser = async (req: Request, res: Response) : Promise <void> => {
     }).catch((error) => {
         throw error;
     });
+}
+
+/**
+ *  Route update user
+ *  @param {Request} req 
+ *  @param {Response} res 
+ */ 
+export const updateUser = async (req: Request, res: Response) : Promise <void> => {
+    await getJwtPayload(req, res).then(async (payload) => {
+        if(payload === null || payload === undefined){
+            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+        }else{
+            const data = req.body;
+            if(isEmptyObject(data)) return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes'})
+            const user: UserInterfaces | null = await UserModel.findById(payload.id);
+            if(user === null || user === undefined){
+                return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !"})
+            }else{
+                let isError: boolean = false;
+                isError = exist(data.portable) ? isValidLength(data.portable, 1, 30) ? false : true : false;
+                let toUpdate = {
+                    firstname: exist(data.firstname) ? !textFormat(data.firstname) ? (isError = true) : data.firstname : user.firstname,
+                    lastname: exist(data.lastname) ? !textFormat(data.lastname) ? (isError = true) : data.lastname : user.lastname,
+                    civilite: exist(data.civilite) ? (data.civilite.toLowerCase() !== "homme" && data.civilite.toLowerCase() !== "femme") ? (isError = true) : data.civilite : user.civilite,
+                    dateNaissance: exist(data.dateNaissance) ? !dateFormatFr(data.dateNaissance) ? (isError = true) : data.dateNaissance : user.dateNaissance,
+                    portable: exist(data.portable) ? data.portable : user.portable
+                }
+                if(isError){
+                    return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
+                }else{
+                    await UserModel.findByIdAndUpdate(payload.id, toUpdate, null, (err: Error, resp: any) => {
+                        if (err) {
+                            return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
+                        } else {
+                            return dataResponse(res, 200, { error: false, message: "L'utilisateur a bien été mise à jour" })
+                        }
+                    });
+                }
+            }
+        }
+    }).catch((error) => {
+        throw error;
+    });
+}
+
+/**
+ *  Route disable user
+ *  @param {Request} req 
+ *  @param {Response} res 
+ */ 
+export const disableUser = async (req: Request, res: Response) : Promise <void> => {
+    await getJwtPayload(req, res).then(async (payload) => {
+        if(payload === null || payload === undefined){
+            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+        }else{
+            await UserModel.findByIdAndUpdate(payload.id, { actif: false }, null, async(err: Error, resp: any) => {
+                if (err) {
+                    return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
+                } else {
+                    const user: UserInterfaces | null  = await UserModel.findById(payload.id)//<UserInterfaces>
+                    if(user === null || user === undefined){
+                        return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !"})
+                    }else{
+                        return dataResponse(res, 200, { error: false, message: "L'utilisateur a bien été désactivé", actif: user.actif })
+                    }
+                }
+            });
+        }
+    }).catch((error) => {
+        throw error;
+    });
+}
+
+/**
+ *  Route reinitiallisation password
+ *  @param {Request} req 
+ *  @param {Response} res 
+ */ 
+export const forgotPassword = async (req: Request, res: Response) : Promise <void> => {
+    const data = req.body;
+    if(isEmptyObject(data)) return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes'})
+    if(!exist(data.email)){
+        return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
+    }else{
+        if(!emailFormat(data.email)){
+            return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
+        }else{
+            if(await UserModel.countDocuments({ email: data.email.trim().toLowerCase() }) === 0){
+                return dataResponse(res, 409, { error: true, message: "Votre email n'existe pas"}) 
+            }else{
+                //const passwordTemp = Math.random().toString(36).slice(-8);
+                const passwordTemp = randChars(10).concat('*') + randomNumber(1,100) + '!';
+                await UserModel.findOneAndUpdate({ email: data.email.trim().toLowerCase() }, { password: passwordTemp }, null, async(err: Error, resp: any) => {
+                    if (err) {
+                        return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
+                    } else {
+                        await mailforgotPw(data.email.trim().toLowerCase(), passwordTemp);
+                        return dataResponse(res, 200, { error: false, message: "Votre mot de passe a bien été réinitialisé, veuillez consulter votre boîte mail" })
+                    }
+                });
+            }
+        }   
+    }
 }

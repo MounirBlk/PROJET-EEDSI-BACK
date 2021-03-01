@@ -23,6 +23,7 @@ export const deleteUserTest = () => {
             globalThis.tokenInfos = '';
             globalThis.emailInfos = '';
             globalThis.passwordInfos = '';
+            console.log('end')
             return done();
         });
     };
