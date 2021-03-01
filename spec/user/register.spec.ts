@@ -75,7 +75,7 @@ export const registerUserSpec = (role: Array<string>) => {
 
     it('Test Register: email existe deja', (done: DoneFn) => {
         const data = {
-            email: 'mou95500@gmail.com',
+            email: globalThis.emailInfos,
             password: randomChars(randNumber(5,10)).concat('*') + randNumber(1,100),
             firstname: randomChars(randNumber(5,10)),
             lastname: randomChars(randNumber(5,10)),
