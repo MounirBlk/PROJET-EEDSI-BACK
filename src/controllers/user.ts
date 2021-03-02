@@ -83,12 +83,12 @@ export const login = async (req: Request, res: Response): Promise<void> => {
                             user.updateAt = new Date();
                             user.lastLogin = new Date();
                             await user.save();
-                            let checkData = {
-                                fullName : `${user.firstname} ${user.lastname}`,
-                                email: user.email,
-                                url: 'http://' + req.headers.host + '/check/' + user.token
-                            }//req.hostname
                             if(!user.checked){
+                                let checkData = {
+                                    fullName : `${user.firstname} ${user.lastname}`,
+                                    email: user.email,
+                                    url: 'http://' + req.headers.host + '/check/' + user.token
+                                }//req.hostname
                                 await mailCheckEmail(checkData);
                             }
                             return dataResponse(res, 200, { error: false, message: "L'utilisateur a été authentifié avec succès", token: user.token})
