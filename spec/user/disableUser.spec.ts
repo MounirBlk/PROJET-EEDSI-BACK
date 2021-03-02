@@ -24,7 +24,7 @@ export const disableUserSpec = () => {
             .expect(200, {
                 error: false,
                 message: "L'utilisateur a bien été désactivé",
-                actif: false
+                disabled: true
             }, done);
     }, getTimeout());
 };

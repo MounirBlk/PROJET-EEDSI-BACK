@@ -1,3 +1,4 @@
+import { checkUserSpec } from "../user/checkUser.spec";
 import { deleteUserSpec } from "../user/deleteUser.spec"
 import { disableUserSpec } from "../user/disableUser.spec";
 import { forgotPasswordUserSpec } from "../user/forgotPassword.spec";
@@ -16,6 +17,7 @@ export const userSpec = (role: Array<string>) => {
     updateUserSpec();
     disableUserSpec();
     forgotPasswordUserSpec();
+    checkUserSpec();
 }
 
 export const productSpec = () => {

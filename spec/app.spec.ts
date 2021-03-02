@@ -5,6 +5,7 @@ declare global {
 }
 import { getTimeout, randNumber } from "./helpers";
 import * as index from "./routes/index.spec";
+import { checkUserTest } from "./user/checkUser.spec";
 import { deleteUserTest } from "./user/deleteUser.spec";
 import { loginUserTest } from "./user/login.spec";
 import { registerUserTest } from "./user/register.spec";
@@ -16,6 +17,8 @@ for(let i = 0; i < iteratorTest; i++){
     describe('TEST API E-COMMERCE', () => {
         beforeAll(registerUserTest(role), getTimeout(120));// Before all tests of specs (register)
         beforeAll(loginUserTest(), getTimeout(120));// Before all tests of specs (login)
+        beforeAll(checkUserTest(), getTimeout(120));// Before all tests of specs (login)
+
         //beforeEach(() => console.log(__dirname));
         //afterEach(() => console.log('Test passed'))
     

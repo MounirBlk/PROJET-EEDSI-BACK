@@ -53,6 +53,32 @@ export const mailforgotPw = async (email: string, password: string): Promise<voi
 }
 
 /**
+ * SEND MAIL template checkmail
+ * @param {Object} checkData 
+ */
+export const mailCheckEmail = async (checkData: any): Promise<void> => {
+    await templateRenderFile(__dirname + '/templates/checkMail.ejs', {
+        email: checkData.email,
+        fullName: checkData.fullName,
+        url: checkData.url
+    }).then((data: unknown) => {
+        let transporter = getTransporterInfos();
+        transporter.sendMail({
+            from: process.env.GMAIL_EMAIL, // sender address
+            to: checkData.email, // list of receivers
+            subject: "Vérification de l'email", // Subject line
+            html: String(data)
+        }, (error, response) => {
+            error ? console.log(error) : null;
+            return transporter.close();
+        });
+    }).catch((error: Error) => {
+        console.log(error);
+        throw error;
+    });
+}
+
+/**
  * INFORMATIONS TRANSPORTER
  */
 const getTransporterInfos = (): Mail => {
