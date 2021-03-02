@@ -1,7 +1,7 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
 import UserInterfaces from '../interfaces/UserInterface';
 import { dataResponse, dateFormatFr, deleteMapper, emailFormat, exist, getJwtPayload, isEmptyObject, isValidLength, passwordFormat, randChars, randomNumber, textFormat } from '../middlewares';
-import { mailforgotPw, mailRegister } from '../middlewares/sendMail';
+import { mailCheckEmail, mailforgotPw, mailRegister } from '../middlewares/sendMail';
 import UserModel from '../models/UserModel';
 import jwt from 'jsonwebtoken';
 import { isError } from 'lodash';
@@ -66,7 +66,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
             if (user === null || user === undefined) {
                 return dataResponse(res, 409, { error: true, message: "Email/password incorrect" });
             }else{
-                if(!user.actif){
+                //if(!user.checked) return dataResponse(res, 400, { error: true, message: "Votre email n'a pas été vérifié, consulter vos mails" });
+                if(user.disabled){
                     return dataResponse(res, 400, { error: true, message: "Votre compte n'est pas actif" });
                 }else{
                     if (await user.verifyPasswordSync(data.password)) {// Password correct
@@ -77,11 +78,19 @@ export const login = async (req: Request, res: Response): Promise<void> => {
                                 id: user.get("_id"),
                                 role: user.role,
                                 exp: Math.floor(Date.now() / 1000) + (60 * 60) * 24 * 7 , // 7 jours
-                            }, String(process.env.JWT_TOKEN_SECRET));
+                            }, String(process.env.JWT_TOKEN_SECRET)/*, { expiresIn: '1d'}*/);
                             user.attempt = 0;
                             user.updateAt = new Date();
                             user.lastLogin = new Date();
                             await user.save();
+                            if(!user.checked){
+                                let checkData = {
+                                    fullName : `${user.firstname} ${user.lastname}`,
+                                    email: user.email,
+                                    url: 'http://' + req.headers.host + '/check/' + user.token
+                                }//req.hostname
+                                await mailCheckEmail(checkData);
+                            }
                             return dataResponse(res, 200, { error: false, message: "L'utilisateur a été authentifié avec succès", token: user.token})
                         }
                     }else{// Password incorrect
@@ -111,7 +120,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
  *  @param {Response} res 
  */ 
 export const deleteUser = async (req: Request, res: Response) : Promise <void> => {
-    await getJwtPayload(req, res).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
@@ -129,7 +138,7 @@ export const deleteUser = async (req: Request, res: Response) : Promise <void> =
  *  @param {Response} res 
  */ 
 export const getUser = async (req: Request, res: Response) : Promise <void> => {
-    await getJwtPayload(req, res).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
@@ -168,7 +177,7 @@ export const getUser = async (req: Request, res: Response) : Promise <void> => {
  *  @param {Response} res 
  */ 
 export const updateUser = async (req: Request, res: Response) : Promise <void> => {
-    await getJwtPayload(req, res).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
@@ -211,11 +220,11 @@ export const updateUser = async (req: Request, res: Response) : Promise <void> =
  *  @param {Response} res 
  */ 
 export const disableUser = async (req: Request, res: Response) : Promise <void> => {
-    await getJwtPayload(req, res).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
-            await UserModel.findByIdAndUpdate(payload.id, { actif: false }, null, async(err: Error, resp: any) => {
+            await UserModel.findByIdAndUpdate(payload.id, { disabled: true }, null, async(err: Error, resp: any) => {
                 if (err) {
                     return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
                 } else {
@@ -223,7 +232,7 @@ export const disableUser = async (req: Request, res: Response) : Promise <void> 
                     if(user === null || user === undefined){
                         return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !"})
                     }else{
-                        return dataResponse(res, 200, { error: false, message: "L'utilisateur a bien été désactivé", actif: user.actif })
+                        return dataResponse(res, 200, { error: false, message: "L'utilisateur a bien été désactivé", disabled: user.disabled })
                     }
                 }
             });
@@ -263,4 +272,28 @@ export const forgotPassword = async (req: Request, res: Response) : Promise <voi
             }
         }   
     }
+}
+
+/**
+ *  Route check de l'email
+ *  @param {Request} req 
+ *  @param {Response} res 
+ */ 
+export const checkEmail = async (req: Request, res: Response) : Promise <void> => {
+    const token = `Bearer ${req.params.token}`;
+    await getJwtPayload(token).then(async (payload) => {
+        if(payload === null || payload === undefined){
+            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+        }else{
+            await UserModel.findOneAndUpdate({ _id: payload.id }, { checked: true }, null, async(err: Error, resp: any) => {
+                if (err) {
+                    return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
+                } else {
+                    return dataResponse(res, 200, { error: false, message: "L'email a bien été confirmé"})
+                }
+            });
+        }
+    }).catch((error) => {
+        throw error;
+    });
 }

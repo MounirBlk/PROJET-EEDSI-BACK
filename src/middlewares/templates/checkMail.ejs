@@ -5,7 +5,7 @@
 
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>Création de compte</title>
+    <title>Vérification de l'email</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style type="text/css">
         /**
@@ -153,7 +153,7 @@
                     <tr>
                         <td align="left" bgcolor="#ffffff" style="padding: 36px 24px 0; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; border-top: 3px solid #d4dadf;">
                             <h3>Bonjour
-                                <%= name %>,
+                                <%= fullName %>,
                         </td>
                     </tr>
                 </table>
@@ -207,8 +207,15 @@
 
                     <!-- start copy -->
                     <tr>
-                        <td align="left" style="padding: 24px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;">
-                            <p style="margin: 0; ">Une équipe de développeur travaille pour améliorer les performances et la sécurité de nos plateformes.</p>
+                        <td align="left" bgcolor="#ffffff" style="padding: 24px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;">
+                            <p style="margin: 0;">Veuillez cliquer sur le lien ci-dessous pour confirmer la vérification de votre email.</p>
+                            <br />
+                            <p style="margin: 0;">
+                                <a style="color:blue" href="<%= url %>">
+                                    <%= url %>
+                                </a>
+                            </p>
+                            <br />
                             <p>En cas de problème, veuillez contactez le support.</p>
                         </td>
                     </tr>
@@ -245,7 +252,7 @@
                     <!-- start permission -->
                     <tr>
                         <td align="center " bgcolor="#e9ecef " style="padding: 12px 24px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 14px; line-height: 20px; color: #666; ">
-                            <p style="margin: 0; ">Merci d'avoir créer votre compte</p>
+                            <p style="margin: 0; ">Merci d'avoir valider votre email</p>
                         </td>
                     </tr>
                     <!-- end permission -->

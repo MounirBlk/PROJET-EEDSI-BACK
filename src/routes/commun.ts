@@ -1,5 +1,5 @@
 import { Application, Request, Response, NextFunction, Errback } from "express";
-import { deleteUser, disableUser, forgotPassword, getUser, login, register, updateUser } from "../controllers/user";
+import { checkEmail, deleteUser, disableUser, forgotPassword, getUser, login, register, updateUser } from "../controllers/user";
 
 export const commun = (app: Application): void => {
     app.route('/register').post(register);
@@ -9,4 +9,5 @@ export const commun = (app: Application): void => {
     app.route('/user').put(updateUser);
     app.route('/disable').put(disableUser);
     app.route('/forgot').put(forgotPassword);// TO PERFORM LATER
+    app.route('/check/:token').get(checkEmail);
 }

@@ -68,11 +68,17 @@ const UserSchema = new mongoose.Schema<UserInterface>({
         type: String,
         required: false
     },
-    actif: {
-        default: true,
+    disabled: {
+        default: false,
         type: Boolean,
         required: false
-    }
+    },
+    checked: {
+        default: false,
+        type: Boolean,
+        required: false
+    },
+
 }, {
     collection: "users",
     timestamps: true,

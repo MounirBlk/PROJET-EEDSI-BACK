@@ -290,9 +290,9 @@ const randChars = (length: number = 10): string => {
  *  @param {Request} req 
  *  @param {Response} res 
  */ 
-const getJwtPayload = async(req: Request, res: Response): Promise < any | null > => {
+const getJwtPayload = async(tokenHeader: string | undefined): Promise < any | null > => {
     try {
-        const tokenHeader: string | undefined = req.headers.authorization;
+        //const tokenHeader: string | undefined = req.headers.authorization;
         if (tokenHeader && tokenHeader !== undefined) {
             const token = tokenHeader.replace(/^bearer/i, "").trim();
             const jwtObject = jwt.verify(token, String(process.env.JWT_TOKEN_SECRET));
