@@ -18,7 +18,7 @@ export const htmlSpec = () => {
 
     it('Test error.html', (done: DoneFn) => {
         request(app)
-            .get(`/${randomChars()}`)
+            .get(`/${randomChars()}${randNumber(1, 100)}`)
             .expect(404, done);
     }, getTimeout());
 }

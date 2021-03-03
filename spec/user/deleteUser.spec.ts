@@ -6,7 +6,6 @@ import path from 'path';
 
 export const deleteUserTest = () => {
     return (done: DoneFn) => {
-        //const token = fs.readFileSync(process.cwd() + '/logs/bearerToken.txt', "utf-8");
         request(app)//app
         .delete('/user')
         .set('Accept', 'application/json')

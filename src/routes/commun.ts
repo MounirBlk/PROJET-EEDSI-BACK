@@ -1,7 +1,7 @@
 import { Application, Request, Response, NextFunction, Errback } from "express";
 import { checkEmail, deleteUser, disableUser, forgotPassword, getUser, login, register, updateUser } from "../controllers/user";
 
-export const commun = (app: Application): void => {
+export default (app: Application): void => {
     app.route('/register').post(register);
     app.route('/login').post(login);
     app.route('/user').delete(deleteUser);
