@@ -9,8 +9,6 @@ export const loginUserTest = () => {
         request(app)
             .post('/login')
             .send(convertToFormBody({
-                //email: fs.readFileSync(process.cwd() + '/logs/emailTest.txt', "utf-8"),
-                //password: fs.readFileSync(process.cwd() + '/logs/passwordTest.txt', "utf-8")
                 email: globalThis.emailInfos,
                 password: globalThis.passwordInfos,
             }))
@@ -25,7 +23,6 @@ export const loginUserTest = () => {
                     token: response.body.token
                 })
                 const token: string = response.body.token;
-                //fs.writeFileSync(process.cwd() + '/logs/bearerToken.txt', token)
                 globalThis.tokenInfos = token;
                 return done();
             })
@@ -108,7 +105,6 @@ export const loginUserSpec = () => {
     }
     for(let i = 0; i < 10; i++){
         it('Test login: mot de passe incorrect', (done: DoneFn) => {
-            //let emailTest = fs.readFileSync(process.cwd() + '/logs/emailTest.txt', "utf-8");
             testManyAuth(globalThis.emailInfos, i < 5 ? false : true, done);
             //async.parallel(testManyAuth(emailTest, isManyRequests, done), done);
         }, getTimeout());

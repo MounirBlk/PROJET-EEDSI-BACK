@@ -1,3 +1,4 @@
+import { roleTypes } from "../../src/types/roleTypes";
 import { checkUserSpec } from "../user/checkUser.spec";
 import { deleteUserSpec } from "../user/deleteUser.spec"
 import { disableUserSpec } from "../user/disableUser.spec";
@@ -8,7 +9,7 @@ import { loginUserSpec } from "../user/login.spec"
 import { registerUserSpec } from "../user/register.spec"
 import { updateUserSpec } from "../user/updateUser.spec";
 
-export const userSpec = (role: Array<string>) => {
+export const userSpec = (role: Array<roleTypes>) => {
     htmlSpec();
     deleteUserSpec();
     registerUserSpec(role);

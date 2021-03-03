@@ -18,7 +18,6 @@ export const getUserSpec = () => {
     }, getTimeout());
 
     it('Test recuperation: successfull', (done: DoneFn) => {
-        //const token = fs.readFileSync(process.cwd() + '/logs/bearerToken.txt', "utf-8");
         request(app)
             .get('/user')
             .set('Accept', 'application/json')

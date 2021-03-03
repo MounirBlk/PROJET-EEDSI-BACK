@@ -3,8 +3,9 @@ import app from "../../app";
 import { convertToFormBody, getTimeout, randNumber, randomChars, randomDate, randomFileName } from "../helpers";
 import fs from 'fs';
 import path from 'path';
+import { roleTypes } from "../../src/types/roleTypes";
 
-export const registerUserTest = (role: Array<string>) => {
+export const registerUserTest = (role: Array<roleTypes>) => {
     return (done: DoneFn) => {
         const data = {
             email: randomChars(4) + randomFileName() +'@gmail.com',
@@ -30,14 +31,12 @@ export const registerUserTest = (role: Array<string>) => {
                 !fs.existsSync(process.cwd() + '/logs') ? fs.mkdirSync(process.cwd() + '/logs') : null;
                 globalThis.emailInfos = data.email;
                 globalThis.passwordInfos = data.password;
-                //fs.writeFileSync(process.cwd() + '/logs/emailTest.txt', data.email)
-                //fs.writeFileSync(process.cwd() + '/logs/passwordTest.txt', data.password)
                 return done();
             });
     };
 };
 
-export const registerUserSpec = (role: Array<string>) => {
+export const registerUserSpec = (role: Array<roleTypes>) => {
     it('Test Register: données manquantes', (done: DoneFn) => {
         const data = {}
         request(app)

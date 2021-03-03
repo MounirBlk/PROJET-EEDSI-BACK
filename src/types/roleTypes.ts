@@ -1,1 +1,1 @@
-export type roleTypes = "Administrateur" | "Commercial" | "Livreur" | "Client";
+export type roleTypes = "Administrateur" | "Commercial" | "Livreur" | "Client" | "Prospect";

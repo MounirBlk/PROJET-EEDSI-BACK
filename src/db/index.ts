@@ -21,5 +21,4 @@ const mongooseConnect = () => {
     });
 }
 
-
 export default mongooseConnect;
