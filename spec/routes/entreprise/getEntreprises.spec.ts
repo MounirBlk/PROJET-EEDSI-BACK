@@ -1,13 +1,14 @@
 import request from "supertest"
-import app from "../../app";
-import { convertToFormBody, getTimeout, randNumber, randomChars, randomDate, randomFileName } from "../helpers";
+import app from "../../../app";
+import { convertToFormBody, getTimeout, randNumber, randomChars, randomDate, randomFileName } from "../../helpers";
 import fs from 'fs';
 import path from 'path';
 
-export const getUserSpec = () => {
-    it('Test recuperation: token incorrect', (done: DoneFn) => {
+
+export const getEntreprisesSpec = () => {
+    it('Test get Entreprises: token incorrect', (done: DoneFn) => {       
         request(app)
-            .get('/user')
+            .get('/entreprises')
             .set('Accept', 'application/json')
             .auth(randomChars(100), { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -17,9 +18,9 @@ export const getUserSpec = () => {
             }, done);
     }, getTimeout());
 
-    it('Test recuperation: successfull', (done: DoneFn) => {
+    /*it('Test get Entreprises: successfull', (done: DoneFn) => {
         request(app)
-            .get('/user')
+            .get('/entreprises')
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -28,13 +29,13 @@ export const getUserSpec = () => {
                 expect(response.status).toEqual(200)
                 expect(response.body).toEqual({
                     error: false,
-                    message: "Les informations ont bien été récupéré",
-                    user: response.body.user
+                    message: "Les entreprises ont bien été récupéré",
+                    entreprises: response.body.entreprises
                 })
                 return done();
             })
             .catch(err => {
                 throw err;
             })
-    }, getTimeout());
+    }, getTimeout());*/
 }

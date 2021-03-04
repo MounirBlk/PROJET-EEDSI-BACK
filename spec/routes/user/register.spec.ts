@@ -1,9 +1,9 @@
 import request from "supertest"
-import app from "../../app";
-import { convertToFormBody, getTimeout, randNumber, randomChars, randomDate, randomFileName } from "../helpers";
+import app from "../../../app";
+import { convertToFormBody, getTimeout, randNumber, randomChars, randomDate, randomFileName } from "../../helpers";
 import fs from 'fs';
 import path from 'path';
-import { roleTypes } from "../../src/types/roleTypes";
+import { roleTypes } from "../../../src/types/roleTypes";
 
 export const registerUserTest = (role: Array<roleTypes>) => {
     return (done: DoneFn) => {
@@ -31,6 +31,7 @@ export const registerUserTest = (role: Array<roleTypes>) => {
                 !fs.existsSync(process.cwd() + '/logs') ? fs.mkdirSync(process.cwd() + '/logs') : null;
                 globalThis.emailInfos = data.email;
                 globalThis.passwordInfos = data.password;
+                globalThis.idEntreprise = "604131c12364c74c5c5137e2";// TODO soon: automate
                 return done();
             });
     };

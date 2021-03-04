@@ -1,4 +1,4 @@
-import UserInterfaces from "../interfaces/UserInterface";
+import UserInterface from "../interfaces/UserInterface";
 import { isValidLength, numberFormat } from "./index";
 const axios = require('axios').default;
 
@@ -125,7 +125,7 @@ export const getAllCardsCustomerStripe = async(idCustomer: string | undefined) =
 /**
  *  Modifier les données clients Stripe
  */ 
-export const updateCustomerStripe = async(idCustomer: string | undefined, data: any, user: UserInterfaces): Promise<any>=> {
+export const updateCustomerStripe = async(idCustomer: string | undefined, data: any, user: UserInterface): Promise<any>=> {
     return new Promise(async(resolve, reject) => {
         if(idCustomer === null || idCustomer === undefined){
             reject();

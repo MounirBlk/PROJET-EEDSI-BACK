@@ -1,6 +1,6 @@
 import request from "supertest"
-import app from "../../app";
-import { getTimeout, randomChars } from "../helpers";
+import app from "../../../app";
+import { getTimeout, randomChars } from "../../helpers";
 import fs from 'fs';
 import path from 'path';
 

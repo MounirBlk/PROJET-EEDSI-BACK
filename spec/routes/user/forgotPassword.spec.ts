@@ -1,6 +1,6 @@
 import request from "supertest"
-import app from "../../app";
-import { convertToFormBody, getTimeout, randNumber, randomChars, randomFileName } from "../helpers";
+import app from "../../../app";
+import { convertToFormBody, getTimeout, randNumber, randomChars, randomFileName } from "../../helpers";
 
 export const forgotPasswordUserSpec = () => {
     it('Test forgot password: données manquantes', (done: DoneFn) => {

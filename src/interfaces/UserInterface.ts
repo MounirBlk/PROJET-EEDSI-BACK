@@ -2,7 +2,7 @@ import { Document } from "mongoose"
 import { civiliteTypes } from "../types/civiliteTypes";
 import { roleTypes } from "../types/roleTypes";
 
-export default interface UserInterfaces extends Document {
+export default interface UserInterface extends Document {
     //_id: { $oid: string }|null|string;
     email: string;
     password: string;

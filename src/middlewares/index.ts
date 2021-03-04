@@ -120,7 +120,7 @@ const zipFormat = (data: string): Boolean => {
  *  Function vérification de si le text est dans le bon format (taille entre 2 et 25 caracteres)
  */ 
 const textFormat = (data: string): Boolean => {
-    let regexText = /^[^@"()/!_$*€£`+=;?#]+$/ // regex:  /^[^@&"()!_$*€£`+=\/;?#]+$/
+    let regexText = /^[^@"()/!_$*€£`+=;?#]+$/ // regex:  /^[^@&"()!_$*€£`+=\/;?#]+$/   (ajouter les chars spéc a ne pas ajouter au texte)
     if (data.match(regexText) == null)
         return false
     else
