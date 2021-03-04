@@ -1,6 +1,6 @@
 import request from "supertest"
-import app from "../../app";
-import { getTimeout, randomChars } from "../helpers";
+import app from "../../../app";
+import { getTimeout, randomChars } from "../../helpers";
 
 export const disableUserSpec = () => {
     it('Test disable: token incorrect', (done: DoneFn) => {

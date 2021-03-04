@@ -1,7 +1,7 @@
 //const request = require('supertest');
 import request from "supertest"
-import { convertToFormBody, exist, getTimeout, randNumber, randomChars, randomDate, randomFileName } from "../helpers";
-import app from "../../app";
+import { convertToFormBody, exist, getTimeout, randNumber, randomChars, randomDate, randomFileName } from "../../helpers";
+import app from "../../../app";
 
 export const htmlSpec = () => {
     it('Test index.html', (done: DoneFn) => {
