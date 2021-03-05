@@ -5,7 +5,9 @@ name: Node.js CI test
 
 on:
   schedule:
-    - cron: '0 */8 * * *'
+    - cron: '0 4 * * *'
+    #- cron: '0 */8 * * *'
+  
   #push:
   #  branches: [ main ]
   pull_request:
@@ -21,13 +23,15 @@ jobs:
     if: github.event.review.state == 'approved' || !github.event.review
     runs-on: ${{ matrix.os }}
     env:
+      ENV: ${{ secrets.ENV }}
       GMAIL_EMAIL: ${{ secrets.GMAIL_EMAIL }}
       GMAIL_PWD: ${{ secrets.GMAIL_PWD }}
       JWT_TOKEN_SECRET: ${{ secrets.JWT_TOKEN_SECRET }}
       MONGO_URL: ${{ secrets.MONGO_URL }}
       STRIPE_PUBLIC_KEY: ${{ secrets.STRIPE_PUBLIC_KEY }}
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-      
+      MONGO_URL_LOCAL: ${{ secrets.MONGO_URL_LOCAL }}
+
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -40,22 +44,16 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: install pm2
-        run: npm install -g pm2
+      #- name: install pm2
+      #  run: npm install -g pm2
       - name: install modules deps
         run: npm install
       - name: build if present
         run: npm run build --if-present
       #- name: pm2 kill && pm2 start && pm2 status
       #  run: pm2 kill && pm2 start dist/app.js
-        env:
-          GMAIL_EMAIL: ${{ secrets.GMAIL_EMAIL }}
-          GMAIL_PWD: ${{ secrets.GMAIL_PWD }}
-          JWT_TOKEN_SECRET: ${{ secrets.JWT_TOKEN_SECRET }}
-          MONGO_URL: ${{ secrets.MONGO_URL }}
-          STRIPE_PUBLIC_KEY: ${{ secrets.STRIPE_PUBLIC_KEY }}
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+
       - name: test unit
         run: npm test
-      - name: pm2 kill
-        run: pm2 kill
+      #- name: pm2 kill
+      #  run: pm2 kill
