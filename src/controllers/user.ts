@@ -36,7 +36,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
                 };
                 let user: UserInterface = new UserModel(toInsert);
                 await user.save().then(async(user: UserInterface) => {
-                    if(String(process.env.ENV).toLowerCase() !== "test") await mailRegister(user.email, `${user.firstname} ${user.lastname}`);
+                    if(String(process.env.ENV).trim().toLowerCase() !== "test"){
+                        await mailRegister(user.email, `${user.firstname} ${user.lastname}`);
+                    } 
                     return dataResponse(res, 201, { error: false, message: "L'utilisateur a bien été créé avec succès" });
                 }).catch(() => {
                     return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
@@ -86,7 +88,9 @@ export const login = async (req: Request, res: Response): Promise<void> => {
                                     email: user.email,
                                     url: 'http://' + req.headers.host + '/check/' + user.token
                                 }//req.hostname
-                                if(String(process.env.ENV).toLowerCase() !== "test") await mailCheckEmail(checkData);
+                                if(String(process.env.ENV).trim().toLowerCase() !== "test"){
+                                    await mailCheckEmail(checkData);
+                                } 
                             }
                             return dataResponse(res, 200, { error: false, message: "L'utilisateur a été authentifié avec succès", token: user.token})
                         }
@@ -153,6 +157,45 @@ export const getUser = async (req: Request, res: Response) : Promise <void> => {
                             error: false,
                             message: "Les informations ont bien été récupéré",
                             user: deleteMapper(results) 
+                        });
+                    } else {
+                        return dataResponse(res, 401, {
+                            error: true,
+                            message: "La requête en base de donnée n'a pas fonctionné"
+                        });
+                    }
+                }
+            });
+        }
+    }).catch((error) => {
+        throw error;
+    });
+}
+
+/**
+ *  Route recuperation des users
+ *  @param {Request} req 
+ *  @param {Response} res 
+ */ 
+export const getAllUsers = async (req: Request, res: Response) : Promise <void> => {
+    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+        if(payload === null || payload === undefined){
+            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+        }else{
+            await UserModel.find({}, (err: Error, results: any) => {
+                if (err) {
+                    return dataResponse(res, 500, {
+                        error: true,
+                        message: "Erreur dans la requête !"
+                    });
+                }else if (results === undefined || results === null){// Si le resultat n'existe pas
+                    return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
+                } else {
+                    if (results) {
+                        return dataResponse(res, 200, {
+                            error: false,
+                            message: "Les utilisateurs ont bien été récupéré",
+                            users: results.map((item: UserInterface) => deleteMapper(item))
                         });
                     } else {
                         return dataResponse(res, 401, {
@@ -261,7 +304,9 @@ export const forgotPassword = async (req: Request, res: Response) : Promise <voi
                     if (err) {
                         return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
                     } else {
-                        if(String(process.env.ENV).toLowerCase() !== "test") await mailforgotPw(data.email.trim().toLowerCase(), passwordTemp);
+                        if(String(process.env.ENV).trim().toLowerCase() !== "test"){
+                            await mailforgotPw(data.email.trim().toLowerCase(), passwordTemp);
+                        } 
                         return dataResponse(res, 200, { error: false, message: "Votre mot de passe a bien été réinitialisé, veuillez consulter votre boîte mail" })
                     }
                 });
