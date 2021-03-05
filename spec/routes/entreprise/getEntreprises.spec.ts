@@ -34,7 +34,7 @@ export const getEntreprisesSpec = () => {
                     message: "Les entreprises ont bien été récupéré",
                     entreprises: response.body.entreprises
                 })
-                const entrepriseSelected: Array<EntrepriseInterface> = response.body.entreprises.filter((item: EntrepriseInterface) => item.siret === parseInt(siret));
+                const entrepriseSelected: Array<EntrepriseInterface> = response.body.entreprises.filter((item: EntrepriseInterface) => item.siret === globalThis.siret);
                 globalThis.idEntreprise = entrepriseSelected[0]._id;//forcément que un element
                 return done();
             })

@@ -4,11 +4,15 @@ import { convertToFormBody, getTimeout, randNumber, randomChars, randomDate, ran
 import fs from 'fs';
 import path from 'path';
 
-export const newEntrepriseSpec = () => {
-    it('Test new Entreprise: token incorrect', (done: DoneFn) => {
-        const data = {}           
+const siret : string = '44306184100047';
+
+export const newEntrepriseAutoSpec = () => {
+    it('Test new Entreprise auto: token incorrect', (done: DoneFn) => {
+        const data = {
+            siret: String(randNumber(1,9)).repeat(14),//taille d'un siret est de 14
+        }           
         request(app)
-            .post('/entreprise')
+            .post('/entrepriseAuto')
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(randomChars(100), { type: 'bearer' })
@@ -19,53 +23,42 @@ export const newEntrepriseSpec = () => {
             }, done);
     }, getTimeout());
 
-    it('Test new Entreprise: données manquantes', (done: DoneFn) => {
-        const data = {}           
+    it('Test new Entreprise auto: données manquantes', (done: DoneFn) => {
+        const data = {}
         request(app)
-            .post('/entreprise')
+            .post('/entrepriseAuto')
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
             .expect(400, {
                 error: true,
-                message: "Une ou plusieurs données obligatoire sont manquantes"
+                message: 'Le siret ne peut pas être vide'
             }, done);
     }, getTimeout());
 
-    it('Test new Entreprise: données erronées', (done: DoneFn) => {
+    it('Test new Entreprise auto: siret invalide', (done: DoneFn) => {
         const data = {
-            siret: randNumber(1000000000000, 9999999999999),//nécessite 14 chiffres
-            nom: randomChars(randNumber(5,10)),
-            adresse: randomChars(randNumber(5,10)) + ' rue ' + randomChars(randNumber(10,10)) + ' ' + randNumber(10000,99999),
-            categorieEntreprise : 'PME',
-            etatAdministratif: randNumber(1,2) ? 'Actif' : 'Ferme',
-            categorieJuridique: randNumber(1000,9999)
-        }           
+            siret: String(randNumber(1,9)).repeat(randNumber(1,13)),//taille d'un siret doit etre de 14 
+        }        
         request(app)
-            .post('/entreprise')
+            .post('/entrepriseAuto')
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
             .expect(409, {
                 error: true,
-                message: "Une ou plusieurs données sont erronées"
+                message: "Le siret n'est pas valide"
             }, done);
     }, getTimeout());
-
-    it('Test new Entreprise: success', (done: DoneFn) => {
-        globalThis.siret = randNumber(10000000000000, 99999999999999)
+    
+    /*it('Test new Entreprise auto: success', (done: DoneFn) => {
         const data = {
-            siret: globalThis.siret,
-            nom: randomChars(randNumber(5,10)),
-            adresse: randomChars(randNumber(5,10)) + ' rue ' + randomChars(randNumber(10,10)) + ' ' + randNumber(10000,99999),
-            categorieEntreprise : 'PME',
-            etatAdministratif: randNumber(1,2) ? 'Actif' : 'Ferme',
-            categorieJuridique: randNumber(1000,9999)
-        }           
+            siret: siret,//SIRET de google entreprise
+        }        
         request(app)
-            .post('/entreprise')
+            .post('/entrepriseAuto')
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
@@ -74,19 +67,14 @@ export const newEntrepriseSpec = () => {
                 error: false,
                 message: "L'entreprise a bien été ajoutée avec succès"
             }, done);
-    }, getTimeout());
+    }, getTimeout());*/
 
-    it('Test new Entreprise : existe deja', (done: DoneFn) => {
+    it('Test new Entreprise auto: existe deja', (done: DoneFn) => {
         const data = {
             siret: globalThis.siret,
-            nom: randomChars(randNumber(5,10)),
-            adresse: randomChars(randNumber(5,10)) + ' rue ' + randomChars(randNumber(10,10)) + ' ' + randNumber(10000,99999),
-            categorieEntreprise : 'PME',
-            etatAdministratif: randNumber(1,2) ? 'Actif' : 'Ferme',
-            categorieJuridique: randNumber(1000,9999)
         }        
         request(app)
-            .post('/entreprise')
+            .post('/entrepriseAuto')
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
