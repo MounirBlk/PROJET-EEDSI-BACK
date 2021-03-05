@@ -3,7 +3,7 @@ import bluebird from 'bluebird';
 //const mongoose = require("mongoose")
 
 const mongooseConnect = () => {
-    const uri: string = String(process.env.MONGO_URL);
+    const uri: string = process.env.ENV === "PROD" || process.env.ENV === "DEV" ? String(process.env.MONGO_URL) : String(process.env.MONGO_URL_LOCAL);// ENV: PROD / DEV / TEST
 
     //Perform promise in node
     mongoose.Promise = bluebird;
