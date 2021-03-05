@@ -14,26 +14,29 @@ import { loginUserSpec } from "./user/login.spec"
 import { registerUserSpec } from "./user/register.spec"
 import { updateUserSpec } from "./user/updateUser.spec";
 
+//ATTENTION: l'ordre des functions est très important !!!
 export const userSpec = (role: Array<roleTypes>) => {
-    htmlSpec();
-    deleteUserSpec();
-    registerUserSpec(role);
-    loginUserSpec();
-    getUserSpec();
-    updateUserSpec();
-    disableUserSpec();
-    forgotPasswordUserSpec();
-    checkUserSpec();
+    htmlSpec();//1
+    deleteUserSpec();//2
+    registerUserSpec(role);//3
+    loginUserSpec();//4
+    getUserSpec();//5
+    updateUserSpec();//6
+    disableUserSpec();//7
+    forgotPasswordUserSpec();//8
+    checkUserSpec();//9
 }
 
+//ATTENTION: l'ordre des functions est très important !!!
 export const entrepriseSpec = () => {
-    newEntrepriseSpec()
-    updateEntrepriseSpec()
-    deleteEntrepriseSpec()
-    getEntrepriseSpec()
-    getEntreprisesSpec()
+    newEntrepriseSpec()//1
+    getEntreprisesSpec()//2
+    updateEntrepriseSpec()//3
+    getEntrepriseSpec()//4   
+    deleteEntrepriseSpec()//5
 }
 
+//ATTENTION: l'ordre des functions est très important !!!
 export const productSpec = () => {
 
 }

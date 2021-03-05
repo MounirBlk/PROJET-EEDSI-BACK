@@ -30,7 +30,7 @@ export const getEntrepriseSpec = () => {
             }, done);
     }, getTimeout());
 
-    /*it('Test get Entreprise: successfull', (done: DoneFn) => {
+    it('Test get Entreprise: success', (done: DoneFn) => {
         request(app)
             .get('/entreprise/' + globalThis.idEntreprise)
             .set('Accept', 'application/json')
@@ -49,5 +49,5 @@ export const getEntrepriseSpec = () => {
             .catch(err => {
                 throw err;
             })
-    }, getTimeout());*/
+    }, getTimeout());
 }

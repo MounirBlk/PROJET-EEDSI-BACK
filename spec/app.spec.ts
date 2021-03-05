@@ -15,13 +15,12 @@ import { registerUserTest } from "./routes/user/register.spec";
 const role: Array<roleTypes> = ["Administrateur", "Commercial", "Livreur", "Client", "Prospect"]
 const iteratorTest: number = randNumber(1, 1); // random number btw min and max pour le nbre d'iteration des tests
 
-
+//ATTENTION: l'ordre des functions est très important !!!
 for(let i = 0; i < iteratorTest; i++){
     describe('TEST API E-COMMERCE', () => {
         beforeAll(registerUserTest(role), getTimeout(120));// Before all tests of specs (register)
         beforeAll(loginUserTest(), getTimeout(120));// Before all tests of specs (login)
         beforeAll(checkUserTest(), getTimeout(120));// Before all tests of specs (check)
-        //beforeAll(newEntrepriseTest(), getTimeout(120));// Before all tests of specs (entreprise)
 
         //beforeEach(() => console.log(__dirname));
         //afterEach(() => console.log('Test passed'))
@@ -30,7 +29,6 @@ for(let i = 0; i < iteratorTest; i++){
         index.entrepriseSpec(); // All tests entreprise
         index.productSpec(); // All tests produit
     
-        //afterAll(deleteEntrepriseTest(), getTimeout(60));// After all tests of specs
         afterAll(deleteUserTest(), getTimeout(60));// After all tests of specs
     })
 }

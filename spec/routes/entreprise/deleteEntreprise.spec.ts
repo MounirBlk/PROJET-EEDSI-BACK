@@ -6,7 +6,7 @@ import path from 'path';
 
 
 export const deleteEntrepriseSpec = () => {
-    it('Test delete Entreprise: token incorrect', (done: DoneFn) => {       
+    it('Test delete Entreprise: token incorrect', (done: DoneFn) => {      
         request(app)
             .delete('/entreprise/' + globalThis.idEntreprise)
             .set('Accept', 'application/json')
@@ -30,15 +30,15 @@ export const deleteEntrepriseSpec = () => {
             }, done);
     }, getTimeout());
 
-    /*it('Test delete Entreprise: success', (done: DoneFn) => { 
+    it('Test delete Entreprise: success', (done: DoneFn) => {
         request(app)
             .delete('/entreprise/' + globalThis.idEntreprise)
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
             .expect(200, {
-                error: true,
+                error: false,
                 message: 'L\'entreprise a été supprimé avec succès'
             }, done);
-    }, getTimeout());*/
+    }, getTimeout());
 }

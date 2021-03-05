@@ -53,7 +53,7 @@ export const newEntrepriseSpec = () => {
             }, done);
     }, getTimeout());
     
-    /*it('Test new Entreprise: success', (done: DoneFn) => {
+    it('Test new Entreprise: success', (done: DoneFn) => {
         const data = {
             siret: siret,//SIRET de google entreprise
         }        
@@ -64,12 +64,12 @@ export const newEntrepriseSpec = () => {
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
             .expect(201, {
-                error: true,
+                error: false,
                 message: "L'entreprise a bien été ajoutée avec succès"
             }, done);
-    }, getTimeout());*/
+    }, getTimeout());
 
-    /*it('Test new Entreprise: existe deja', (done: DoneFn) => {
+    it('Test new Entreprise: existe deja', (done: DoneFn) => {
         const data = {
             siret: siret,//SIRET de google entreprise
         }        
@@ -83,5 +83,5 @@ export const newEntrepriseSpec = () => {
                 error: true,
                 message: "Cette entreprise est déjà enregistré"
             }, done);
-    }, getTimeout());*/
+    }, getTimeout());
 }

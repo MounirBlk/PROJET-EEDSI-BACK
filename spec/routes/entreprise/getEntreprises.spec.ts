@@ -3,10 +3,12 @@ import app from "../../../app";
 import { convertToFormBody, getTimeout, randNumber, randomChars, randomDate, randomFileName } from "../../helpers";
 import fs from 'fs';
 import path from 'path';
+import EntrepriseInterface from "../../../src/interfaces/EntrepriseInterface";
 
+const siret : string = '44306184100047';
 
 export const getEntreprisesSpec = () => {
-    it('Test get Entreprises: token incorrect', (done: DoneFn) => {       
+    it('Test get Entreprises: token incorrect', (done: DoneFn) => { 
         request(app)
             .get('/entreprises')
             .set('Accept', 'application/json')
@@ -18,7 +20,7 @@ export const getEntreprisesSpec = () => {
             }, done);
     }, getTimeout());
 
-    /*it('Test get Entreprises: successfull', (done: DoneFn) => {
+    it('Test get Entreprises: success', (done: DoneFn) => {
         request(app)
             .get('/entreprises')
             .set('Accept', 'application/json')
@@ -32,10 +34,12 @@ export const getEntreprisesSpec = () => {
                     message: "Les entreprises ont bien été récupéré",
                     entreprises: response.body.entreprises
                 })
+                const entrepriseSelected: Array<EntrepriseInterface> = response.body.entreprises.filter((item: EntrepriseInterface) => item.siret === parseInt(siret));
+                globalThis.idEntreprise = entrepriseSelected[0]._id;//forcément que un element
                 return done();
             })
             .catch(err => {
                 throw err;
             })
-    }, getTimeout());*/
+    }, getTimeout());
 }
