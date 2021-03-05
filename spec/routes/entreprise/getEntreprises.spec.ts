@@ -1,13 +1,16 @@
 import request from "supertest"
-import app from "../../app";
-import { convertToFormBody, getTimeout, randNumber, randomChars, randomDate, randomFileName } from "../helpers";
+import app from "../../../app";
+import { convertToFormBody, getTimeout, randNumber, randomChars, randomDate, randomFileName } from "../../helpers";
 import fs from 'fs';
 import path from 'path';
+import EntrepriseInterface from "../../../src/interfaces/EntrepriseInterface";
 
-export const getUserSpec = () => {
-    it('Test recuperation: token incorrect', (done: DoneFn) => {
+const siret : string = '44306184100047';
+
+export const getEntreprisesSpec = () => {
+    it('Test get Entreprises: token incorrect', (done: DoneFn) => { 
         request(app)
-            .get('/user')
+            .get('/entreprises')
             .set('Accept', 'application/json')
             .auth(randomChars(100), { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -17,10 +20,9 @@ export const getUserSpec = () => {
             }, done);
     }, getTimeout());
 
-    it('Test recuperation: successfull', (done: DoneFn) => {
-        //const token = fs.readFileSync(process.cwd() + '/logs/bearerToken.txt', "utf-8");
+    it('Test get Entreprises: success', (done: DoneFn) => {
         request(app)
-            .get('/user')
+            .get('/entreprises')
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -29,9 +31,11 @@ export const getUserSpec = () => {
                 expect(response.status).toEqual(200)
                 expect(response.body).toEqual({
                     error: false,
-                    message: "Les informations ont bien été récupéré",
-                    user: response.body.user
+                    message: "Les entreprises ont bien été récupéré",
+                    entreprises: response.body.entreprises
                 })
+                const entrepriseSelected: Array<EntrepriseInterface> = response.body.entreprises.filter((item: EntrepriseInterface) => item.siret === parseInt(siret));
+                globalThis.idEntreprise = entrepriseSelected[0]._id;//forcément que un element
                 return done();
             })
             .catch(err => {

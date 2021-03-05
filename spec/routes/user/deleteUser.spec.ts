@@ -1,12 +1,11 @@
 import request from "supertest"
-import app from "../../app";
-import { getTimeout, randomChars } from "../helpers";
+import app from "../../../app";
+import { getTimeout, randomChars } from "../../helpers";
 import fs from 'fs';
 import path from 'path';
 
 export const deleteUserTest = () => {
     return (done: DoneFn) => {
-        //const token = fs.readFileSync(process.cwd() + '/logs/bearerToken.txt', "utf-8");
         request(app)//app
         .delete('/user')
         .set('Accept', 'application/json')

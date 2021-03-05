@@ -1,13 +1,14 @@
 import { Application, Request, Response, NextFunction, Errback } from "express";
 import { checkEmail, deleteUser, disableUser, forgotPassword, getUser, login, register, updateUser } from "../controllers/user";
+import { checkInternet } from "../middlewares";
 
-export const commun = (app: Application): void => {
-    app.route('/register').post(register);
-    app.route('/login').post(login);
-    app.route('/user').delete(deleteUser);
-    app.route('/user').get(getUser);
-    app.route('/user').put(updateUser);
-    app.route('/disable').put(disableUser);
-    app.route('/forgot').put(forgotPassword);// TO PERFORM LATER
-    app.route('/check/:token').get(checkEmail);
+export default (app: Application): void => {
+    app.route('/register').post(checkInternet, register);
+    app.route('/login').post(checkInternet, login);
+    app.route('/user').delete(checkInternet, deleteUser);
+    app.route('/user').get(checkInternet, getUser);
+    app.route('/user').put(checkInternet, updateUser);
+    app.route('/disable').put(checkInternet, disableUser);
+    app.route('/forgot').put(checkInternet, forgotPassword);// TO PERFORM LATER
+    app.route('/check/:token').get(checkInternet, checkEmail);
 }

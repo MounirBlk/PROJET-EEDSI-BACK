@@ -1,7 +1,11 @@
 import { Application, Request, Response, NextFunction, Errback } from "express";
+import { deleteEntreprise, getAllEntreprises, getEntreprise, newEntreprise, updateEntreprise } from "../controllers/entreprise";
+import { checkInternet } from "../middlewares";
 
-export const software = (app: Application): void => {
-    app.route('/software').get((req: Request, res: Response) => {
-        console.log(req.hostname)
-    })
+export default (app: Application): void => {
+    app.route('/entreprise').post(checkInternet, newEntreprise);
+    app.route('/entreprise/:id').put(checkInternet, updateEntreprise);
+    app.route('/entreprise/:id').delete(checkInternet, deleteEntreprise);
+    app.route('/entreprise/:id').get(checkInternet, getEntreprise);
+    app.route('/entreprises').get(checkInternet, getAllEntreprises);
 }

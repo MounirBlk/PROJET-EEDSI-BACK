@@ -36,7 +36,7 @@ const UserSchema = new mongoose.Schema<UserInterface>({
     role: {
         type: String,
         //default: "Client",
-        enum: ["Administrateur", "Commercial", "Livreur", "Client"],
+        enum: ["Administrateur", "Commercial", "Livreur", "Client", "Prospect"],
     },
     attempt: {
         default: 0,
@@ -64,6 +64,11 @@ const UserSchema = new mongoose.Schema<UserInterface>({
         required: false
     },
     idCustomer: {
+        default: null,
+        type: String,
+        required: false
+    },
+    idEntreprise:{
         default: null,
         type: String,
         required: false

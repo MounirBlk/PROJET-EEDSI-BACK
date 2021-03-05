@@ -36,6 +36,7 @@ app.use((err: Errback , req: Request, res: Response, next: NextFunction) => {
         res.status(401).send('Missing authentication credentials.');
 });
 
+app.set("env", process.env.ENV || 'DEV');
 app.set("port", process.env.PORT || 3000);
 
 route(app);
@@ -45,7 +46,7 @@ app.get('*', (req: Request, res: Response) => {
 });
 
 app.listen(app.get("port"), () => {
-    console.log("App is running on http://localhost:%d", app.get("port"));
+  console.log("App is running on http://localhost:%d/ in %s mode", app.get("port"), app.get("env"));
 });
 
 export default app; //export to call app to test spec

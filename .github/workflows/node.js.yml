@@ -23,7 +23,7 @@ jobs:
     if: github.event.review.state == 'approved' || !github.event.review
     runs-on: ${{ matrix.os }}
     env:
-      ENV: ${{ secrets.ENV }}
+      ENV: ${{ secrets.ENV }} #TEST
       GMAIL_EMAIL: ${{ secrets.GMAIL_EMAIL }}
       GMAIL_PWD: ${{ secrets.GMAIL_PWD }}
       JWT_TOKEN_SECRET: ${{ secrets.JWT_TOKEN_SECRET }}

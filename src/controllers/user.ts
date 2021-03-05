@@ -1,10 +1,9 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
-import UserInterfaces from '../interfaces/UserInterface';
+import UserInterface from '../interfaces/UserInterface';
 import { dataResponse, dateFormatFr, deleteMapper, emailFormat, exist, getJwtPayload, isEmptyObject, isValidLength, passwordFormat, randChars, randomNumber, textFormat } from '../middlewares';
 import { mailCheckEmail, mailforgotPw, mailRegister } from '../middlewares/sendMail';
 import UserModel from '../models/UserModel';
 import jwt from 'jsonwebtoken';
-import { isError } from 'lodash';
 
 /**
  *  Route register user
@@ -13,14 +12,13 @@ import { isError } from 'lodash';
  */ 
 export const register = async (req: Request, res: Response): Promise<void> => {
     const data = req.body;
-    if(isEmptyObject(data)) return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes'})
-    if(!exist(data.email) || !exist(data.password) || !exist(data.firstname) || !exist(data.lastname) || 
+    if(isEmptyObject(data) || !exist(data.email) || !exist(data.password) || !exist(data.firstname) || !exist(data.lastname) || 
     !exist(data.dateNaissance) || !exist(data.civilite) || !exist(data.role)){
         return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
     }else{
-        let isError = exist(data.portable) ? isValidLength(data.portable, 1, 30) ? false : true : false;
-        if(isError || !emailFormat(data.email) || !passwordFormat(data.password) || !textFormat(data.firstname) || !textFormat(data.lastname) || !dateFormatFr(data.dateNaissance) || 
-        (data.civilite.toLowerCase() !== "homme" && data.civilite.toLowerCase() !== "femme") || (data.role.toLowerCase() !== "administrateur" && data.role.toLowerCase() !== "commercial" && data.role.toLowerCase() !== "livreur" && data.role.toLowerCase() !== "client")){
+        let isOnError = exist(data.portable) ? isValidLength(data.portable, 1, 30) ? false : true : false;
+        if(isOnError || !emailFormat(data.email) || !passwordFormat(data.password) || !textFormat(data.firstname) || !textFormat(data.lastname) || !dateFormatFr(data.dateNaissance) || 
+        (data.civilite.toLowerCase() !== "homme" && data.civilite.toLowerCase() !== "femme") || (data.role.toLowerCase() !== "administrateur" && data.role.toLowerCase() !== "commercial" && data.role.toLowerCase() !== "livreur" && data.role.toLowerCase() !== "client"  && data.role.toLowerCase() !== "prospect")){
             return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
         }else{
             if(await UserModel.countDocuments({ email: data.email.trim().toLowerCase() }) !== 0){// Email already exist
@@ -36,8 +34,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
                     portable: exist(data.portable) ? data.portable : null,
                     role: data.role
                 };
-                let user: UserInterfaces = new UserModel(toInsert);
-                await user.save().then(async(user: UserInterfaces) => {
+                let user: UserInterface = new UserModel(toInsert);
+                await user.save().then(async(user: UserInterface) => {
                     await mailRegister(user.email, `${user.firstname} ${user.lastname}`);
                     return dataResponse(res, 201, { error: false, message: "L'utilisateur a bien été créé avec succès" });
                 }).catch(() => {
@@ -55,14 +53,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
  */ 
 export const login = async (req: Request, res: Response): Promise<void> => {
     const data = req.body;
-    if(isEmptyObject(data)) return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes'})
-    if(!exist(data.email) || !exist(data.password)){
+    if(isEmptyObject(data) || !exist(data.email) || !exist(data.password)){
         return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
     }else{
         if(!emailFormat(data.email) || !passwordFormat(data.password)){
             return dataResponse(res, 409, { error: true, message: 'Email/password incorrect' })
         }else{
-            const user: UserInterfaces | null  = await UserModel.findOne({ email: data.email.trim().toLowerCase() }); //verification email
+            const user: UserInterface | null  = await UserModel.findOne({ email: data.email.trim().toLowerCase() }); //verification email
             if (user === null || user === undefined) {
                 return dataResponse(res, 409, { error: true, message: "Email/password incorrect" });
             }else{
@@ -183,20 +180,20 @@ export const updateUser = async (req: Request, res: Response) : Promise <void> =
         }else{
             const data = req.body;
             if(isEmptyObject(data)) return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes'})
-            const user: UserInterfaces | null = await UserModel.findById(payload.id);
+            const user: UserInterface | null = await UserModel.findById(payload.id);
             if(user === null || user === undefined){
                 return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !"})
             }else{
-                let isError: boolean = false;
-                isError = exist(data.portable) ? isValidLength(data.portable, 1, 30) ? false : true : false;
+                let isOnError: boolean = false;
+                isOnError = exist(data.portable) ? isValidLength(data.portable, 1, 30) ? false : true : false;
                 let toUpdate = {
-                    firstname: exist(data.firstname) ? !textFormat(data.firstname) ? (isError = true) : data.firstname : user.firstname,
-                    lastname: exist(data.lastname) ? !textFormat(data.lastname) ? (isError = true) : data.lastname : user.lastname,
-                    civilite: exist(data.civilite) ? (data.civilite.toLowerCase() !== "homme" && data.civilite.toLowerCase() !== "femme") ? (isError = true) : data.civilite : user.civilite,
-                    dateNaissance: exist(data.dateNaissance) ? !dateFormatFr(data.dateNaissance) ? (isError = true) : data.dateNaissance : user.dateNaissance,
+                    firstname: exist(data.firstname) ? !textFormat(data.firstname) ? (isOnError = true) : data.firstname : user.firstname,
+                    lastname: exist(data.lastname) ? !textFormat(data.lastname) ? (isOnError = true) : data.lastname : user.lastname,
+                    civilite: exist(data.civilite) ? (data.civilite.toLowerCase() !== "homme" && data.civilite.toLowerCase() !== "femme") ? (isOnError = true) : data.civilite : user.civilite,
+                    dateNaissance: exist(data.dateNaissance) ? !dateFormatFr(data.dateNaissance) ? (isOnError = true) : data.dateNaissance : user.dateNaissance,
                     portable: exist(data.portable) ? data.portable : user.portable
                 }
-                if(isError){
+                if(isOnError){
                     return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
                 }else{
                     await UserModel.findByIdAndUpdate(payload.id, toUpdate, null, (err: Error, resp: any) => {
@@ -228,7 +225,7 @@ export const disableUser = async (req: Request, res: Response) : Promise <void> 
                 if (err) {
                     return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
                 } else {
-                    const user: UserInterfaces | null  = await UserModel.findById(payload.id)//<UserInterfaces>
+                    const user: UserInterface | null  = await UserModel.findById(payload.id)//<UserInterface>
                     if(user === null || user === undefined){
                         return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !"})
                     }else{
@@ -249,8 +246,7 @@ export const disableUser = async (req: Request, res: Response) : Promise <void> 
  */ 
 export const forgotPassword = async (req: Request, res: Response) : Promise <void> => {
     const data = req.body;
-    if(isEmptyObject(data)) return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes'})
-    if(!exist(data.email)){
+    if(isEmptyObject(data) || !exist(data.email)){
         return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
     }else{
         if(!emailFormat(data.email)){

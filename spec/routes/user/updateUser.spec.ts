@@ -1,6 +1,6 @@
 import request from "supertest"
-import app from "../../app";
-import { convertToFormBody, getTimeout, randNumber, randomChars, randomDate } from "../helpers";
+import app from "../../../app";
+import { convertToFormBody, getTimeout, randNumber, randomChars, randomDate } from "../../helpers";
 
 export const updateUserSpec = () => {
     it('Test update: token incorrect', (done: DoneFn) => {
