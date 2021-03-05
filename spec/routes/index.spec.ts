@@ -10,6 +10,7 @@ import { deleteUserSpec } from "./user/deleteUser.spec"
 import { disableUserSpec } from "./user/disableUser.spec";
 import { forgotPasswordUserSpec } from "./user/forgotPassword.spec";
 import { getUserSpec } from "./user/getUser.spec";
+import { getUsersSpec } from "./user/getUsers.spec";
 import { htmlSpec } from "./user/html.spec";
 import { loginUserSpec } from "./user/login.spec"
 import { registerUserSpec } from "./user/register.spec"
@@ -22,10 +23,11 @@ export const userSpec = (role: Array<roleTypes>) => {
     registerUserSpec(role);//3
     loginUserSpec();//4
     getUserSpec();//5
-    updateUserSpec();//6
-    disableUserSpec();//7
-    forgotPasswordUserSpec();//8
-    checkUserSpec();//9
+    getUsersSpec();//6
+    updateUserSpec();//7
+    disableUserSpec();//8
+    forgotPasswordUserSpec();//9
+    checkUserSpec();//10
 }
 
 //ATTENTION: l'ordre des functions est très important !!!

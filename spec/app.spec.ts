@@ -14,7 +14,7 @@ import { loginUserTest } from "./routes/user/login.spec";
 import { registerUserTest } from "./routes/user/register.spec";
 
 const role: Array<roleTypes> = ["Administrateur", "Commercial", "Livreur", "Client", "Prospect"]
-const iteratorTest: number = randNumber(1, 1); // random number btw min and max pour le nbre d'iteration des tests
+const iteratorTest: number = randNumber(1, 3); // random number btw min and max pour le nbre d'iteration des tests
 
 //ATTENTION: l'ordre des functions est très important !!!
 for(let i = 0; i < iteratorTest; i++){
