@@ -3,6 +3,7 @@ import { deleteEntrepriseSpec } from "./entreprise/deleteEntreprise.spec";
 import { getEntrepriseSpec } from "./entreprise/getEntreprise.spec";
 import { getEntreprisesSpec } from "./entreprise/getEntreprises.spec";
 import { newEntrepriseSpec } from "./entreprise/newEntreprise.spec";
+import { newEntrepriseAutoSpec } from "./entreprise/newEntrepriseAuto.spec";
 import { updateEntrepriseSpec } from "./entreprise/updateEntreprise.spec";
 import { checkUserSpec } from "./user/checkUser.spec";
 import { deleteUserSpec } from "./user/deleteUser.spec"
@@ -30,10 +31,11 @@ export const userSpec = (role: Array<roleTypes>) => {
 //ATTENTION: l'ordre des functions est très important !!!
 export const entrepriseSpec = () => {
     newEntrepriseSpec()//1
-    getEntreprisesSpec()//2
-    updateEntrepriseSpec()//3
-    getEntrepriseSpec()//4   
-    deleteEntrepriseSpec()//5
+    newEntrepriseAutoSpec()//2
+    getEntreprisesSpec()//3
+    updateEntrepriseSpec()//4
+    getEntrepriseSpec()//5 
+    deleteEntrepriseSpec()//6
 }
 
 //ATTENTION: l'ordre des functions est très important !!!

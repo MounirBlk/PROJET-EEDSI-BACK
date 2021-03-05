@@ -4,13 +4,57 @@ const axios = require('axios').default;
 import EntrepriseInterface from '../interfaces/EntrepriseInterface';
 import EntrepriseModel from '../models/EntrepriseModel';
 
-
 /**
- *  Route ajout entreprise
+ *  Route ajout entreprise manuelle
  *  @param {Request} req 
  *  @param {Response} res 
  */ 
 export const newEntreprise = async (req: Request, res: Response): Promise<void> => {
+    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+        if(payload === null || payload === undefined){
+            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+        }else{
+            const data = req.body;
+            if(isEmptyObject(data) || !exist(data.nom) || !exist(data.adresse) || !exist(data.categorieEntreprise) || 
+            !exist(data.etatAdministratif) || !exist(data.siret) || !exist(data.categorieJuridique)){
+                return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
+            }else{
+                if(isEmptyObject(data) || !textFormat(data.nom)  || !textFormat(data.categorieEntreprise) || !isValidLength(data.siret.trim(), 14, 14) || data.siret.trim().match(/^[0-9]*$/gm) == null ||
+                data.etatAdministratif.toLowerCase() !== 'actif' && data.etatAdministratif.toLowerCase() !== 'ferme' || !isValidLength(data.adresse, 1, 50) || !numberFormat(data.categorieJuridique)){
+                    return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
+                }else{
+                    if(await EntrepriseModel.countDocuments({ siret: data.siret.trim()}) !== 0){// Email already exist
+                        return dataResponse(res, 409, { error: true, message: "Cette entreprise est déjà enregistré" });
+                    }else{
+                        const toInsert = {
+                            siret: data.siret,
+                            nom: data.nom,
+                            adresse: data.adresse,
+                            categorieEntreprise : data.categorieEntreprise,
+                            etatAdministratif: data.etatAdministratif,
+                            categorieJuridique: data.categorieJuridique
+                        }
+                        let entreprise: EntrepriseInterface = new EntrepriseModel(toInsert);
+                        await entreprise.save().then(async(entreprise: EntrepriseInterface) => {
+                            return dataResponse(res, 201, { error: false, message: "L'entreprise a bien été ajoutée avec succès" });
+                        }).catch(() => {
+                            return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
+                        });
+                    }
+                }
+            }
+        }
+    }).catch((error) => {
+        throw error;
+    });
+}
+
+/**
+ *  Route ajout entreprise automatique
+ *  @param {Request} req 
+ *  @param {Response} res 
+ */ 
+export const newEntrepriseAuto = async (req: Request, res: Response): Promise<void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })

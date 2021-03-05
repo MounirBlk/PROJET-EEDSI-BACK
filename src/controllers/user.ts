@@ -36,7 +36,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
                 };
                 let user: UserInterface = new UserModel(toInsert);
                 await user.save().then(async(user: UserInterface) => {
-                    await mailRegister(user.email, `${user.firstname} ${user.lastname}`);
+                    if(String(process.env.ENV).toLocaleLowerCase() !== "test") await mailRegister(user.email, `${user.firstname} ${user.lastname}`);
                     return dataResponse(res, 201, { error: false, message: "L'utilisateur a bien été créé avec succès" });
                 }).catch(() => {
                     return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
@@ -86,7 +86,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
                                     email: user.email,
                                     url: 'http://' + req.headers.host + '/check/' + user.token
                                 }//req.hostname
-                                await mailCheckEmail(checkData);
+                                if(String(process.env.ENV).toLocaleLowerCase() !== "test") await mailCheckEmail(checkData);
                             }
                             return dataResponse(res, 200, { error: false, message: "L'utilisateur a été authentifié avec succès", token: user.token})
                         }
@@ -261,7 +261,7 @@ export const forgotPassword = async (req: Request, res: Response) : Promise <voi
                     if (err) {
                         return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
                     } else {
-                        await mailforgotPw(data.email.trim().toLowerCase(), passwordTemp);
+                        if(String(process.env.ENV).toLocaleLowerCase() !== "test") await mailforgotPw(data.email.trim().toLowerCase(), passwordTemp);
                         return dataResponse(res, 200, { error: false, message: "Votre mot de passe a bien été réinitialisé, veuillez consulter votre boîte mail" })
                     }
                 });

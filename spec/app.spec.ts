@@ -2,6 +2,7 @@ declare global {
     var tokenInfos: string;
     var emailInfos: string;
     var passwordInfos: string;
+    var siret: number;
     var idEntreprise: string;
 }
 import { roleTypes } from "../src/types/roleTypes";

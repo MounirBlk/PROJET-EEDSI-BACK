@@ -1,8 +1,9 @@
 import { Application, Request, Response, NextFunction, Errback } from "express";
-import { deleteEntreprise, getAllEntreprises, getEntreprise, newEntreprise, updateEntreprise } from "../controllers/entreprise";
+import { deleteEntreprise, getAllEntreprises, getEntreprise, newEntrepriseAuto, newEntreprise, updateEntreprise } from "../controllers/entreprise";
 import { checkInternet } from "../middlewares";
 
 export default (app: Application): void => {
+    app.route('/entrepriseAuto').post(checkInternet, newEntrepriseAuto);
     app.route('/entreprise').post(checkInternet, newEntreprise);
     app.route('/entreprise/:id').put(checkInternet, updateEntreprise);
     app.route('/entreprise/:id').delete(checkInternet, deleteEntreprise);
