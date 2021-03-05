@@ -182,29 +182,40 @@ export const getAllUsers = async (req: Request, res: Response) : Promise <void> 
         if(payload === null || payload === undefined){
             return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
-            await UserModel.find({}, (err: Error, results: any) => {
-                if (err) {
-                    return dataResponse(res, 500, {
-                        error: true,
-                        message: "Erreur dans la requête !"
+            let data = req.body;
+            if(isEmptyObject(data) || !exist(data.role)){
+                return dataResponse(res, 400, { error: true, message: 'Le role de l\'utilisateur est manquant' })
+            }else{
+                if(data.role.trim().toLowerCase() !== 'administrateur' && data.role.trim().toLowerCase() !== 'commercial' 
+                && data.role.trim().toLowerCase() !== 'livreur' && data.role.trim().toLowerCase() !== 'client' && data.role.trim().toLowerCase() !== 'prospect'){
+                    return dataResponse(res, 409, { error: true, message: 'Le role de l\'utilisateur n\'est pas conforme' })
+                }else{
+                    const roleFind = data.role.trim().charAt(0).toUpperCase() + data.role.trim().substring(1).toLowerCase();
+                    await UserModel.find({ role: roleFind }, (err: Error, results: any) => {
+                        if (err) {
+                            return dataResponse(res, 500, {
+                                error: true,
+                                message: "Erreur dans la requête !"
+                            });
+                        }else if (results === undefined || results === null){// Si le resultat n'existe pas
+                            return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
+                        } else {
+                            if (results) {
+                                return dataResponse(res, 200, {
+                                    error: false,
+                                    message: "Les " + data.role.trim().toLowerCase().concat('s') + " ont bien été récupéré",
+                                    users: results.map((item: UserInterface) => deleteMapper(item))
+                                });
+                            } else {
+                                return dataResponse(res, 401, {
+                                    error: true,
+                                    message: "La requête en base de donnée n'a pas fonctionné"
+                                });
+                            }
+                        }
                     });
-                }else if (results === undefined || results === null){// Si le resultat n'existe pas
-                    return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
-                } else {
-                    if (results) {
-                        return dataResponse(res, 200, {
-                            error: false,
-                            message: "Les utilisateurs ont bien été récupéré",
-                            users: results.map((item: UserInterface) => deleteMapper(item))
-                        });
-                    } else {
-                        return dataResponse(res, 401, {
-                            error: true,
-                            message: "La requête en base de donnée n'a pas fonctionné"
-                        });
-                    }
                 }
-            });
+            }
         }
     }).catch((error) => {
         throw error;

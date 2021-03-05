@@ -36,7 +36,7 @@ app.use((err: Errback , req: Request, res: Response, next: NextFunction) => {
         res.status(401).send('Missing authentication credentials.');
 });
 
-app.set("env", process.env.ENV || 'DEV');
+app.set("env", String(process.env.ENV).trim() || 'DEV');
 app.set("port", process.env.PORT || 3000);
 
 route(app);

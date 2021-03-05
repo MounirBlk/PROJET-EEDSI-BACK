@@ -15,7 +15,7 @@ export const registerUserTest = (role: Array<roleTypes>) => {
             civilite: randNumber(0,1) === 0 ? "Homme" : "Femme",
             dateNaissance: randomDate(),
             portable: '0651637929',
-            role: role[randNumber(0,3)] 
+            role: role[randNumber(0,4)] 
         }        
         request(app)
             .post('/register')
@@ -60,7 +60,7 @@ export const registerUserSpec = (role: Array<roleTypes>) => {
             civilite: randNumber(0,1) === 0 ? "Homme" : "Femme",
             dateNaissance: randomDate(),
             portable: '0651637929',
-            role: role[randNumber(0,3)] 
+            role: role[randNumber(0,4)] 
         }        
         request(app)
             .post('/register')
@@ -82,7 +82,7 @@ export const registerUserSpec = (role: Array<roleTypes>) => {
             civilite: randNumber(0,1) === 0 ? "Homme" : "Femme",
             dateNaissance: randomDate(),
             portable: '0651637929',
-            role: role[randNumber(0,3)]
+            role: role[randNumber(0,4)]
         }
         request(app)
             .post('/register')
