@@ -60,7 +60,7 @@ export const updateEntreprise = async (req: Request, res: Response): Promise<voi
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                if(!isValidLength(id, 24, 24) || !textFormat(id) || await EntrepriseModel.countDocuments({ _id: id}) === 0){
+                if(!isValidLength(id, 24, 24) || await EntrepriseModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
                     const entreprise: EntrepriseInterface | null = await EntrepriseModel.findById(id);
@@ -115,7 +115,7 @@ export const deleteEntreprise = async (req: Request, res: Response) : Promise <v
                 if(!isValidLength(id, 24, 24) || !textFormat(id) || await EntrepriseModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
-                    await EntrepriseModel.findOneAndDelete({ _id : payload.id });
+                    await EntrepriseModel.findOneAndDelete({ _id : id });
                     return dataResponse(res, 200, { error: false, message: 'L\'entreprise a été supprimé avec succès' })
                 }
             }
@@ -155,7 +155,7 @@ export const getEntreprise = async (req: Request, res: Response) : Promise <void
                                 return dataResponse(res, 200, {
                                     error: false,
                                     message: "Les informations de l'entreprise ont bien été récupéré",
-                                    entreprise: deleteMapper(results) 
+                                    entreprise: deleteMapper(results, 'getEntreprise') 
                                 });
                             } else {
                                 return dataResponse(res, 401, {
@@ -196,7 +196,7 @@ export const getAllEntreprises = async (req: Request, res: Response) : Promise <
                         return dataResponse(res, 200, {
                             error: false,
                             message: "Les entreprises ont bien été récupéré",
-                            entreprises: results.map((item: EntrepriseInterface) => deleteMapper(item))
+                            entreprises: results.map((item: EntrepriseInterface) => deleteMapper(item, 'getEntreprises'))
                         });
                     } else {
                         return dataResponse(res, 401, {

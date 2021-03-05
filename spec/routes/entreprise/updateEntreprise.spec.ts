@@ -54,7 +54,7 @@ export const updateEntrepriseSpec = () => {
             }, done);
     }, getTimeout());
 
-    /*it('Test update Entreprise: success', (done: DoneFn) => {
+    it('Test update Entreprise: success', (done: DoneFn) => {
         const data = {
             telephone: '0179985475' // taille du tel doit etre compris entre 1 et 25
         }           
@@ -65,8 +65,8 @@ export const updateEntrepriseSpec = () => {
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
             .expect(200, {
-                error: true,
+                error: false,
                 message: "L'entreprise a bien été mise à jour"
             }, done);
-    }, getTimeout());*/
+    }, getTimeout());
 }

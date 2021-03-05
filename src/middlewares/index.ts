@@ -1,6 +1,7 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
 import UserModel from '../models/UserModel';
 import jwt from 'jsonwebtoken';
+const isOnline = require('is-online');
 //import { random } from "lodash";
 
 /**
@@ -26,7 +27,7 @@ const dataResponse = (res: Response, status: number = 500, data: any = { error: 
  *  @param {string} mapperNameRoute? Nom de la route
  */ 
 const deleteMapper = (data: any, mapperNameRoute?: string): any => {
-    data._id  = null;
+    data._id = mapperNameRoute === 'getEntreprise' || mapperNameRoute === 'getEntreprises' ? data._id : null;
     data.token = null;
     data.attempt = null;
     data.createdAt = null;
@@ -313,5 +314,22 @@ const getJwtPayload = async(tokenHeader: string | undefined): Promise < any | nu
     }
 }
 
-export { dataResponse, isEmptyObject, getJwtPayload, renameKey, randFileName, randomNumber, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
+/**
+ *  Function qui check la connexion internet (true = connexion et false = pas de connexion)
+ */ 
+const checkInternet = (req: Request, res: Response, next: NextFunction): Promise < any > => {
+    return new Promise(async (resolve, reject) => {
+        let online = await isOnline({
+            timeout: 10000
+        });
+        if(online){
+            next();
+        }else{
+            resolve(dataResponse(res, 500, { error: true, message: "Pas de connexion internet" }));
+        }
+    });
+}
+
+
+export { dataResponse, isEmptyObject, checkInternet, getJwtPayload, renameKey, randFileName, randomNumber, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
 
