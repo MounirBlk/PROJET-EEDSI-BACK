@@ -23,7 +23,7 @@ export const userSpec = (role: Array<roleTypes>) => {
     registerUserSpec(role);//3
     loginUserSpec();//4
     getUserSpec();//5
-    getUsersSpec();//6
+    getUsersSpec(role);//6
     updateUserSpec();//7
     disableUserSpec();//8
     forgotPasswordUserSpec();//9
