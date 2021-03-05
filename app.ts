@@ -45,7 +45,7 @@ app.get('*', (req: Request, res: Response) => {
 });
 
 app.listen(app.get("port"), () => {
-    console.log("App is running on http://localhost:%d", app.get("port"));
+    console.log("App is running on http://localhost:%d in %s mode", app.get("port"), app.get("env"));
 });
 
 export default app; //export to call app to test spec
