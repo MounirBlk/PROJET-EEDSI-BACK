@@ -125,8 +125,17 @@ export const deleteUser = async (req: Request, res: Response) : Promise <void> =
         if(payload === null || payload === undefined){
             return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
-            await UserModel.findOneAndDelete({ _id : payload.id });
-            return dataResponse(res, 200, { error: false, message: 'L\'utilisateur a été supprimé avec succès' })// to transform to disabled user
+            const id = req.params.id;
+            if(!exist(id)){
+                return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
+            }else{
+                if(!isValidLength(id, 24, 24) || !textFormat(id) || await UserModel.countDocuments({ _id: id}) === 0){
+                    return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
+                }else{
+                    await UserModel.findOneAndDelete({ _id : id });
+                    return dataResponse(res, 200, { error: false, message: 'L\'utilisateur a été supprimé avec succès' })// to transform to disabled user
+                }
+            }
         }
     }).catch((error) => {
         throw error;
@@ -233,32 +242,44 @@ export const updateUser = async (req: Request, res: Response) : Promise <void> =
             return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const data = req.body;
-            if(isEmptyObject(data)) return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes'})
-            const user: UserInterface | null = await UserModel.findById(payload.id);
-            if(user === null || user === undefined){
-                return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !"})
+            const id = req.params.id;
+            if(!exist(id)){
+                return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                let isOnError: boolean = false;
-                isOnError = exist(data.portable) ? isValidLength(data.portable, 1, 30) ? false : true : false;
-                let toUpdate = {
-                    firstname: exist(data.firstname) ? !textFormat(data.firstname) ? (isOnError = true) : data.firstname : user.firstname,
-                    lastname: exist(data.lastname) ? !textFormat(data.lastname) ? (isOnError = true) : data.lastname : user.lastname,
-                    civilite: exist(data.civilite) ? (data.civilite.toLowerCase() !== "homme" && data.civilite.toLowerCase() !== "femme") ? (isOnError = true) : data.civilite : user.civilite,
-                    dateNaissance: exist(data.dateNaissance) ? !dateFormatFr(data.dateNaissance) ? (isOnError = true) : data.dateNaissance : user.dateNaissance,
-                    portable: exist(data.portable) ? data.portable : user.portable
-                }
-                if(isOnError){
-                    return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
+                if(!isValidLength(id, 24, 24) || !textFormat(id) || await UserModel.countDocuments({ _id: id}) === 0){
+                    return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
-                    await UserModel.findByIdAndUpdate(payload.id, toUpdate, null, (err: Error, resp: any) => {
-                        if (err) {
-                            return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
-                        } else {
-                            return dataResponse(res, 200, { error: false, message: "L'utilisateur a bien été mise à jour" })
+                    if(isEmptyObject(data)){
+                        return dataResponse(res, 200, { error: false, message: "Vos données sont déjà à jour" })
+                    }else{
+                        const user: UserInterface | null = await UserModel.findById(payload.id);
+                        if(user === null || user === undefined){
+                            return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !"})
+                        }else{
+                            let isOnError: boolean = false;
+                            isOnError = exist(data.portable) ? isValidLength(data.portable, 1, 30) ? false : true : false;
+                            let toUpdate = {
+                                firstname: exist(data.firstname) ? !textFormat(data.firstname) ? (isOnError = true) : data.firstname : user.firstname,
+                                lastname: exist(data.lastname) ? !textFormat(data.lastname) ? (isOnError = true) : data.lastname : user.lastname,
+                                civilite: exist(data.civilite) ? (data.civilite.toLowerCase() !== "homme" && data.civilite.toLowerCase() !== "femme") ? (isOnError = true) : data.civilite : user.civilite,
+                                dateNaissance: exist(data.dateNaissance) ? !dateFormatFr(data.dateNaissance) ? (isOnError = true) : data.dateNaissance : user.dateNaissance,
+                                portable: exist(data.portable) ? data.portable : user.portable
+                            }
+                            if(isOnError){
+                                return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
+                            }else{
+                                await UserModel.findByIdAndUpdate(id, toUpdate, null, (err: Error, resp: any) => {
+                                    if (err) {
+                                        return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
+                                    } else {
+                                        return dataResponse(res, 200, { error: false, message: "L'utilisateur a bien été mise à jour" })
+                                    }
+                                });
+                            }
                         }
-                    });
+                    }
                 }
-            }
+            } 
         }
     }).catch((error) => {
         throw error;
@@ -275,18 +296,27 @@ export const disableUser = async (req: Request, res: Response) : Promise <void> 
         if(payload === null || payload === undefined){
             return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
-            await UserModel.findByIdAndUpdate(payload.id, { disabled: true }, null, async(err: Error, resp: any) => {
-                if (err) {
-                    return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
-                } else {
-                    const user: UserInterface | null  = await UserModel.findById(payload.id)//<UserInterface>
-                    if(user === null || user === undefined){
-                        return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !"})
-                    }else{
-                        return dataResponse(res, 200, { error: false, message: "L'utilisateur a bien été désactivé", disabled: user.disabled })
-                    }
+            const id = req.params.id;
+            if(!exist(id)){
+                return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
+            }else{
+                if(!isValidLength(id, 24, 24) || !textFormat(id) || await UserModel.countDocuments({ _id: id}) === 0){
+                    return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
+                }else{
+                    await UserModel.findByIdAndUpdate(id, { disabled: true }, null, async(err: Error, resp: any) => {
+                        if (err) {
+                            return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
+                        } else {
+                            const user: UserInterface | null  = await UserModel.findById(id)//<UserInterface>
+                            if(user === null || user === undefined){
+                                return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !"})
+                            }else{
+                                return dataResponse(res, 200, { error: false, message: "L'utilisateur a bien été désactivé", disabled: user.disabled })
+                            }
+                        }
+                    });
                 }
-            });
+            }
         }
     }).catch((error) => {
         throw error;

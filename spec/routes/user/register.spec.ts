@@ -3,9 +3,8 @@ import app from "../../../app";
 import { convertToFormBody, getTimeout, randNumber, randomChars, randomDate, randomFileName } from "../../helpers";
 import fs from 'fs';
 import path from 'path';
-import { roleTypes } from "../../../src/types/roleTypes";
 
-export const registerUserTest = (role: Array<roleTypes>) => {
+export const registerUserTest = (selectedRole: string) => {
     return (done: DoneFn) => {
         const data = {
             email: randomChars(4) + randomFileName() +'@gmail.com',
@@ -15,7 +14,7 @@ export const registerUserTest = (role: Array<roleTypes>) => {
             civilite: randNumber(0,1) === 0 ? "Homme" : "Femme",
             dateNaissance: randomDate(),
             portable: '0651637929',
-            role: role[randNumber(0,4)] 
+            role: selectedRole
         }        
         request(app)
             .post('/register')
@@ -37,7 +36,7 @@ export const registerUserTest = (role: Array<roleTypes>) => {
     };
 };
 
-export const registerUserSpec = (role: Array<roleTypes>) => {
+export const registerUserSpec = (selectedRole: string) => {
     it('Test Register: données manquantes', (done: DoneFn) => {
         const data = {}
         request(app)
@@ -60,7 +59,7 @@ export const registerUserSpec = (role: Array<roleTypes>) => {
             civilite: randNumber(0,1) === 0 ? "Homme" : "Femme",
             dateNaissance: randomDate(),
             portable: '0651637929',
-            role: role[randNumber(0,4)] 
+            role: selectedRole 
         }        
         request(app)
             .post('/register')
@@ -82,7 +81,7 @@ export const registerUserSpec = (role: Array<roleTypes>) => {
             civilite: randNumber(0,1) === 0 ? "Homme" : "Femme",
             dateNaissance: randomDate(),
             portable: '0651637929',
-            role: role[randNumber(0,4)]
+            role: selectedRole
         }
         request(app)
             .post('/register')

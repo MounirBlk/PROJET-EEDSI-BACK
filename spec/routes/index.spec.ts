@@ -1,4 +1,3 @@
-import { roleTypes } from "../../src/types/roleTypes";
 import { deleteEntrepriseSpec } from "./entreprise/deleteEntreprise.spec";
 import { getEntrepriseSpec } from "./entreprise/getEntreprise.spec";
 import { getEntreprisesSpec } from "./entreprise/getEntreprises.spec";
@@ -17,13 +16,13 @@ import { registerUserSpec } from "./user/register.spec"
 import { updateUserSpec } from "./user/updateUser.spec";
 
 //ATTENTION: l'ordre des functions est très important !!!
-export const userSpec = (role: Array<roleTypes>) => {
+export const userSpec = (selectedRole: string) => {
     htmlSpec();//1
-    deleteUserSpec();//2
-    registerUserSpec(role);//3
-    loginUserSpec();//4
-    getUserSpec();//5
-    getUsersSpec(role);//6
+    getUsersSpec(selectedRole);//2
+    deleteUserSpec();//3
+    registerUserSpec(selectedRole);//4
+    loginUserSpec();//5
+    getUserSpec();//6
     updateUserSpec();//7
     disableUserSpec();//8
     forgotPasswordUserSpec();//9
