@@ -3,10 +3,10 @@ import app from "../../../app";
 import { convertToFormBody, getTimeout, randNumber, randomChars, randomDate, randomFileName } from "../../helpers";
 import fs from 'fs';
 import path from 'path';
-import { roleTypes } from "../../../src/types/roleTypes";
+import UserInterface from "../../../src/interfaces/UserInterface";
 
 
-export const getUsersSpec = (role: Array<roleTypes>) => {
+export const getUsersSpec = (selectedRole: string) => {
     it('Test getUsers: token incorrect', (done: DoneFn) => { 
         const data = {}
         request(app)
@@ -52,7 +52,6 @@ export const getUsersSpec = (role: Array<roleTypes>) => {
     }, getTimeout());
 
     it('Test getUsers: success', (done: DoneFn) => {
-        let selectedRole = role[randNumber(0, (role.length - 1))];
         request(app)
             .get('/users')
             .send(convertToFormBody({
@@ -69,6 +68,8 @@ export const getUsersSpec = (role: Array<roleTypes>) => {
                     message: "Les " + selectedRole.trim().toLowerCase().concat('s') + " ont bien été récupéré",
                     users: response.body.users
                 })
+                const userSelected: Array<UserInterface> = response.body.users.filter((user: UserInterface) => user.email === globalThis.emailInfos.toLowerCase());//email unique
+                globalThis.idUser = userSelected[0]._id;//forcément que un element
                 return done();
             })
             .catch(err => {

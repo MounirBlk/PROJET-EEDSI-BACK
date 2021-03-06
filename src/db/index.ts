@@ -3,7 +3,7 @@ import bluebird from 'bluebird';
 //const mongoose = require("mongoose")
 
 const mongooseConnect = () => {
-    const uri: string = process.env.ENV === "PROD" || process.env.ENV === "DEV" || process.env.ENV === "TEST" ? String(process.env.MONGO_URL) : String(process.env.MONGO_URL_LOCAL);// ENV: PROD / DEV / TEST
+    const uri: string = String(process.env.ENV).trim() === "PROD" || String(process.env.ENV).trim() === "DEV" || String(process.env.ENV).trim() === "TEST" ? String(process.env.MONGO_URL) : String(process.env.MONGO_URL_LOCAL);// ENV: PROD / DEV / TEST
 
     //Perform promise in node
     mongoose.Promise = bluebird;

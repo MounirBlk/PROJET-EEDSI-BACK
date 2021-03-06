@@ -5,7 +5,7 @@ import { getTimeout, randomChars } from "../../helpers";
 export const disableUserSpec = () => {
     it('Test disable: token incorrect', (done: DoneFn) => {
         request(app)
-            .put('/disable')
+            .put('/disable/' + globalThis.idUser)
             .set('Accept', 'application/json')
             .auth(randomChars(100), { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -15,9 +15,21 @@ export const disableUserSpec = () => {
             }, done);
     }, getTimeout());
 
+    it('Test disable: id invalide', (done: DoneFn) => {
+        request(app)
+            .put('/disable/' + randomChars(100))
+            .set('Accept', 'application/json')
+            .auth(globalThis.tokenInfos, { type: 'bearer' })
+            .expect('Content-Type', /json/)
+            .expect(409, {
+                error: true,
+                message: "L'id n'est pas valide !"
+            }, done);
+    }, getTimeout());
+
     it('Test disable: success', (done: DoneFn) => {
         request(app)
-            .put('/disable')
+            .put('/disable/' + globalThis.idUser)
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
