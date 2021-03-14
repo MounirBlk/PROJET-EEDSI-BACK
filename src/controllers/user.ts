@@ -199,8 +199,9 @@ export const getAllUsers = async (req: Request, res: Response) : Promise <void> 
                 && data.role.trim().toLowerCase() !== 'livreur' && data.role.trim().toLowerCase() !== 'client' && data.role.trim().toLowerCase() !== 'prospect'){
                     return dataResponse(res, 409, { error: true, message: 'Le role de l\'utilisateur n\'est pas conforme' })
                 }else{
-                    const roleFind = data.role.trim().charAt(0).toUpperCase() + data.role.trim().substring(1).toLowerCase();
-                    await UserModel.find({ role: roleFind }, (err: Error, results: any) => {
+                    const roleFind = data.role.trim().charAt(0).toUpperCase() + data.role.trim().substring(1).toLowerCase();                
+                    let filterFind = data.role.trim().toLowerCase() === 'commercial' ? { $or: [{role: roleFind}, {role: 'Administrateur'}] } : { role: roleFind }
+                    await UserModel.find(filterFind, (err: Error, results: any) => {
                         if (err) {
                             return dataResponse(res, 500, {
                                 error: true,
@@ -210,9 +211,10 @@ export const getAllUsers = async (req: Request, res: Response) : Promise <void> 
                             return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
                         } else {
                             if (results) {
+                                let roleMessage = data.role.trim().toLowerCase() === 'commercial' ? "commerciaux" : data.role.trim().toLowerCase().concat('s')
                                 return dataResponse(res, 200, {
                                     error: false,
-                                    message: "Les " + data.role.trim().toLowerCase().concat('s') + " ont bien été récupéré",
+                                    message: "Les " + roleMessage + " ont bien été récupéré",
                                     users: results.map((item: UserInterface) => deleteMapper(item))
                                 });
                             } else {

@@ -10,7 +10,7 @@ export const getUsersSpec = (selectedRole: string) => {
     it('Test getUsers: token incorrect', (done: DoneFn) => { 
         const data = {}
         request(app)
-            .get('/users')
+            .post('/users')
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(randomChars(100), { type: 'bearer' })
@@ -24,7 +24,7 @@ export const getUsersSpec = (selectedRole: string) => {
     it('Test getUsers: données manquantes', (done: DoneFn) => {
         const data = {}
         request(app)
-            .get('/users')
+            .post('/users')
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
@@ -40,7 +40,7 @@ export const getUsersSpec = (selectedRole: string) => {
             role: "President"// n'existe pas
         }
         request(app)
-            .get('/users')
+            .post('/users')
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
@@ -53,7 +53,7 @@ export const getUsersSpec = (selectedRole: string) => {
 
     it('Test getUsers: success', (done: DoneFn) => {
         request(app)
-            .get('/users')
+            .post('/users')
             .send(convertToFormBody({
                 role: selectedRole
             }))
@@ -62,10 +62,11 @@ export const getUsersSpec = (selectedRole: string) => {
             .expect('Content-Type', /json/)
             .expect(200)
             .then((response: any) => {
+                let roleMessage = selectedRole.trim().toLowerCase() === 'commercial' ? "commerciaux" : selectedRole.trim().toLowerCase().concat('s');
                 expect(response.status).toEqual(200)
                 expect(response.body).toEqual({
                     error: false,
-                    message: "Les " + selectedRole.trim().toLowerCase().concat('s') + " ont bien été récupéré",
+                    message: "Les " + roleMessage + " ont bien été récupéré",
                     users: response.body.users
                 })
                 const userSelected: Array<UserInterface> = response.body.users.filter((user: UserInterface) => user.email === globalThis.emailInfos.toLowerCase());//email unique
