@@ -7,7 +7,7 @@ export default (app: Application): void => {
     app.route('/login').post(checkInternet, login);
     app.route('/user/:id').delete(checkInternet, deleteUser);
     app.route('/user').get(checkInternet, getUser);
-    app.route('/users').get(checkInternet, getAllUsers);
+    app.route('/users').post(checkInternet, getAllUsers);
     app.route('/user/:id').put(checkInternet, updateUser);
     app.route('/disable/:id').put(checkInternet, disableUser);
     app.route('/forgot').put(checkInternet, forgotPassword);
