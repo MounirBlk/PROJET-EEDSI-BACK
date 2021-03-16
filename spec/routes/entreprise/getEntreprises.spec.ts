@@ -1,6 +1,6 @@
 import request from "supertest"
 import app from "../../../app";
-import { convertToFormBody, getTimeout, randNumber, randomChars, randomDate, randomFileName } from "../../helpers";
+import { convertToFormBody, getTimeout, randNumber, randomChars, randomFileName } from "../../helpers";
 import fs from 'fs';
 import path from 'path';
 import EntrepriseInterface from "../../../src/interfaces/EntrepriseInterface";

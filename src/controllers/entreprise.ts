@@ -1,5 +1,5 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
-import { dataResponse, dateFormatFr, deleteMapper, emailFormat, exist, getJwtPayload, isEmptyObject, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, textFormat } from '../middlewares';
+import { dataResponse, dateFormatFr, deleteMapper, emailFormat, dateFormatEn, exist, getJwtPayload, isEmptyObject, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, textFormat } from '../middlewares';
 const axios = require('axios').default;
 import EntrepriseInterface from '../interfaces/EntrepriseInterface';
 import EntrepriseModel from '../models/EntrepriseModel';
@@ -118,7 +118,7 @@ export const updateEntreprise = async (req: Request, res: Response): Promise<voi
                             telephone: exist(data.telephone) ? isValidLength(data.telephone, 1, 25) ? data.telephone : (isOnError = true) : entreprise.telephone,
                             categorieEntreprise: exist(data.categorieEntreprise) ? textFormat(data.categorieEntreprise) ? data.categorieEntreprise : (isOnError = true) : entreprise.categorieEntreprise,
                             categorieJuridique: exist(data.categorieJuridique) ? numberFormat(data.categorieJuridique) ? data.categorieJuridique : (isOnError = true) : entreprise.categorieJuridique,
-                            dateCreation: exist(data.dateCreation) ? dateFormatFr(data.dateCreation) ? data.dateCreation : (isOnError = true) : entreprise.dateCreation,
+                            dateCreation: exist(data.dateCreation) ? dateFormatEn(data.dateCreation) ? data.dateCreation : (isOnError = true) : entreprise.dateCreation,
                             etatAdministratif: exist(data.etatAdministratif) ? data.etatAdministratif.toLowerCase() === 'actif' || data.etatAdministratif.toLowerCase() === 'ferme' ? data.etatAdministratif : (isOnError = true) : entreprise.etatAdministratif,
                             numeroTvaIntra: exist(data.numeroTvaIntra) ? textFormat(data.numeroTvaIntra) ? data.numeroTvaIntra : (isOnError = true) : entreprise.numeroTvaIntra,
                         }

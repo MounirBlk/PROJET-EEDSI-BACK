@@ -1,6 +1,6 @@
 import request from "supertest"
 import app from "../../../app";
-import { convertToFormBody, getTimeout, randNumber, randomChars, randomDate } from "../../helpers";
+import { convertToFormBody, getTimeout, randNumber, randomChars, randomDateEn } from "../../helpers";
 
 export const updateUserSpec = () => {
     it('Test update: token incorrect', (done: DoneFn) => {
@@ -46,7 +46,7 @@ export const updateUserSpec = () => {
             firstname: randomChars(randNumber(5,10)).concat('$&+'),//non-conforme
             lastname: randomChars(randNumber(5,10)).concat('$&+'),//non-conforme
             civilite: randNumber(0,1) === 0 ? "Homme" : "Femme",
-            dateNaissance: randomDate(),
+            dateNaissance: randomDateEn(),
             portable: "$".repeat(randNumber(35,50)),//non-conforme taille entre 1-30
         }        
         request(app)
@@ -66,7 +66,7 @@ export const updateUserSpec = () => {
             firstname: randomChars(randNumber(5,10)),
             lastname: randomChars(randNumber(5,10)),
             civilite: randNumber(0,1) === 0 ? "Homme" : "Femme",
-            dateNaissance: randomDate(),
+            dateNaissance: randomDateEn(),
             //portable: '0651637929',
         }        
         request(app)

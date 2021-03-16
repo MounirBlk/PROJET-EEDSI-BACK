@@ -54,13 +54,23 @@ export const randomChars = (length: number = 10): string => {
 }
 
 /**
- *  générator random Date
+ *  générator random Date FR
  *  @param {Date} start début année (1950)
  *  @param {Date} end fin année (today)
  */ 
-export const randomDate = (start: Date = new Date(1950, 0, 1), end: Date = new Date()): string => {
+export const randomDateFr = (start: Date = new Date(1950, 0, 1), end: Date = new Date()): string => {
     let dt = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));//FORMAT DATE
     return `${dt.getDate().toString().padStart(2, '0')}/${(dt.getMonth()+1).toString().padStart(2, '0')}/${dt.getFullYear().toString().padStart(4, '0')}`   
+}
+
+/**
+ *  générator random Date EN
+ *  @param {Date} start début année (1950)
+ *  @param {Date} end fin année (today)
+ */ 
+export const randomDateEn = (start: Date = new Date(1950, 0, 1), end: Date = new Date()): string => {
+    let dt = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));//FORMAT DATE
+    return `${dt.getFullYear().toString().padStart(4, '0')}-${(dt.getMonth()+1).toString().padStart(2, '0')}-${dt.getDate().toString().padStart(2, '0')}`   
 
 }
 
@@ -68,7 +78,6 @@ export const randomDate = (start: Date = new Date(1950, 0, 1), end: Date = new D
  *  Conversion to form body 
  *  @param {Object} data 
  */ 
-
 export const convertToFormBody = (data: any) => {
     let formBody: any = [];
     for (let property in data) {

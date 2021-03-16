@@ -1,6 +1,6 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
 import UserInterface from '../interfaces/UserInterface';
-import { dataResponse, dateFormatFr, deleteMapper, emailFormat, exist, getJwtPayload, isEmptyObject, isValidLength, passwordFormat, randChars, randomNumber, textFormat } from '../middlewares';
+import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, getJwtPayload, isEmptyObject, isValidLength, passwordFormat, randChars, randomNumber, textFormat } from '../middlewares';
 import { mailCheckEmail, mailforgotPw, mailRegister } from '../middlewares/sendMail';
 import UserModel from '../models/UserModel';
 import jwt from 'jsonwebtoken';
@@ -17,7 +17,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
     }else{
         let isOnError = exist(data.portable) ? isValidLength(data.portable, 1, 30) ? false : true : false;
-        if(isOnError || !emailFormat(data.email) || !passwordFormat(data.password) || !textFormat(data.firstname) || !textFormat(data.lastname) || !dateFormatFr(data.dateNaissance) || 
+        if(isOnError || !emailFormat(data.email) || !passwordFormat(data.password) || !textFormat(data.firstname) || !textFormat(data.lastname) || !dateFormatEn(data.dateNaissance) || 
         (data.civilite.toLowerCase() !== "homme" && data.civilite.toLowerCase() !== "femme") || (data.role.toLowerCase() !== "administrateur" && data.role.toLowerCase() !== "commercial" && data.role.toLowerCase() !== "livreur" && data.role.toLowerCase() !== "client"  && data.role.toLowerCase() !== "prospect")){
             return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
         }else{
@@ -264,7 +264,7 @@ export const updateUser = async (req: Request, res: Response) : Promise <void> =
                                 firstname: exist(data.firstname) ? !textFormat(data.firstname) ? (isOnError = true) : data.firstname : user.firstname,
                                 lastname: exist(data.lastname) ? !textFormat(data.lastname) ? (isOnError = true) : data.lastname : user.lastname,
                                 civilite: exist(data.civilite) ? (data.civilite.toLowerCase() !== "homme" && data.civilite.toLowerCase() !== "femme") ? (isOnError = true) : data.civilite : user.civilite,
-                                dateNaissance: exist(data.dateNaissance) ? !dateFormatFr(data.dateNaissance) ? (isOnError = true) : data.dateNaissance : user.dateNaissance,
+                                dateNaissance: exist(data.dateNaissance) ? !dateFormatEn(data.dateNaissance) ? (isOnError = true) : data.dateNaissance : user.dateNaissance,
                                 portable: exist(data.portable) ? data.portable : user.portable
                             }
                             if(isOnError){
