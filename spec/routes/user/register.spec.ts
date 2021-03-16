@@ -1,6 +1,6 @@
 import request from "supertest"
 import app from "../../../app";
-import { convertToFormBody, getTimeout, randNumber, randomChars, randomDate, randomFileName } from "../../helpers";
+import { convertToFormBody, getTimeout, randNumber, randomChars, randomDateEn, randomFileName } from "../../helpers";
 import fs from 'fs';
 import path from 'path';
 
@@ -12,7 +12,7 @@ export const registerUserTest = (selectedRole: string) => {
             firstname: randomChars(randNumber(5,10)),
             lastname: randomChars(randNumber(5,10)),
             civilite: randNumber(0,1) === 0 ? "Homme" : "Femme",
-            dateNaissance: randomDate(),
+            dateNaissance: randomDateEn(),
             portable: '0651637929',
             role: selectedRole
         }        
@@ -57,7 +57,7 @@ export const registerUserSpec = (selectedRole: string) => {
             firstname: randomChars(randNumber(5,10)),
             lastname: randomChars(randNumber(5,10)),
             civilite: randNumber(0,1) === 0 ? "Homme" : "Femme",
-            dateNaissance: randomDate(),
+            dateNaissance: randomDateEn(),
             portable: '0651637929',
             role: selectedRole 
         }        
@@ -79,7 +79,7 @@ export const registerUserSpec = (selectedRole: string) => {
             firstname: randomChars(randNumber(5,10)),
             lastname: randomChars(randNumber(5,10)),
             civilite: randNumber(0,1) === 0 ? "Homme" : "Femme",
-            dateNaissance: randomDate(),
+            dateNaissance: randomDateEn(),
             portable: '0651637929',
             role: selectedRole
         }
