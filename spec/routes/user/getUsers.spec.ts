@@ -8,10 +8,8 @@ import UserInterface from "../../../src/interfaces/UserInterface";
 
 export const getUsersSpec = (selectedRole: string) => {
     it('Test getUsers: token incorrect', (done: DoneFn) => { 
-        const data = {}
         request(app)
-            .post('/users')
-            .send(convertToFormBody(data))
+            .get('/user/all/toto')
             .set('Accept', 'application/json')
             .auth(randomChars(100), { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -21,11 +19,9 @@ export const getUsersSpec = (selectedRole: string) => {
             }, done);
     }, getTimeout());
 
-    it('Test getUsers: données manquantes', (done: DoneFn) => {
-        const data = {}
+    /*it('Test getUsers: données manquantes', (done: DoneFn) => {
         request(app)
-            .post('/users')
-            .send(convertToFormBody(data))
+            .get('/user/all/')
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -33,15 +29,11 @@ export const getUsersSpec = (selectedRole: string) => {
                 error: true,
                 message: 'Le role de l\'utilisateur est manquant'
             }, done);
-    }, getTimeout());
+    }, getTimeout());*/
 
     it('Test getUsers: données non-conformes', (done: DoneFn) => {
-        const data = {
-            role: "President"// n'existe pas
-        }
         request(app)
-            .post('/users')
-            .send(convertToFormBody(data))
+            .get('/user/all/President')
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -53,10 +45,7 @@ export const getUsersSpec = (selectedRole: string) => {
 
     it('Test getUsers: success', (done: DoneFn) => {
         request(app)
-            .post('/users')
-            .send(convertToFormBody({
-                role: selectedRole
-            }))
+            .get('/user/all/'+ selectedRole)
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)

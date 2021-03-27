@@ -86,7 +86,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
                                 let checkData = {
                                     fullName : `${user.firstname} ${user.lastname}`,
                                     email: user.email,
-                                    url: 'http://' + req.headers.host + '/check/' + user.token
+                                    url: 'http://' + req.headers.host + '/user/check/' + user.token
                                 }//req.hostname
                                 if(String(process.env.ENV).trim().toLowerCase() !== "test"){
                                     await mailCheckEmail(checkData);
@@ -143,11 +143,11 @@ export const deleteUser = async (req: Request, res: Response) : Promise <void> =
 }
 
 /**
- *  Route recuperation user
+ *  Route recuperation user connecte
  *  @param {Request} req 
  *  @param {Response} res 
  */ 
-export const getUser = async (req: Request, res: Response) : Promise <void> => {
+export const getOwnUser = async (req: Request, res: Response) : Promise <void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
@@ -182,6 +182,50 @@ export const getUser = async (req: Request, res: Response) : Promise <void> => {
 }
 
 /**
+ *  Route recuperation one user infos
+ *  @param {Request} req 
+ *  @param {Response} res 
+ */ 
+export const getOneUser = async (req: Request, res: Response) : Promise <void> => {
+    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+        if(payload === null || payload === undefined){
+            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+        }else{
+            const id: any = req.params.id;
+            if(!isValidLength(id, 24, 24) || !textFormat(id) || await UserModel.countDocuments({ _id: id}) === 0){
+                return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
+            }else{
+                await UserModel.findOne({ _id: id }, (err: Error, results: Response) => {
+                    if (err) {
+                        return dataResponse(res, 500, {
+                            error: true,
+                            message: "Erreur dans la requête !"
+                        });
+                    }else if (results === undefined || results === null){// Si le resultat n'existe pas
+                        return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
+                    } else {
+                        if (results) {
+                            return dataResponse(res, 200, {
+                                error: false,
+                                message: "Les informations ont bien été récupéré",
+                                user: deleteMapper(results) 
+                            });
+                        } else {
+                            return dataResponse(res, 401, {
+                                error: true,
+                                message: "La requête en base de donnée n'a pas fonctionné"
+                            });
+                        }
+                    }
+                });
+            }
+        }
+    }).catch((error) => {
+        throw error;
+    });
+}
+
+/**
  *  Route recuperation des users
  *  @param {Request} req 
  *  @param {Response} res 
@@ -191,16 +235,16 @@ export const getAllUsers = async (req: Request, res: Response) : Promise <void> 
         if(payload === null || payload === undefined){
             return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
-            let data = req.body;
-            if(isEmptyObject(data) || !exist(data.role)){
+            const role: any = req.params.role;
+            if(!exist(role)){
                 return dataResponse(res, 400, { error: true, message: 'Le role de l\'utilisateur est manquant' })
             }else{
-                if(data.role.trim().toLowerCase() !== 'administrateur' && data.role.trim().toLowerCase() !== 'commercial' 
-                && data.role.trim().toLowerCase() !== 'livreur' && data.role.trim().toLowerCase() !== 'client' && data.role.trim().toLowerCase() !== 'prospect'){
+                if(role.trim().toLowerCase() !== 'administrateur' && role.trim().toLowerCase() !== 'commercial' 
+                && role.trim().toLowerCase() !== 'livreur' && role.trim().toLowerCase() !== 'client' && role.trim().toLowerCase() !== 'prospect'){
                     return dataResponse(res, 409, { error: true, message: 'Le role de l\'utilisateur n\'est pas conforme' })
                 }else{
-                    const roleFind = data.role.trim().charAt(0).toUpperCase() + data.role.trim().substring(1).toLowerCase();                
-                    let filterFind = data.role.trim().toLowerCase() === 'commercial' ? { $or: [{role: roleFind}, {role: 'Administrateur'}] } : { role: roleFind }
+                    const roleFind = role.trim().charAt(0).toUpperCase() + role.trim().substring(1).toLowerCase();                
+                    let filterFind: any = role.trim().toLowerCase() === 'commercial' ? { $or: [{role: roleFind}, {role: 'Administrateur'}] } : { role: roleFind }
                     await UserModel.find(filterFind, (err: Error, results: any) => {
                         if (err) {
                             return dataResponse(res, 500, {
@@ -211,7 +255,7 @@ export const getAllUsers = async (req: Request, res: Response) : Promise <void> 
                             return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
                         } else {
                             if (results) {
-                                let roleMessage = data.role.trim().toLowerCase() === 'commercial' ? "commerciaux" : data.role.trim().toLowerCase().concat('s')
+                                let roleMessage = role.trim().toLowerCase() === 'commercial' ? "commerciaux" : role.trim().toLowerCase().concat('s')
                                 return dataResponse(res, 200, {
                                     error: false,
                                     message: "Les " + roleMessage + " ont bien été récupéré",

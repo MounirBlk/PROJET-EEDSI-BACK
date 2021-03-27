@@ -8,7 +8,8 @@ import { checkUserSpec } from "./user/checkUser.spec";
 import { deleteUserSpec } from "./user/deleteUser.spec"
 import { disableUserSpec } from "./user/disableUser.spec";
 import { forgotPasswordUserSpec } from "./user/forgotPassword.spec";
-import { getUserSpec } from "./user/getUser.spec";
+import { getOneUserSpec } from "./user/getOneUser.spec";
+import { getOwnUserSpec } from "./user/getOwnUser.spec";
 import { getUsersSpec } from "./user/getUsers.spec";
 import { htmlSpec } from "./user/html.spec";
 import { loginUserSpec } from "./user/login.spec"
@@ -22,11 +23,12 @@ export const userSpec = (selectedRole: string) => {
     deleteUserSpec();//3
     registerUserSpec(selectedRole);//4
     loginUserSpec();//5
-    getUserSpec();//6
-    updateUserSpec();//7
-    disableUserSpec();//8
-    forgotPasswordUserSpec();//9
-    checkUserSpec();//10
+    getOwnUserSpec();//6
+    getOneUserSpec();//7
+    updateUserSpec();//8
+    disableUserSpec();//9
+    forgotPasswordUserSpec();//10
+    checkUserSpec();//111
 }
 
 //ATTENTION: l'ordre des functions est très important !!!

@@ -7,7 +7,7 @@ import path from 'path';
 export const deleteUserTest = () => {
     return (done: DoneFn) => {
         request(app)//app
-        .delete('/user/' + globalThis.idUser)
+        .delete('/user/delete/' + globalThis.idUser)
         .set('Accept', 'application/json')
         //.set('Authorization', `Bearer ${token}`) //fonctionne aussi normalement
         .auth(globalThis.tokenInfos, { type: 'bearer' })
@@ -28,7 +28,7 @@ export const deleteUserTest = () => {
 export const deleteUserSpec = () => {
     it('Test delete: token incorrect', (done: DoneFn) => {
         request(app)
-            .delete('/user/' + globalThis.idUser)
+            .delete('/user/delete/' + globalThis.idUser)
             .set('Accept', 'application/json')
             .auth(randomChars(100), { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -40,7 +40,7 @@ export const deleteUserSpec = () => {
 
     it('Test delete: id invalide', (done: DoneFn) => {
         request(app)
-            .delete('/user/' + randomChars(100))
+            .delete('/user/delete/' + randomChars(100))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
