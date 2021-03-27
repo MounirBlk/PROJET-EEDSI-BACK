@@ -12,7 +12,7 @@ export const newEntrepriseAutoSpec = () => {
             siret: String(randNumber(1,9)).repeat(14),//taille d'un siret est de 14
         }           
         request(app)
-            .post('/entrepriseAuto')
+            .post('/entreprise/auto')
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(randomChars(100), { type: 'bearer' })
@@ -26,7 +26,7 @@ export const newEntrepriseAutoSpec = () => {
     it('Test new Entreprise auto: données manquantes', (done: DoneFn) => {
         const data = {}
         request(app)
-            .post('/entrepriseAuto')
+            .post('/entreprise/auto')
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
@@ -42,7 +42,7 @@ export const newEntrepriseAutoSpec = () => {
             siret: String(randNumber(1,9)).repeat(randNumber(1,13)),//taille d'un siret doit etre de 14 
         }        
         request(app)
-            .post('/entrepriseAuto')
+            .post('/entreprise/auto')
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
@@ -58,7 +58,7 @@ export const newEntrepriseAutoSpec = () => {
             siret: siret,//SIRET de google entreprise
         }        
         request(app)
-            .post('/entrepriseAuto')
+            .post('/entreprise/auto')
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
@@ -74,7 +74,7 @@ export const newEntrepriseAutoSpec = () => {
             siret: globalThis.siret,
         }        
         request(app)
-            .post('/entrepriseAuto')
+            .post('/entreprise/auto')
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })

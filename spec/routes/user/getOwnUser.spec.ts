@@ -4,10 +4,10 @@ import { convertToFormBody, getTimeout, randNumber, randomChars, randomFileName 
 import fs from 'fs';
 import path from 'path';
 
-export const getUserSpec = () => {
+export const getOwnUserSpec = () => {
     it('Test recuperation: token incorrect', (done: DoneFn) => {
         request(app)
-            .get('/user')
+            .get('/user/own')
             .set('Accept', 'application/json')
             .auth(randomChars(100), { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -19,7 +19,7 @@ export const getUserSpec = () => {
 
     it('Test recuperation: successfull', (done: DoneFn) => {
         request(app)
-            .get('/user')
+            .get('/user/own')
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)

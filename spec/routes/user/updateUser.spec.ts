@@ -5,7 +5,7 @@ import { convertToFormBody, getTimeout, randNumber, randomChars, randomDateEn } 
 export const updateUserSpec = () => {
     it('Test update: token incorrect', (done: DoneFn) => {
         request(app)
-            .put('/user/' + globalThis.idUser)
+            .put('/user/update/' + globalThis.idUser)
             .set('Accept', 'application/json')
             .auth(randomChars(100), { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -17,7 +17,7 @@ export const updateUserSpec = () => {
 
     it('Test update: id invalide', (done: DoneFn) => {
         request(app)
-            .put('/user/' + randomChars(100))
+            .put('/user/update/' + randomChars(100))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -30,7 +30,7 @@ export const updateUserSpec = () => {
     it('Test update: données à jour', (done: DoneFn) => {
         const data = {}
         request(app)
-            .put('/user/' + globalThis.idUser)
+            .put('/user/update/' + globalThis.idUser)
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
@@ -50,7 +50,7 @@ export const updateUserSpec = () => {
             portable: "$".repeat(randNumber(35,50)),//non-conforme taille entre 1-30
         }        
         request(app)
-            .put('/user/' + globalThis.idUser)
+            .put('/user/update/' + globalThis.idUser)
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
@@ -70,7 +70,7 @@ export const updateUserSpec = () => {
             //portable: '0651637929',
         }        
         request(app)
-            .put('/user/' + globalThis.idUser)
+            .put('/user/update/' + globalThis.idUser)
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })

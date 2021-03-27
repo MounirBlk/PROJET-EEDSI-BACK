@@ -6,7 +6,7 @@ export const forgotPasswordUserSpec = () => {
     it('Test forgot password: données manquantes', (done: DoneFn) => {
         const data = {}
         request(app)
-            .put('/forgot')
+            .put('/user/forgot')
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
@@ -18,7 +18,7 @@ export const forgotPasswordUserSpec = () => {
 
     it('Test forgot password: données non-conformes', (done: DoneFn) => {
         request(app)
-            .put('/forgot')
+            .put('/user/forgot')
             .send(convertToFormBody({ email: randomChars(randNumber(5,10)).concat('$&+') }))
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
@@ -30,7 +30,7 @@ export const forgotPasswordUserSpec = () => {
 
     it('Test forgot password: not exist in base', (done: DoneFn) => {
         request(app)
-            .put('/forgot')
+            .put('/user/forgot')
             .send(convertToFormBody({ email: randomChars(4) + randomFileName() +'@gmail.com' }))
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
@@ -42,7 +42,7 @@ export const forgotPasswordUserSpec = () => {
 
     it('Test forgot password: success', (done: DoneFn) => {
         request(app)
-            .put('/forgot')
+            .put('/user/forgot')
             .send(convertToFormBody({ email: globalThis.emailInfos }))
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)

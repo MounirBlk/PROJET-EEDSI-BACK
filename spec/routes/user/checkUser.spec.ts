@@ -7,7 +7,7 @@ import path from 'path';
 export const checkUserTest = () => {
     return (done: DoneFn) => {
         request(app)
-            .get('/check/'+ globalThis.tokenInfos)
+            .get('/user/check/'+ globalThis.tokenInfos)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(200, {
@@ -24,7 +24,7 @@ export const checkUserTest = () => {
 export const checkUserSpec = () => {
     it('Test check: token incorrect', (done: DoneFn) => {
         request(app)
-            .get('/check/'+ randomChars(100))
+            .get('/user/check/'+ randomChars(100))
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(498, {

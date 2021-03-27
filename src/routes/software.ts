@@ -3,7 +3,7 @@ import { deleteEntreprise, getAllEntreprises, getEntreprise, newEntrepriseAuto, 
 import { checkInternet } from "../middlewares";
 
 export default (app: Application): void => {
-    app.route('/entrepriseAuto').post(checkInternet, newEntrepriseAuto);
+    app.route('/entreprise/auto').post(checkInternet, newEntrepriseAuto);
     app.route('/entreprise').post(checkInternet, newEntreprise);
     app.route('/entreprise/:id').put(checkInternet, updateEntreprise);
     app.route('/entreprise/:id').delete(checkInternet, deleteEntreprise);
