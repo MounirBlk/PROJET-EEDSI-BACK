@@ -1,7 +1,7 @@
 import { Document } from "mongoose"
 
 export default interface ComposantInterface extends Document {
-    "refID": number,
+    "refID": string,
     "nom": string,
     "type": string,
     "matieres": Array<string>,
@@ -11,5 +11,5 @@ export default interface ComposantInterface extends Document {
     "largeur": number,
     "profondeur": number,
     "prix": number,
-    "quantité": number,
+    "quantite": number,
 }

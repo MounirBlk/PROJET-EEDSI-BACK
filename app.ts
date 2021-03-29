@@ -1,11 +1,13 @@
-require('dotenv').config()
+//require('dotenv').config()
+import { config } from "dotenv"; 
+config(); 
 import express, { Application, Request, Response, NextFunction, Errback } from 'express';
-import bodyParser, { json } from 'body-parser';
 import cors from 'cors';
 import path from 'path';
 import { route } from './src/routes';
 import mongooseConnect from './src/db';
 import fs from 'fs';
+import rateLimit from 'express-rate-limit';
 
 mongooseConnect()
 
@@ -22,21 +24,23 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+app.use(cors());
+app.use(express.urlencoded({ extended: false }))
 app.use(express.json());
 app.use(express.static('public'));
-
-app.use(cors());
-
-app.use(bodyParser.urlencoded({
-    extended: false
-}))
 
 app.use((err: Errback , req: Request, res: Response, next: NextFunction) => {
     if (err.name === 'UnauthorizedError')
         res.status(401).send('Missing authentication credentials.');
 });
 
-app.set("env", String(process.env.ENV).trim() || 'DEV');
+const limiter: rateLimit.RateLimit = rateLimit({
+  windowMs: (60 * 1000) * 1, // 1 min
+  max: 200 //limit for each IP with 200 requests per windowMs
+});
+
+app.use(limiter);
+
 app.set("port", process.env.PORT || 3000);
 
 route(app);
@@ -46,7 +50,7 @@ app.get('*', (req: Request, res: Response) => {
 });
 
 app.listen(app.get("port"), () => {
-  console.log("App is running on http://localhost:%d/ in %s mode", app.get("port"), app.get("env"));
+  console.log(`App is running on http://localhost:${app.get("port")}/ in ${String(process.env.ENV).trim() || 'DEV'} mode`);
 });
 
 export default app; //export to call app to test spec

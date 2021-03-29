@@ -48,6 +48,16 @@ const exist = (data: string): Boolean => {
 }
 
 /**
+ *  Function qui vérifie l'existence d'une data type array tableau
+ */ 
+const existTab = (data: Array<any>): Boolean => {
+    if (data === undefined || data === null)
+        return false
+    else
+        return true
+}
+
+/**
  *  Function qui vérifie si l'objet est vide
  */ 
 const isEmptyObject = (objectData: any): boolean => {
@@ -122,12 +132,23 @@ const textFormat = (data: string): Boolean => {
     if (data.match(regexText) == null)
         return false
     else
-        return isValidLength(data, 2, 25) ? true : false
+        return isValidLength(data, 1, 25) ? true : false
     
 }
 
 /**
- *  Function vérification de si la date est dans le format number
+ *  Function qui vérifie la conformité d'un tableau de chaine de caracteres (Array<string>)
+ *  @param {Array<string>} data
+ */ 
+const tabFormat = (data: Array<string>): Boolean => {
+    if (!Array.isArray(data))
+        return false
+    else
+        return true
+}
+
+/**
+ *  Function vérification de si la data est dans le format number
  */ 
 const numberFormat = (data: string): Boolean => {
     let regexNumber = /^[0-9]+$/
@@ -138,7 +159,7 @@ const numberFormat = (data: string): Boolean => {
 }
 
 /**
- *  Function vérification de si la date est dans le format float
+ *  Function vérification de si la data est dans le format float
  */ 
 const floatFormat = (data: string): Boolean => {
     let regexFloat = /^[0-9]+(\.[0-9]{0,})$/
@@ -217,7 +238,16 @@ const getTimeHourSecMin = (dt: Date = new Date()) => {
 /**
  *  Function random float min et max
  */ 
-const randomFloat = (min: number, max: number) => Math.random() * (max - min) + min;
+const randomFloat = (min: number, max: number): number => { 
+    return Math.random() * (max - min) + min 
+};
+
+/**
+ *  Function 1er lettre maj
+ */ 
+const firstLetterMaj = (texte: string): any => {
+    return texte.trim().charAt(0).toUpperCase() + texte.trim().substring(1).toLowerCase();
+};
 
 /**
  *  Function convert ht en ttc
@@ -244,7 +274,7 @@ const isValidDateCard = (data: any): boolean => {
     let today = new Date;
     let year = today.getFullYear().toString().substr(-2);
     let month = String(today.getMonth()+1);
-    month = parseInt(month) > 0 && parseInt(month) < 10 ? '0'.concat(String(parseInt(month))) : month
+    month = parseInt(month) > 0 && parseInt(month) < 10 ? '0'.concat(String(parseInt(month))) : month //month = month.padStart(2, '0')
     let verifYear: boolean = data.year > year ? true : false
     let isValidDate: boolean = data.year === year ? parseInt(data.month) >= parseInt(month) ? true : false : verifYear;
     return isValidDate;
@@ -317,7 +347,7 @@ const getJwtPayload = async(tokenHeader: string | undefined): Promise < any | nu
 const checkInternet = (req: Request, res: Response, next: NextFunction): Promise < any > => {
     return new Promise(async (resolve, reject) => {
         let online = await isOnline({
-            timeout: 10000
+            timeout: 7000
         });
         if(online){
             next();
@@ -328,5 +358,5 @@ const checkInternet = (req: Request, res: Response, next: NextFunction): Promise
 }
 
 
-export { dataResponse, isEmptyObject, checkInternet, getJwtPayload, renameKey, randFileName, randomNumber, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
+export { dataResponse, existTab, tabFormat, firstLetterMaj, isEmptyObject, checkInternet, getJwtPayload, renameKey, randFileName, randomNumber, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
 

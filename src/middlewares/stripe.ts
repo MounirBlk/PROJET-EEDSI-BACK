@@ -1,11 +1,12 @@
 import UserInterface from "../interfaces/UserInterface";
 import { isValidLength, numberFormat } from "./index";
-const axios = require('axios').default;
+//const axios = require('axios').default;
+import axios, { AxiosError, AxiosResponse, Method } from "axios"
 
 /**
  *  Add card token stripe
  */ 
-export const addCardStripe = async(numberCard: number, exp_month: number, exp_year: number, cvc?: number) : Promise<any> => {
+export const addCardStripe = async(numberCard: number, exp_month: number, exp_year: number, cvc?: number) : Promise<AxiosResponse> => {
     return new Promise(async(resolve, reject) => {
         let payload: any = {
             "card[number]": String(numberCard),
@@ -14,8 +15,8 @@ export const addCardStripe = async(numberCard: number, exp_month: number, exp_ye
             //"card[cvc]": String(cvc),//optional
         };
         const dataBody = convertToFormBody(payload);
-        await axios(`https://api.stripe.com/v1/tokens`, getConfigaxios('post', dataBody))
-            .then((data: any) => {
+        await axios(getConfigAxios(`https://api.stripe.com/v1/tokens`, 'post', dataBody))
+            .then((data: AxiosResponse) => {
                 resolve(data.data)// return tok_...
             }).catch((error: any) => {
                 resolve(error.response)
@@ -32,7 +33,7 @@ export const addCustomerStripe = async(email: string, fullName: string) => {
         "name": fullName,
     };
     const dataBody = convertToFormBody(payload);
-    return await axios("https://api.stripe.com/v1/customers", getConfigaxios('post', dataBody))// return cus_...
+    return await axios(getConfigAxios("https://api.stripe.com/v1/customers", 'post', dataBody))// return cus_...
 }
 
 /**
@@ -44,7 +45,7 @@ export const updateCustomerCardStripe = async(idCustomer: string | undefined , i
         'source' : idCard
     };
     const dataBody = convertToFormBody(payload);
-    return await axios(`https://api.stripe.com/v1/customers/${idCustomer}/sources`, getConfigaxios('post', dataBody))// return src_...
+    return await axios(getConfigAxios(`https://api.stripe.com/v1/customers/${idCustomer}/sources`, 'post', dataBody))// return src_...
 }
 
 /**
@@ -56,7 +57,7 @@ export const addProductStripe = async(name: string, description: string, unitAmo
         description: description
     };
     const dataBody = convertToFormBody(payload);
-    const responseAddProduct = await axios(`https://api.stripe.com/v1/products`, getConfigaxios('post', dataBody))
+    const responseAddProduct = await axios(getConfigAxios(`https://api.stripe.com/v1/products`, 'post', dataBody))
     return await addPriceProductStripe(responseAddProduct.data.id, unitAmount, currency);
 }
 
@@ -76,13 +77,13 @@ const addPriceProductStripe = async(idProduct: string, unitAmount: number = 500,
         //"unit_amount_decimal": unitAmount < 0 ? String(500) : String(unitAmount),
     };
     const dataBody = convertToFormBody(payload);
-    return await axios(`https://api.stripe.com/v1/prices`, getConfigaxios('post', dataBody))
+    return await axios(getConfigAxios(`https://api.stripe.com/v1/prices`, 'post', dataBody))
 }
 
 /**
  *  Payment abonnement au produit
  */ 
-export const paymentStripe = async(idCustomer: string | undefined, idPrice: string, quantity: number = 1): Promise<any>=> {
+export const paymentStripe = async(idCustomer: string | undefined, idPrice: string, quantity: number = 1): Promise<AxiosResponse>=> {
     return new Promise(async(resolve, reject) => {
         if(idCustomer === null || idCustomer === undefined){
             reject();
@@ -96,8 +97,8 @@ export const paymentStripe = async(idCustomer: string | undefined, idPrice: stri
                 "enable_incomplete_payments": String(false) // Champ a vérifier et confirmer
             };
             const dataBody = convertToFormBody(payload);
-            await axios(`https://api.stripe.com/v1/subscriptions`, getConfigaxios('post', dataBody))
-                .then((data: any) => {
+            await axios(getConfigAxios(`https://api.stripe.com/v1/subscriptions`, 'post', dataBody))
+                .then((data: AxiosResponse) => {
                     resolve(data)//return sub_...
                 }).catch((error: any) => {
                     reject(error)
@@ -110,7 +111,7 @@ export const paymentStripe = async(idCustomer: string | undefined, idPrice: stri
  *  Récupération des données du client Stripe
  */ 
 export const getCustomerStripe = async(idCustomer: string) => {
-    return await axios(`https://api.stripe.com/v1/customers/${idCustomer}`, getConfigaxios('get'))
+    return await axios(getConfigAxios(`https://api.stripe.com/v1/customers/${idCustomer}`, 'get'))
 }
 
 /**
@@ -119,13 +120,13 @@ export const getCustomerStripe = async(idCustomer: string) => {
  */ 
 export const getAllCardsCustomerStripe = async(idCustomer: string | undefined) => {
     if(idCustomer === null || idCustomer === undefined) return { data: {} };
-    return await axios(`https://api.stripe.com/v1/customers/${idCustomer}/sources?object=card`, getConfigaxios('get'))
+    return await axios(getConfigAxios(`https://api.stripe.com/v1/customers/${idCustomer}/sources?object=card`, 'get'))
 }
 
 /**
  *  Modifier les données clients Stripe
  */ 
-export const updateCustomerStripe = async(idCustomer: string | undefined, data: any, user: UserInterface): Promise<any>=> {
+export const updateCustomerStripe = async(idCustomer: string | undefined, data: any, user: UserInterface): Promise<AxiosResponse> => {
     return new Promise(async(resolve, reject) => {
         if(idCustomer === null || idCustomer === undefined){
             reject();
@@ -135,8 +136,8 @@ export const updateCustomerStripe = async(idCustomer: string | undefined, data: 
                 "name": data.firstname+' '+data.lastname,  
             };
             const dataBody = convertToFormBody(payload);
-            await axios(`https://api.stripe.com/v1/customers/${idCustomer}`, getConfigaxios('post', dataBody))
-                .then((data: any) => {
+            await axios(getConfigAxios(`https://api.stripe.com/v1/customers/${idCustomer}`, 'post', dataBody))
+                .then((data: AxiosResponse) => {
                     resolve(data)
                 }).catch((error: any) => {
                     reject(error)
@@ -148,13 +149,13 @@ export const updateCustomerStripe = async(idCustomer: string | undefined, data: 
 /**
  *  Supprimer le clients Stripe
  */ 
-export const deleteCustomerStripe = async(idCustomer: string | undefined): Promise<any>=> {
+export const deleteCustomerStripe = async(idCustomer: string | undefined): Promise<AxiosResponse>=> {
     return new Promise(async(resolve, reject) => {
         if(idCustomer === null || idCustomer === undefined){
             reject();
         }else{
-            await axios(`https://api.stripe.com/v1/customers/${idCustomer}`, getConfigaxios('delete'))
-                .then((response: any) => {
+            await axios(getConfigAxios(`https://api.stripe.com/v1/customers/${idCustomer}`, 'delete'))
+                .then((response: AxiosResponse) => {
                     resolve(response)
                 }).catch((error: any) => {
                     reject(error)
@@ -169,7 +170,7 @@ export const deleteCustomerStripe = async(idCustomer: string | undefined): Promi
  *  @param idCard idCard
  */ 
 export const getCardCustomerStripe = async(idCustomer: string, idCard: string) => {
-    return await axios(`https://api.stripe.com/v1/customers/${idCustomer}/sources/${idCard}`, getConfigaxios('get'))
+    return await axios(getConfigAxios(`https://api.stripe.com/v1/customers/${idCustomer}/sources/${idCard}`, 'get'))
 }
 
 /**
@@ -178,7 +179,7 @@ export const getCardCustomerStripe = async(idCustomer: string, idCard: string) =
  *  @param idCard idCard
  */ 
 export const detachCardCustomerStripe = async(idCustomer: string, idCard: string) => {
-    return await axios(`https://api.stripe.com/v1/customers/${idCustomer}/sources/${idCard}`, getConfigaxios('delete'))
+    return await axios(getConfigAxios(`https://api.stripe.com/v1/customers/${idCustomer}/sources/${idCard}`, 'delete'))
 }
 
 
@@ -202,12 +203,14 @@ export const checkIsNonConformeSub = (data: any): boolean => {
 
 /**
  *  Request config 
+ *  @param url url
  *  @param methodReq post / get / put / delete ...
  *  @param dataBody? data from body
  */ 
-const getConfigaxios = (methodReq: string, dataBody: any = null) => {
+const getConfigAxios = (url: string, methodReq: Method, dataBody: any = null) => {
     const configaxios = {
-        method: methodReq.trim().toLowerCase(),
+        url: url.trim(),
+        method: methodReq,
         headers: {
             Accept: "application/json",
             "Content-Type": "application/x-www-form-urlencoded",

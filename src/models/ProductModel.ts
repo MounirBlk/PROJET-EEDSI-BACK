@@ -5,7 +5,7 @@ const ProductSchema = new mongoose.Schema<ProductInterface>({
     refID: {
         trim: true,
         index: true,
-        type: Number,
+        type: String,
         unique: true,
     },
     nom: {
@@ -63,7 +63,7 @@ const ProductSchema = new mongoose.Schema<ProductInterface>({
         type: Number,
         required: true
     },
-    quantité: {
+    quantite: {
         default: null,
         type: Number,
         required: true

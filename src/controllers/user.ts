@@ -1,6 +1,6 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
 import UserInterface from '../interfaces/UserInterface';
-import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, getJwtPayload, isEmptyObject, isValidLength, passwordFormat, randChars, randomNumber, textFormat } from '../middlewares';
+import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, firstLetterMaj, getJwtPayload, isEmptyObject, isValidLength, passwordFormat, randChars, randomNumber, textFormat } from '../middlewares';
 import { mailCheckEmail, mailforgotPw, mailRegister } from '../middlewares/sendMail';
 import UserModel from '../models/UserModel';
 import jwt from 'jsonwebtoken';
@@ -27,8 +27,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
                 let toInsert = {
                     email: data.email.trim().toLowerCase(),
                     password: data.password,
-                    firstname: data.firstname.trim().charAt(0).toUpperCase() + data.firstname.trim().substring(1).toLowerCase(),
-                    lastname: data.lastname.trim().charAt(0).toUpperCase() + data.lastname.trim().substring(1).toLowerCase(),
+                    firstname: firstLetterMaj(data.firstname),
+                    lastname: firstLetterMaj(data.lastname),
                     dateNaissance: data.dateNaissance.trim(),
                     civilite: data.civilite.trim(),
                     portable: exist(data.portable) ? data.portable : null,
@@ -243,7 +243,7 @@ export const getAllUsers = async (req: Request, res: Response) : Promise <void> 
                 && role.trim().toLowerCase() !== 'livreur' && role.trim().toLowerCase() !== 'client' && role.trim().toLowerCase() !== 'prospect'){
                     return dataResponse(res, 409, { error: true, message: 'Le role de l\'utilisateur n\'est pas conforme' })
                 }else{
-                    const roleFind = role.trim().charAt(0).toUpperCase() + role.trim().substring(1).toLowerCase();                
+                    const roleFind = firstLetterMaj(role)              
                     let filterFind: any = role.trim().toLowerCase() === 'commercial' ? { $or: [{role: roleFind}, {role: 'Administrateur'}] } : { role: roleFind }
                     await UserModel.find(filterFind, (err: Error, results: any) => {
                         if (err) {
@@ -305,8 +305,8 @@ export const updateUser = async (req: Request, res: Response) : Promise <void> =
                             let isOnError: boolean = false;
                             isOnError = exist(data.portable) ? isValidLength(data.portable, 1, 30) ? false : true : false;
                             let toUpdate = {
-                                firstname: exist(data.firstname) ? !textFormat(data.firstname) ? (isOnError = true) : data.firstname : user.firstname,
-                                lastname: exist(data.lastname) ? !textFormat(data.lastname) ? (isOnError = true) : data.lastname : user.lastname,
+                                firstname: exist(data.firstname) ? !textFormat(data.firstname) ? (isOnError = true) : firstLetterMaj(data.firstname) : user.firstname,
+                                lastname: exist(data.lastname) ? !textFormat(data.lastname) ? (isOnError = true) : firstLetterMaj(data.lastname) : user.lastname,
                                 civilite: exist(data.civilite) ? (data.civilite.toLowerCase() !== "homme" && data.civilite.toLowerCase() !== "femme") ? (isOnError = true) : data.civilite : user.civilite,
                                 dateNaissance: exist(data.dateNaissance) ? !dateFormatEn(data.dateNaissance) ? (isOnError = true) : data.dateNaissance : user.dateNaissance,
                                 portable: exist(data.portable) ? data.portable : user.portable

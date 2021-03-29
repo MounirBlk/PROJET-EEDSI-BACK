@@ -1,7 +1,7 @@
 import { Document } from "mongoose"
 
 export default interface ProductInterface extends Document {
-    "refID": number,
+    "refID": string,
     "nom": string,
     "type": string,
     "sousType": string,
@@ -13,6 +13,6 @@ export default interface ProductInterface extends Document {
     "profondeur": number,
     "prix": number,
     "taxe": number,
-    "quantité": number,
-    "composants": Array<any>
+    "quantite": number,
+    "composants": Array<string>
 }

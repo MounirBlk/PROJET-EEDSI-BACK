@@ -1,8 +1,10 @@
 import { Application, Request, Response, NextFunction, Errback } from "express";
+import { addProduct } from "../controllers/product";
 import { checkEmail, deleteUser, disableUser, forgotPassword, getAllUsers, getOneUser, getOwnUser, login, register, updateUser } from "../controllers/user";
 import { checkInternet } from "../middlewares";
 
 export default (app: Application): void => {
+    //USER
     app.route('/register').post(checkInternet, register);
     app.route('/login').post(checkInternet, login);
     app.route('/user/delete/:id').delete(checkInternet, deleteUser);
@@ -13,4 +15,7 @@ export default (app: Application): void => {
     app.route('/user/disable/:id').put(checkInternet, disableUser);
     app.route('/user/forgot').put(checkInternet, forgotPassword);
     app.route('/user/check/:token').get(checkInternet, checkEmail);
+
+    //PRODUCT
+    app.route('/product/add').post(checkInternet, addProduct);
 }

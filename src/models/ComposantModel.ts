@@ -5,7 +5,7 @@ const ComposantSchema = new mongoose.Schema<ComposantInterface>({
     refID: {
         trim: true,
         index: true,
-        type: Number,
+        type: String,
         unique: true,
     },
     nom: {
@@ -53,7 +53,7 @@ const ComposantSchema = new mongoose.Schema<ComposantInterface>({
         type: Number,
         required: true
     }, 
-    quantité: {
+    quantite: {
         default: null,
         type: Number,
         required: true
