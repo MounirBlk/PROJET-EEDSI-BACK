@@ -3,6 +3,7 @@ import { Document } from "mongoose"
 export default interface ComposantInterface extends Document {
     "refID": string,
     "nom": string,
+    "description": string,
     "type": string,
     "matieres": Array<string>,
     "couleurs": Array<string>,
@@ -12,4 +13,5 @@ export default interface ComposantInterface extends Document {
     "profondeur": number,
     "prix": number,
     "quantite": number,
+    "idStripeComposant": string
 }

@@ -13,6 +13,11 @@ const ProductSchema = new mongoose.Schema<ProductInterface>({
         type: String,
         required: true
     },
+    description: {
+        default: null,
+        type: String,
+        required: false
+    },
     type: {
         default: null,
         type: String,
@@ -72,6 +77,11 @@ const ProductSchema = new mongoose.Schema<ProductInterface>({
         type: [String],
         required: false,
         default: undefined
+    },
+    idStripeProduct:{
+        default: null,
+        type: String,
+        required: false
     },
     createdAt: {
         default: new Date(),

@@ -51,33 +51,101 @@ export const updateCustomerCardStripe = async(idCustomer: string | undefined , i
 /**
  *  Ajout du produit stripe
  */ 
-export const addProductStripe = async(name: string, description: string, unitAmount: number = 500, currency: string = 'eur') => {
-    let payload: any = {
-        name: name,
-        description: description
-    };
-    const dataBody = convertToFormBody(payload);
-    const responseAddProduct = await axios(getConfigAxios(`https://api.stripe.com/v1/products`, 'post', dataBody))
-    return await addPriceProductStripe(responseAddProduct.data.id, unitAmount, currency);
+export const addProductStripe = async(nom: string, description: string, unitAmount: number, isRecurrent: boolean, currency: string = 'eur', imgFile: any = null): Promise<AxiosResponse> => {
+    return new Promise(async(resolve, reject) => {
+        let payload: any = {
+            name: nom,
+            description: description,
+            //type: "service",
+            //images: []
+        };
+        if(imgFile !== null && imgFile !== undefined){
+            const urlFile = (await addImgProduct(imgFile)).data.links.data[0].url;
+            let imgTab: Array<string> = [];
+            imgTab.push(urlFile)
+            payload.images = imgTab;
+            //const listFiles = await getListFiles();
+        }
+        const dataBody = convertToFormBody(payload);
+        await axios(getConfigAxios(`https://api.stripe.com/v1/products`, 'post', dataBody)).then(async(resp: AxiosResponse) => {
+            resolve(await addPriceProductStripe(resp.data.id, unitAmount, isRecurrent, currency));
+        }).catch((err: AxiosError) => {
+            reject(err);
+        })
+    });
 }
+
+/**
+ *  Ajout de l'image du produit
+ */ 
+const addImgProduct = async(imgFile: any): Promise<AxiosResponse> => {
+    return new Promise(async(resolve, reject) => {
+        let payload: any = {
+            "file": imgFile,
+            "purpose": "product_image",
+        };
+        const dataBody = convertToFormBody(payload);
+        await axios(getConfigAxios(`https://files.stripe.com/v1/files`, 'post', dataBody)).then(async(resp: AxiosResponse) => {
+            resolve(resp);
+        }).catch((err: AxiosError) => {
+            reject(err);
+        })
+    });
+}
+
+/**
+ *  Get list of files
+ */ 
+const getListFiles = async(): Promise<AxiosResponse> => {
+    return new Promise(async(resolve, reject) => {
+        await axios(getConfigAxios(`https://api.stripe.com/v1/files`, 'get')).then(async(resp: AxiosResponse) => {
+            resolve(resp.data.data);
+        }).catch((err: AxiosError) => {
+            reject(err);
+        })
+    });
+}
+
+
+/**
+ *  Delete product stripe
+ */ 
+export const deleteProductStripe = async(idProduct: string): Promise<AxiosResponse> => {
+    return new Promise(async(resolve, reject) => {
+        await axios(getConfigAxios(`https://api.stripe.com/v1/products/${idProduct}`, 'delete')).then(async(resp: AxiosResponse) => {
+            resolve(resp);
+        }).catch((err: AxiosError) => {
+            reject(err);
+        })
+    });
+}
+
 
 /**
  *  Ajout du price sur un produit
  */ 
-const addPriceProductStripe = async(idProduct: string, unitAmount: number = 500, currency: string = 'eur') => {
-    let payload: any = {
-        "product": idProduct,
-        "currency": currency.toLowerCase(),
-        "unit_amount": unitAmount < 0 ? 500 : unitAmount,// equivalent a 500 centimes soit 5.00 Euros
-        "billing_scheme": "per_unit",
-        "recurring[interval]":"month",
-        "recurring[interval_count]":"1",
-        "recurring[trial_period_days]":"0",
-        "recurring[usage_type]":"licensed"
-        //"unit_amount_decimal": unitAmount < 0 ? String(500) : String(unitAmount),
-    };
-    const dataBody = convertToFormBody(payload);
-    return await axios(getConfigAxios(`https://api.stripe.com/v1/prices`, 'post', dataBody))
+const addPriceProductStripe = async(idProduct: string, unitAmount: number, isRecurrent: boolean, currency: string = 'eur'): Promise<AxiosResponse> => {
+    return new Promise(async(resolve, reject) => {
+        let payload: any = {
+            "product": idProduct,
+            "currency": currency.toLowerCase(),
+            "unit_amount": unitAmount < 0 ? 0 : (unitAmount * 100),// en centimes
+            "billing_scheme": "per_unit",
+            //"unit_amount_decimal": unitAmount < 0 ? String(500) : String(unitAmount),
+        };
+        if(isRecurrent){
+            payload['recurring[interval]'] = "month";
+            payload['recurring[interval_count]'] = "1";
+            payload['recurring[trial_period_days]'] = "0";
+            payload['recurring[usage_type]'] = "licensed";
+        } 
+        const dataBody = convertToFormBody(payload);
+        await axios(getConfigAxios(`https://api.stripe.com/v1/prices`, 'post', dataBody)).then((resp: AxiosResponse) => {
+            resolve(resp)
+        }).catch((err: AxiosError) => {
+            reject(err);
+        })
+    });
 }
 
 /**

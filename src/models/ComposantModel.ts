@@ -13,6 +13,11 @@ const ComposantSchema = new mongoose.Schema<ComposantInterface>({
         type: String,
         required: true
     },
+    description: {
+        default: null,
+        type: String,
+        required: false
+    },
     type: {
         default: null,
         type: String,
@@ -57,6 +62,11 @@ const ComposantSchema = new mongoose.Schema<ComposantInterface>({
         default: null,
         type: Number,
         required: true
+    },
+    idStripeComposant:{
+        default: null,
+        type: String,
+        required: false
     },
     createdAt: {
         default: new Date(),
