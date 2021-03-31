@@ -8,8 +8,8 @@ import { route } from './src/routes';
 import mongooseConnect from './src/db';
 import fs from 'fs';
 import rateLimit from 'express-rate-limit';
+import { initUpload } from "./src/config";
 
-mongooseConnect()
 
 const app: Application = express();
 //app.use(json)
@@ -49,8 +49,7 @@ app.get('*', (req: Request, res: Response) => {
   res.status(404).sendFile(path.join(__dirname + '/public/error.html'))
 });
 
-app.listen(app.get("port"), () => {
-  console.log(`App is running on http://localhost:${app.get("port")}/ in ${String(process.env.ENV).trim() || 'DEV'} mode`);
-});
+initUpload(app);
+mongooseConnect(app);
 
 export default app; //export to call app to test spec

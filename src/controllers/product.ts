@@ -5,8 +5,9 @@ import fs from 'fs';
 import ProductModel from '../models/ProductModel';
 import ProductInterface from '../interfaces/ProductInterface';
 import Jimp from 'jimp'
-import { addProductStripe, deleteProductStripe } from '../middlewares/stripe';
+import { addProductStripe, deleteProductStripe, updatePriceStripe, updateProductStripe } from '../middlewares/stripe';
 import { AxiosError, AxiosResponse } from 'axios';
+import firebase from 'firebase';
 //const Jimp = require('jimp');
 
 /**
@@ -51,14 +52,20 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                             "taxe": data.taxe,// x.xx (1 = 100%)
                             "quantite": data.quantite,// xxx
                             "composants": data.composants !== null && data.composants !== undefined ? data.composants : [],// [composants]
-                            "idStripeProduct": null
+                            "idStripeProduct": null,
+                            "idStripePrice": null
                         };
-                        //let fileImg = fs.readFileSync(process.cwd() + '/public/canape.jpg'/*, { encoding: "base64"}*/);
-                        await addProductStripe(toInsert.nom, toInsert.description, toInsert.prix, false, 'eur', null).then(async(resp: AxiosResponse) => {// ajout du produit sur stripe
-                            toInsert.idStripeProduct = resp.data.id;
+                        let imgFile = fs.readFileSync(process.cwd() + '/public/canape.jpg'/*, { encoding: "base64"}*/);
+                        const imgObj = {
+                            imgFile: imgFile,
+                            imgName: 'canape.jpg'
+                        }
+                        await addProductStripe(toInsert.nom, toInsert.description, toInsert.prix, false, 'eur', imgObj).then(async(resp: any) => {// ajout du produit sur stripe
+                            toInsert.idStripeProduct = toInsert.hasOwnProperty('idStripeProduct') ? resp.idStripeProduct : null;
+                            toInsert.idStripePrice = toInsert.hasOwnProperty('idStripePrice') ? resp.idStripePrice : null;
                             let product: ProductInterface = new ProductModel(toInsert);
-                            await product.save().then(async(product: ProductInterface) => {
-                                await generateAllImagesColors(process.cwd() + '/public/canape.jpg' , product.get("_id"), data.couleurs)
+                            await product.save().then(async(produit: ProductInterface) => {
+                                await generateAllImagesColors(process.cwd() + '/public/canape.jpg' , produit.get("_id"), data.couleurs)
                                 return dataResponse(res, 201, { error: false, message: "Le produit a bien été créé avec succès" });
                             }).catch(() => {
                                 return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
@@ -140,7 +147,7 @@ const generateImg = async (filePath: string, destPath: string, element: any): Pr
 }
 
 /**
- *  Route delete product
+ *  Route delete/archive product
  *  @param {Request} req 
  *  @param {Response} res 
  */ 
@@ -158,7 +165,9 @@ export const deleteProduct = async (req: Request, res: Response) : Promise <void
                 }else{
                     await ProductModel.findOne({ _id: id }, async(err: Error, results: ProductInterface) => {
                         let ttPromise: Array<any> = []
-                        ttPromise.push(await deleteProductStripe(results.idStripeProduct));                         
+                        ttPromise.push(await updatePriceStripe(results.idStripePrice, true));
+                        ttPromise.push(await updateProductStripe(results.idStripeProduct, results.nom, results.description, true));
+                        //ttPromise.push(await deleteProductStripe(results.idStripeProduct));
                         ttPromise.push(await ProductModel.findOneAndDelete({ _id : id })); 
                         Promise.all(ttPromise).then((data) => {
                             return dataResponse(res, 200, { error: false, message: 'Le produit a été supprimé avec succès' })

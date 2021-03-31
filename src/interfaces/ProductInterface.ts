@@ -16,5 +16,6 @@ export default interface ProductInterface extends Document {
     "taxe": number,
     "quantite": number,
     "composants": Array<string>,
-    "idStripeProduct": string
+    "idStripeProduct": string,
+    "idStripePrice": string
 }

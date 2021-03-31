@@ -63,7 +63,12 @@ const ComposantSchema = new mongoose.Schema<ComposantInterface>({
         type: Number,
         required: true
     },
-    idStripeComposant:{
+    idStripeProduct:{
+        default: null,
+        type: String,
+        required: false
+    },
+    idStripePrice:{
         default: null,
         type: String,
         required: false

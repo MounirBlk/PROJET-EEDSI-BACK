@@ -1,25 +1,31 @@
 import UserInterface from "../interfaces/UserInterface";
-import { isValidLength, numberFormat } from "./index";
-//const axios = require('axios').default;
+import { exist, isValidLength, numberFormat } from "./index";
 import axios, { AxiosError, AxiosResponse, Method } from "axios"
+import Stripe from 'stripe';
+
+const stripe = new Stripe(String(process.env.STRIPE_SECRET_KEY), {
+    apiVersion: '2020-08-27',
+    maxNetworkRetries: 2,
+});
 
 /**
  *  Add card token stripe
  */ 
-export const addCardStripe = async(numberCard: number, exp_month: number, exp_year: number, cvc?: number) : Promise<AxiosResponse> => {
+export const addCardStripe = async(numberCard: number, exp_month: number, exp_year: number, cvc: number | null = null) : Promise<Stripe.Response<Stripe.Token>> => {
     return new Promise(async(resolve, reject) => {
         let payload: any = {
-            "card[number]": String(numberCard),
-            "card[exp_month]": String(exp_month),
-            "card[exp_year]": String(exp_year),
-            //"card[cvc]": String(cvc),//optional
+            card: {
+                number: numberCard,
+                exp_month: exp_month,
+                exp_year: exp_year,
+                cvc: cvc
+            }
         };
-        const dataBody = convertToFormBody(payload);
-        await axios(getConfigAxios(`https://api.stripe.com/v1/tokens`, 'post', dataBody))
-            .then((data: AxiosResponse) => {
-                resolve(data.data)// return tok_...
+        exist(String(cvc)) === false ? (delete payload.card.cvc) : null;
+        await stripe.tokens.create(payload).then((data: Stripe.Response<Stripe.Token>) => {
+                resolve(data)// return tok_...
             }).catch((error: any) => {
-                resolve(error.response)
+                resolve(error.response)// verification de la carte
             })
     });
 }
@@ -27,48 +33,59 @@ export const addCardStripe = async(numberCard: number, exp_month: number, exp_ye
 /**
  *  Add customer stripe
  */ 
-export const addCustomerStripe = async(email: string, fullName: string) => {
-    let payload: any = {
-        "email": email,
-        "name": fullName,
-    };
-    const dataBody = convertToFormBody(payload);
-    return await axios(getConfigAxios("https://api.stripe.com/v1/customers", 'post', dataBody))// return cus_...
+export const addCustomerStripe = async(email: string, fullName: string): Promise<Stripe.Response<Stripe.Customer>> => {
+    return new Promise(async(resolve, reject) => {
+        let payload: any = {
+            "email": email,
+            "name": fullName,
+        };
+        await stripe.customers.create(payload).then((data: Stripe.Response<Stripe.Customer>) => {
+            resolve(data)// return data.cus_...
+        }).catch((error: any) => {
+            reject(error)
+        })
+    });
 }
 
 /**
  *  Update customer with card token (secure) stripe
  */ 
-export const updateCustomerCardStripe = async(idCustomer: string | undefined , idCard: string) => {
-    if(idCustomer === undefined || idCustomer === null) return;
-    let payload: any = {
-        'source' : idCard
-    };
-    const dataBody = convertToFormBody(payload);
-    return await axios(getConfigAxios(`https://api.stripe.com/v1/customers/${idCustomer}/sources`, 'post', dataBody))// return src_...
+export const updateCustomerCardStripe = async(idCustomer: string | undefined , idCard: string): Promise<Stripe.Response<Stripe.CustomerSource>> => {
+    return new Promise(async(resolve, reject) => {
+        let payload: any = {
+            'source' : idCard
+        };
+        await stripe.customers.createSource(String(idCustomer), payload).then((data: Stripe.Response<Stripe.CustomerSource>) => {
+            resolve(data)// return data.src_...
+        }).catch((error: any) => {
+            reject(error)
+        })
+    });
 }
 
 /**
  *  Ajout du produit stripe
  */ 
-export const addProductStripe = async(nom: string, description: string, unitAmount: number, isRecurrent: boolean, currency: string = 'eur', imgFile: any = null): Promise<AxiosResponse> => {
+export const addProductStripe = async(nom: string, description: string, unitAmount: number, isRecurrent: boolean, currency: string = 'eur', imgObj: any = null): Promise<any> => {
     return new Promise(async(resolve, reject) => {
         let payload: any = {
             name: nom,
             description: description,
-            //type: "service",
-            //images: []
         };
-        if(imgFile !== null && imgFile !== undefined){
-            const urlFile = (await addImgProduct(imgFile)).data.links.data[0].url;
-            let imgTab: Array<string> = [];
-            imgTab.push(urlFile)
-            payload.images = imgTab;
-            //const listFiles = await getListFiles();
+        if(imgObj !== null && imgObj !== undefined){
+            const fileData = await addFileStripe(imgObj);
+            const urlFile = (await addImgProduct(fileData.id)).url;
+            let imgTabLink: Array<string> = [];
+            imgTabLink.push(urlFile)
+            payload.images = imgTabLink;
         }
-        const dataBody = convertToFormBody(payload);
-        await axios(getConfigAxios(`https://api.stripe.com/v1/products`, 'post', dataBody)).then(async(resp: AxiosResponse) => {
-            resolve(await addPriceProductStripe(resp.data.id, unitAmount, isRecurrent, currency));
+        await stripe.products.create(payload).then(async(respProduct: Stripe.Response<Stripe.Product>) => {//https://api.stripe.com/v1/products
+            const idStripePrice = (await addPriceProductStripe(respProduct.id, unitAmount, isRecurrent, currency)).data.id;
+            const toReturn = {
+                idStripeProduct : respProduct.id,
+                idStripePrice: idStripePrice
+            }
+            resolve(toReturn);
         }).catch((err: AxiosError) => {
             reject(err);
         })
@@ -76,17 +93,33 @@ export const addProductStripe = async(nom: string, description: string, unitAmou
 }
 
 /**
- *  Ajout de l'image du produit
+ *  Ad file to stripe system
  */ 
-const addImgProduct = async(imgFile: any): Promise<AxiosResponse> => {
+const addFileStripe = async(imgObj: any): Promise<Stripe.Response<Stripe.File>> => {
+    return new Promise(async(resolve, reject) => {
+        //https://files.stripe.com/v1/files
+        resolve(await stripe.files.create({
+            file: {
+                data: imgObj.imgFile,
+                name: imgObj.imgName,
+                type: 'application.octet-stream',
+            },
+            purpose: 'dispute_evidence',
+        }));
+    });
+}
+
+/**
+ *  Ajout de l'image sur product dashboard
+ */ 
+const addImgProduct = async(idFile: string): Promise<any> => {
     return new Promise(async(resolve, reject) => {
         let payload: any = {
-            "file": imgFile,
-            "purpose": "product_image",
+            "file": idFile,
         };
         const dataBody = convertToFormBody(payload);
-        await axios(getConfigAxios(`https://files.stripe.com/v1/files`, 'post', dataBody)).then(async(resp: AxiosResponse) => {
-            resolve(resp);
+        await axios(getConfigAxios(`https://api.stripe.com/v1/file_links`, 'post', dataBody)).then(async(resp: AxiosResponse) => {
+            resolve(resp.data);
         }).catch((err: AxiosError) => {
             reject(err);
         })
@@ -106,20 +139,26 @@ const getListFiles = async(): Promise<AxiosResponse> => {
     });
 }
 
-
 /**
- *  Delete product stripe
+ *  Update product stripe
  */ 
-export const deleteProductStripe = async(idProduct: string): Promise<AxiosResponse> => {
+export const updateProductStripe = async(idProduct: string, name: string, description: string, isArchive: boolean): Promise<AxiosResponse> => {
     return new Promise(async(resolve, reject) => {
-        await axios(getConfigAxios(`https://api.stripe.com/v1/products/${idProduct}`, 'delete')).then(async(resp: AxiosResponse) => {
+        let payload: any = {
+            name: name,
+            description: description
+        };
+        if(isArchive){//archivé
+            payload.active = false
+        }
+        const dataBody = convertToFormBody(payload);
+        await axios(getConfigAxios(`https://api.stripe.com/v1/products/${idProduct}`, 'post', dataBody)).then(async(resp: AxiosResponse) => {
             resolve(resp);
         }).catch((err: AxiosError) => {
             reject(err);
         })
     });
 }
-
 
 /**
  *  Ajout du price sur un produit
@@ -129,9 +168,8 @@ const addPriceProductStripe = async(idProduct: string, unitAmount: number, isRec
         let payload: any = {
             "product": idProduct,
             "currency": currency.toLowerCase(),
-            "unit_amount": unitAmount < 0 ? 0 : (unitAmount * 100),// en centimes
+            "unit_amount": unitAmount < 0 ? 0 : (unitAmount * 100),// en centimes (unit_amount_decimal ?)
             "billing_scheme": "per_unit",
-            //"unit_amount_decimal": unitAmount < 0 ? String(500) : String(unitAmount),
         };
         if(isRecurrent){
             payload['recurring[interval]'] = "month";
@@ -142,6 +180,37 @@ const addPriceProductStripe = async(idProduct: string, unitAmount: number, isRec
         const dataBody = convertToFormBody(payload);
         await axios(getConfigAxios(`https://api.stripe.com/v1/prices`, 'post', dataBody)).then((resp: AxiosResponse) => {
             resolve(resp)
+        }).catch((err: AxiosError) => {
+            reject(err);
+        })
+    });
+}
+
+/**
+ *  Update price stripe
+ */ 
+export const updatePriceStripe = async(idPrice: string, isArchive: boolean): Promise<AxiosResponse> => {
+    return new Promise(async(resolve, reject) => {
+        let payload: any = {}
+        if(isArchive){//archivé
+            payload.active = false;
+        }
+        const dataBody = convertToFormBody(payload);
+        await axios(getConfigAxios(`https://api.stripe.com/v1/prices/${idPrice}`, 'post', dataBody)).then(async(resp: AxiosResponse) => {
+            resolve(resp);
+        }).catch((err: AxiosError) => {
+            reject(err);
+        })
+    });
+}
+
+/**
+ *  Delete product stripe
+ */ 
+export const deleteProductStripe = async(idProduct: string): Promise<AxiosResponse> => {
+    return new Promise(async(resolve, reject) => {
+        await axios(getConfigAxios(`https://api.stripe.com/v1/products/${idProduct}`, 'delete')).then(async(resp: AxiosResponse) => {
+            resolve(resp);
         }).catch((err: AxiosError) => {
             reject(err);
         })
