@@ -88,6 +88,11 @@ const ProductSchema = new mongoose.Schema<ProductInterface>({
         type: String,
         required: false
     },
+    imgLink:{
+        default: null,
+        type: String,
+        required: false
+    },
     createdAt: {
         default: new Date(),
         type: Date,

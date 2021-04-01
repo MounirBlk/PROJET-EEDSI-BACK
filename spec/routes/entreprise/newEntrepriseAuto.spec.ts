@@ -17,7 +17,7 @@ export const newEntrepriseAutoSpec = () => {
             .set('Accept', 'application/json')
             .auth(randomChars(100), { type: 'bearer' })
             .expect('Content-Type', /json/)
-            .expect(498, {
+            .expect(401, {
                 error: true,
                 message: 'Votre token n\'est pas correct'
             }, done);

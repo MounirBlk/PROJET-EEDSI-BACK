@@ -5,13 +5,11 @@ import fs from 'fs';
 import path from 'path';
 
 
-export const updateEntrepriseSpec = () => {
-    it('Test update Entreprise: token incorrect', (done: DoneFn) => {
-        const data = {
-            telephone: '0179985475'
-        }               
+export const updateComposantSpec = () => {
+    it('Test update Composant: token incorrect', (done: DoneFn) => { 
+        const data = {}                  
         request(app)
-            .put('/entreprise/' + globalThis.idEntreprise)
+            .put('/composant/update/' + randomChars(randNumber(1,5)))
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(randomChars(100), { type: 'bearer' })
@@ -22,12 +20,10 @@ export const updateEntrepriseSpec = () => {
             }, done);
     }, getTimeout());
 
-    it('Test update Entreprise: id non valide', (done: DoneFn) => {
-        const data = {
-            telephone: '0179985475' // taille du tel doit etre compris entre 1 et 25
-        }           
+    it('Test update Composant: id non valide', (done: DoneFn) => {
+        const data = {}           
         request(app)
-            .put('/entreprise/' + globalThis.idEntreprise + randomChars(randNumber(1,5)))
+            .put('/composant/update/' + randomChars(randNumber(1,5)))
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
@@ -38,12 +34,12 @@ export const updateEntrepriseSpec = () => {
             }, done);
     }, getTimeout());
 
-    it('Test update Entreprise: data non-conforme', (done: DoneFn) => {
+    /*it('Test update Composant: data non-conforme', (done: DoneFn) => {
         const data = {
-            telephone: '0179985475'.repeat(10) // taille du tel doit etre compris entre 1 et 25
+            matieres: randomChars(randNumber(1,5)).repeat(randNumber(1,5)) // composants doit etre un tableau array et non chaine de caracteres
         }           
         request(app)
-            .put('/entreprise/' + globalThis.idEntreprise)
+            .put('/composant/update/' + globalThis.idComposant)
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
@@ -52,21 +48,19 @@ export const updateEntrepriseSpec = () => {
                 error: true,
                 message: "Une ou plusieurs données sont erronées"
             }, done);
-    }, getTimeout());
+    }, getTimeout());*/
 
-    it('Test update Entreprise: success', (done: DoneFn) => {
-        const data = {
-            telephone: '0179985475' // taille du tel doit etre compris entre 1 et 25
-        }           
+    /*it('Test update Composant: success', (done: DoneFn) => {
+        const data = {}           
         request(app)
-            .put('/entreprise/' + globalThis.idEntreprise)
+            .put('/composant/update/' + globalThis.idComposant)
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
             .expect(200, {
                 error: false,
-                message: "L'entreprise a bien été mise à jour"
+                message: "Le composant a bien été mise à jour"
             }, done);
-    }, getTimeout());
+    }, getTimeout());*/
 }

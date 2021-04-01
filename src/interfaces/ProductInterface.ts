@@ -17,5 +17,6 @@ export default interface ProductInterface extends Document {
     "quantite": number,
     "composants": Array<string>,
     "idStripeProduct": string,
-    "idStripePrice": string
+    "idStripePrice": string,
+    "imgLink": string
 }

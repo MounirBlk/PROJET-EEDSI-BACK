@@ -13,12 +13,12 @@ const stripe = new Stripe(String(process.env.STRIPE_SECRET_KEY), {
  */ 
 export const addCardStripe = async(numberCard: number, exp_month: number, exp_year: number, cvc: number | null = null) : Promise<Stripe.Response<Stripe.Token>> => {
     return new Promise(async(resolve, reject) => {
-        let payload: any = {
+        let payload: any  = {
             card: {
-                number: numberCard,
-                exp_month: exp_month,
-                exp_year: exp_year,
-                cvc: cvc
+                number: String(numberCard),
+                exp_month: String(exp_month),
+                exp_year: String(exp_year),
+                cvc: String(cvc)
             }
         };
         exist(String(cvc)) === false ? (delete payload.card.cvc) : null;
@@ -35,7 +35,7 @@ export const addCardStripe = async(numberCard: number, exp_month: number, exp_ye
  */ 
 export const addCustomerStripe = async(email: string, fullName: string): Promise<Stripe.Response<Stripe.Customer>> => {
     return new Promise(async(resolve, reject) => {
-        let payload: any = {
+        let payload: Stripe.CustomerCreateParams | undefined = {
             "email": email,
             "name": fullName,
         };
@@ -52,7 +52,7 @@ export const addCustomerStripe = async(email: string, fullName: string): Promise
  */ 
 export const updateCustomerCardStripe = async(idCustomer: string | undefined , idCard: string): Promise<Stripe.Response<Stripe.CustomerSource>> => {
     return new Promise(async(resolve, reject) => {
-        let payload: any = {
+        let payload: Stripe.CustomerSourceCreateParams = {
             'source' : idCard
         };
         await stripe.customers.createSource(String(idCustomer), payload).then((data: Stripe.Response<Stripe.CustomerSource>) => {
@@ -68,25 +68,28 @@ export const updateCustomerCardStripe = async(idCustomer: string | undefined , i
  */ 
 export const addProductStripe = async(nom: string, description: string, unitAmount: number, isRecurrent: boolean, currency: string = 'eur', imgObj: any = null): Promise<any> => {
     return new Promise(async(resolve, reject) => {
-        let payload: any = {
+        let payload: Stripe.ProductCreateParams = {
             name: nom,
             description: description,
         };
+        let imgLink: string | null = null;
         if(imgObj !== null && imgObj !== undefined){
             const fileData = await addFileStripe(imgObj);
             const urlFile = (await addImgProduct(fileData.id)).url;
             let imgTabLink: Array<string> = [];
             imgTabLink.push(urlFile)
             payload.images = imgTabLink;
+            imgLink = urlFile;
         }
         await stripe.products.create(payload).then(async(respProduct: Stripe.Response<Stripe.Product>) => {//https://api.stripe.com/v1/products
             const idStripePrice = (await addPriceProductStripe(respProduct.id, unitAmount, isRecurrent, currency)).data.id;
             const toReturn = {
                 idStripeProduct : respProduct.id,
-                idStripePrice: idStripePrice
+                idStripePrice: idStripePrice,
+                imgLink: imgLink
             }
             resolve(toReturn);
-        }).catch((err: AxiosError) => {
+        }).catch((err: any) => {
             reject(err);
         })
     });
@@ -142,19 +145,31 @@ const getListFiles = async(): Promise<AxiosResponse> => {
 /**
  *  Update product stripe
  */ 
-export const updateProductStripe = async(idProduct: string, name: string, description: string, isArchive: boolean): Promise<AxiosResponse> => {
+export const updateProductStripe = async(idProduct: string, name: string, description: string, isArchive: boolean, imgObj: any = null): Promise<any> => {
     return new Promise(async(resolve, reject) => {
-        let payload: any = {
+        let payload: Stripe.ProductUpdateParams = {
             name: name,
             description: description
         };
+        let imgLink: string | null = null;
         if(isArchive){//archivé
             payload.active = false
+        }else{
+            if(imgObj !== null && imgObj !== undefined){
+                const fileData = await addFileStripe(imgObj);
+                const urlFile = (await addImgProduct(fileData.id)).url;
+                let imgTabLink: Array<string> = [];
+                imgTabLink.push(urlFile)
+                payload.images = imgTabLink;
+                imgLink = urlFile;
+            }
         }
-        const dataBody = convertToFormBody(payload);
-        await axios(getConfigAxios(`https://api.stripe.com/v1/products/${idProduct}`, 'post', dataBody)).then(async(resp: AxiosResponse) => {
-            resolve(resp);
-        }).catch((err: AxiosError) => {
+        await stripe.products.update(idProduct, payload).then(async(resp: Stripe.Response<Stripe.Product>) => {
+            const toReturn = {
+                imgLink: imgLink
+            }
+            resolve(toReturn);
+        }).catch((err: any) => {
             reject(err);
         })
     });

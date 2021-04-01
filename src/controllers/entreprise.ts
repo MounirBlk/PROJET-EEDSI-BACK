@@ -13,7 +13,7 @@ import axios, { AxiosResponse, Method } from "axios"
 export const newEntreprise = async (req: Request, res: Response): Promise<void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const data = req.body;
             if(isEmptyObject(data) || !exist(data.nom) || !exist(data.adresse) || !exist(data.categorieEntreprise) || 
@@ -58,7 +58,7 @@ export const newEntreprise = async (req: Request, res: Response): Promise<void> 
 export const newEntrepriseAuto = async (req: Request, res: Response): Promise<void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const data = req.body;
             if(isEmptyObject(data) || !exist(data.siret)){
@@ -98,7 +98,7 @@ export const newEntrepriseAuto = async (req: Request, res: Response): Promise<vo
 export const updateEntreprise = async (req: Request, res: Response): Promise<void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const id = req.params.id;
             const data = req.body;
@@ -151,7 +151,7 @@ export const updateEntreprise = async (req: Request, res: Response): Promise<voi
 export const deleteEntreprise = async (req: Request, res: Response) : Promise <void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const id = req.params.id;
             if(!exist(id)){
@@ -178,7 +178,7 @@ export const deleteEntreprise = async (req: Request, res: Response) : Promise <v
 export const getEntreprise = async (req: Request, res: Response) : Promise <void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const id = req.params.id;
             if(!exist(id)){
@@ -226,7 +226,7 @@ export const getEntreprise = async (req: Request, res: Response) : Promise <void
 export const getAllEntreprises = async (req: Request, res: Response) : Promise <void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             await EntrepriseModel.find({}, (err: Error, results: any) => {
                 if (err) {

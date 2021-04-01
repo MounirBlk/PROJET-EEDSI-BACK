@@ -34,6 +34,8 @@ const deleteMapper = (data: any, mapperNameRoute?: string): any => {
     data.updatedAt = null;
     data.__v = null;
     data.active = null;
+    data.idStripeProduct = null;
+    data.idStripePrice = null;
     return data;
 }
 

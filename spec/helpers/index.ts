@@ -102,3 +102,10 @@ export const getFormData = (object: any) => {
     Object.keys(object).forEach(key => formData.append(key, object[key]));
     return formData;
 }
+
+/**
+ *  Function random float min et max
+ */ 
+export const randFloat = (min: number, max: number): number => { 
+    return Math.random() * (max - min) + min 
+};

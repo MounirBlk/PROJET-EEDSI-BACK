@@ -123,7 +123,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 export const deleteUser = async (req: Request, res: Response) : Promise <void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const id = req.params.id;
             if(!exist(id)){
@@ -150,7 +150,7 @@ export const deleteUser = async (req: Request, res: Response) : Promise <void> =
 export const getOwnUser = async (req: Request, res: Response) : Promise <void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             await UserModel.findOne({ _id: payload.id }, (err: Error, results: Response) => {
                 if (err) {
@@ -189,7 +189,7 @@ export const getOwnUser = async (req: Request, res: Response) : Promise <void> =
 export const getOneUser = async (req: Request, res: Response) : Promise <void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const id: any = req.params.id;
             if(!isValidLength(id, 24, 24) || !textFormat(id) || await UserModel.countDocuments({ _id: id}) === 0){
@@ -233,7 +233,7 @@ export const getOneUser = async (req: Request, res: Response) : Promise <void> =
 export const getAllUsers = async (req: Request, res: Response) : Promise <void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const role: any = req.params.role;
             if(!exist(role)){
@@ -285,7 +285,7 @@ export const getAllUsers = async (req: Request, res: Response) : Promise <void> 
 export const updateUser = async (req: Request, res: Response) : Promise <void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const data = req.body;
             const id = req.params.id;
@@ -340,7 +340,7 @@ export const updateUser = async (req: Request, res: Response) : Promise <void> =
 export const disableUser = async (req: Request, res: Response) : Promise <void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const id = req.params.id;
             if(!exist(id)){
@@ -411,7 +411,7 @@ export const checkEmail = async (req: Request, res: Response) : Promise <void> =
     const token = `Bearer ${req.params.token}`;
     await getJwtPayload(token).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             await UserModel.findOneAndUpdate({ _id: payload.id }, { checked: true }, null, async(err: Error, resp: any) => {
                 if (err) {

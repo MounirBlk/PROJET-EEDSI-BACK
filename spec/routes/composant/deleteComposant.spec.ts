@@ -4,10 +4,11 @@ import { convertToFormBody, getTimeout, randNumber, randomChars, randomFileName 
 import fs from 'fs';
 import path from 'path';
 
-export const getOneUserSpec = () => {
-    it('Test recuperation one: token incorrect', (done: DoneFn) => {
+
+export const deleteComposantSpec = () => {
+    it('Test delete Composant: token incorrect', (done: DoneFn) => {      
         request(app)
-            .get('/user/one/'+ globalThis.idUser)
+            .delete('/composant/delete/' + randomChars(randNumber(1,5)))
             .set('Accept', 'application/json')
             .auth(randomChars(100), { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -17,9 +18,9 @@ export const getOneUserSpec = () => {
             }, done);
     }, getTimeout());
 
-    it('Test recuperation one: id invalide', (done: DoneFn) => {
+    it('Test delete Composant: id non valide', (done: DoneFn) => { 
         request(app)
-            .get('/user/one/' + randomChars(100))
+            .delete('/composant/delete/' + randomChars(randNumber(1,5)))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -29,24 +30,15 @@ export const getOneUserSpec = () => {
             }, done);
     }, getTimeout());
 
-    it('Test recuperation one: successfull', (done: DoneFn) => {
+    /*it('Test delete Composant: success', (done: DoneFn) => {
         request(app)
-            .get('/user/one/'+ globalThis.idUser)
+            .delete('/composant/delete/' + globalThis.idComposant)
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
-            .expect(200)
-            .then((response: any) => {
-                expect(response.status).toEqual(200)
-                expect(response.body).toEqual({
-                    error: false,
-                    message: "Les informations ont bien été récupéré",
-                    user: response.body.user
-                })
-                return done();
-            })
-            .catch(err => {
-                throw err;
-            })
-    }, getTimeout());
+            .expect(200, {
+                error: false,
+                message: 'Le composant a été supprimé avec succès'
+            }, done);
+    }, getTimeout());*/
 }
