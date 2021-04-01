@@ -2,47 +2,42 @@ import { Application, Request, Response, NextFunction, Errback } from 'express';
 import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, existTab, firstLetterMaj, floatFormat, getJwtPayload, isEmptyObject, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, tabFormat, textFormat } from '../middlewares';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
-import ProductModel from '../models/ProductModel';
-import ProductInterface from '../interfaces/ProductInterface';
-import Jimp from 'jimp'
+import ComposantModel from '../models/ComposantModel';
+import ComposantInterface from '../interfaces/ComposantInterface';
 import { addProductStripe, deleteProductStripe, updatePriceStripe, updateProductStripe } from '../middlewares/stripe';
 import { AxiosError, AxiosResponse } from 'axios';
 import firebase from 'firebase';
 import { generateAllImagesColors } from '../middlewares/generate';
-//const Jimp = require('jimp');
 
 /**
- *  Route new produit
+ *  Route new composant
  *  @param {Request} req 
  *  @param {Response} res 
  */ 
-export const addProduct = async (req: Request, res: Response): Promise<void> => {
+export const addComposant = async (req: Request, res: Response): Promise<void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const data = req.body;
             if(isEmptyObject(data) || !exist(data.nom) || !exist(data.type) || !exist(data.poids) || !exist(data.longueur) || 
-            !exist(data.largeur) || !exist(data.profondeur) || !exist(data.prix) || !exist(data.taxe) || !exist(data.quantite) ||
+            !exist(data.largeur) || !exist(data.profondeur) || !exist(data.prix) || !exist(data.quantite) ||
             !existTab(data.matieres) || !existTab(data.couleurs)){
                 return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' });
             }else{
-                let isError = exist(data.sousType) ? textFormat(data.sousType) ? false : true : false;
-                isError = existTab(data.composants) ? tabFormat(data.composants) ? false : true : false;
-                isError = existTab(data.description) ? isValidLength(data.description, 1, 300) ? false : true : false;
+                let isError = existTab(data.description) ? isValidLength(data.description, 1, 300) ? false : true : false;
                 if(isError || !textFormat(data.nom) || !textFormat(data.type) || !numberFormat(data.poids) || !numberFormat(data.longueur) || !numberFormat(data.largeur) || 
-                !numberFormat(data.profondeur) || !floatFormat(data.prix) || !floatFormat(data.taxe) || !numberFormat(data.quantite) || !tabFormat(data.matieres) || !tabFormat(data.couleurs)){
+                !numberFormat(data.profondeur) || !floatFormat(data.prix) || !numberFormat(data.quantite) || !tabFormat(data.matieres) || !tabFormat(data.couleurs)){
                     return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"});
                 }else{
-                    if(await ProductModel.countDocuments({ nom: data.nom.trim()}) !== 0){// nom already exist
-                        return dataResponse(res, 409, { error: true, message: "Ce produit est déjà enregistré" });
+                    if(await ComposantModel.countDocuments({ nom: data.nom.trim()}) !== 0){// nom already exist
+                        return dataResponse(res, 409, { error: true, message: "Ce composant est déjà enregistré" });
                     }else{
                         let toInsert = {
                             "refID": uuidv4(),// Unique ID
                             "nom": data.nom,
                             "description": data.description !== null && data.description !== undefined ? data.description : null,
                             "type": firstLetterMaj(data.type),
-                            "sousType": data.sousType !== null && data.sousType !== undefined ? firstLetterMaj(data.sousType) : null,
                             "matieres": data.matieres.map((el: string) => firstLetterMaj(el)),// [matieres]
                             "couleurs": data.couleurs.map((color: string) => firstLetterMaj(color)),// [colors]
                             "poids": data.poids, // gramme
@@ -50,32 +45,30 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                             "largeur": data.largeur,// centimetre
                             "profondeur": data.profondeur,// centimetre
                             "prix": data.prix,// xx.xx (€)
-                            "taxe": data.taxe,// x.xx (1 = 100%)
                             "quantite": data.quantite,// xxx
-                            "composants": data.composants !== null && data.composants !== undefined ? data.composants : [],// [composants]
                             "idStripeProduct": null,
                             "idStripePrice": null,
                             "imgLink": null
                         };
-                        let imgFile = fs.readFileSync(process.cwd() + '/public/canape.jpg'/*, { encoding: "base64"}*/);//import img from form/data
+                        let imgFile = fs.readFileSync(process.cwd() + '/public/chaise.jpg'/*, { encoding: "base64"}*/);//import img from form/data
                         const imgObj = {//import img from form/data
                             imgFile: imgFile,
-                            imgName: 'canape.jpg'
+                            imgName: 'chaise.jpg'
                         }
                         //const imgObj = null; //ne pas ajouter d'img
-                        await addProductStripe('[PRODUIT] - ' + toInsert.nom, toInsert.description, toInsert.prix, false, 'eur', imgObj).then(async(resp: any) => {// ajout du produit sur stripe
+                        await addProductStripe('[COMPOSANT] - ' + toInsert.nom, toInsert.description, toInsert.prix, false, 'eur', imgObj).then(async(resp: any) => {// ajout du composant sur stripe
                             toInsert.idStripeProduct = !resp.hasOwnProperty('idStripeProduct') || !exist(resp.idStripeProduct) ? null : resp.idStripeProduct;
                             toInsert.idStripePrice = !resp.hasOwnProperty('idStripePrice') || !exist(resp.idStripePrice) ? null : resp.idStripePrice;
                             toInsert.imgLink = !resp.hasOwnProperty('imgLink') || !exist(resp.imgLink) ? null : resp.imgLink;
-                            let product: ProductInterface = new ProductModel(toInsert);
-                            await product.save().then(async(produit: ProductInterface) => {
-                                await generateAllImagesColors(process.cwd() + '/public/canape.jpg' , produit.get("_id"), data.couleurs)
-                                return dataResponse(res, 201, { error: false, message: "Le produit a bien été créé avec succès" });
+                            let composant: ComposantInterface = new ComposantModel(toInsert);
+                            await composant.save().then(async(respComp: ComposantInterface) => {
+                                await generateAllImagesColors(process.cwd() + '/public/chaise.jpg' , respComp.get("_id"), data.couleurs)
+                                return dataResponse(res, 201, { error: false, message: "Le composant a bien été créé avec succès" });
                             }).catch(() => {
                                 return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
                             });
                         }).catch((err: AxiosError) => {
-                            return dataResponse(res, 500, { error: true, message: "Erreur dans la requête pour l'ajout du produit !" });
+                            return dataResponse(res, 500, { error: true, message: "Erreur dans la requête pour l'ajout du composant !" });
                         });
                     }
                 }
@@ -84,13 +77,12 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
     });
 }
 
-
 /**
- *  Route delete/archive product
+ *  Route delete/archive composant
  *  @param {Request} req 
  *  @param {Response} res 
  */ 
-export const deleteProduct = async (req: Request, res: Response) : Promise <void> => {
+export const deleteComposant = async (req: Request, res: Response) : Promise <void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
@@ -99,17 +91,16 @@ export const deleteProduct = async (req: Request, res: Response) : Promise <void
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                if(!isValidLength(id, 24, 24) || !textFormat(id) || await ProductModel.countDocuments({ _id: id}) === 0){
+                if(!isValidLength(id, 24, 24) || !textFormat(id) || await ComposantModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
-                    await ProductModel.findOne({ _id: id }, async(err: Error, results: ProductInterface) => {
+                    await ComposantModel.findOne({ _id: id }, async(err: Error, results: ComposantInterface) => {
                         let ttPromise: Array<any> = []
                         ttPromise.push(await updatePriceStripe(results.idStripePrice, true));
-                        ttPromise.push(await updateProductStripe(results.idStripeProduct,'[PRODUIT] - ' + results.nom, results.description, true));
-                        //ttPromise.push(await deleteProductStripe(results.idStripeProduct));
-                        ttPromise.push(await ProductModel.findOneAndDelete({ _id : id })); 
+                        ttPromise.push(await updateProductStripe(results.idStripeProduct,'[COMPOSANT] - ' +  results.nom, results.description, true));
+                        ttPromise.push(await ComposantModel.findOneAndDelete({ _id : id })); 
                         Promise.all(ttPromise).then((data) => {
-                            return dataResponse(res, 200, { error: false, message: 'Le produit a été supprimé avec succès' })
+                            return dataResponse(res, 200, { error: false, message: 'Le composant a été supprimé avec succès' })
                         }).catch((err) => {
                             throw err;
                         })
@@ -123,11 +114,11 @@ export const deleteProduct = async (req: Request, res: Response) : Promise <void
 }
 
 /**
- *  Route get one product
+ *  Route get one composant
  *  @param {Request} req 
  *  @param {Response} res 
  */ 
-export const getProduct = async (req: Request, res: Response) : Promise <void> => {
+export const getComposant = async (req: Request, res: Response) : Promise <void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
@@ -136,10 +127,10 @@ export const getProduct = async (req: Request, res: Response) : Promise <void> =
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                if(!isValidLength(id, 24, 24) || !textFormat(id) || await ProductModel.countDocuments({ _id: id}) === 0){
+                if(!isValidLength(id, 24, 24) || !textFormat(id) || await ComposantModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
-                    await ProductModel.findOne({ _id: id }, (err: Error, results: Response) => {
+                    await ComposantModel.findOne({ _id: id }, (err: Error, results: Response) => {
                         if (err) {
                             return dataResponse(res, 500, {
                                 error: true,
@@ -151,8 +142,8 @@ export const getProduct = async (req: Request, res: Response) : Promise <void> =
                             if (results) {
                                 return dataResponse(res, 200, {
                                     error: false,
-                                    message: "Les informations du produit ont bien été récupéré",
-                                    product: deleteMapper(results) 
+                                    message: "Les informations du composant ont bien été récupéré",
+                                    composant: deleteMapper(results) 
                                 });
                             } else {
                                 return dataResponse(res, 401, {
@@ -171,16 +162,16 @@ export const getProduct = async (req: Request, res: Response) : Promise <void> =
 }
 
 /**
- *  Route get all products
+ *  Route get all composants
  *  @param {Request} req 
  *  @param {Response} res 
  */ 
-export const getAllProducts = async (req: Request, res: Response) : Promise <void> => {
+export const getAllComposants = async (req: Request, res: Response) : Promise <void> => {
         await getJwtPayload(req.headers.authorization).then(async (payload) => {
             if(payload === null || payload === undefined){
                 return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
             }else{
-                await ProductModel.find({}, (err: Error, results: any) => {
+                await ComposantModel.find({}, (err: Error, results: any) => {
                     if (err) {
                         return dataResponse(res, 500, {
                             error: true,
@@ -192,8 +183,8 @@ export const getAllProducts = async (req: Request, res: Response) : Promise <voi
                         if (results) {
                             return dataResponse(res, 200, {
                                 error: false,
-                                message: "Les produits ont bien été récupéré",
-                                products: results.map((item: ProductInterface) => deleteMapper(item, 'getAllProducts'))
+                                message: "Les composants ont bien été récupéré",
+                                composants: results.map((item: ComposantInterface) => deleteMapper(item, 'getAllComposants'))
                             });
                         } else {
                             return dataResponse(res, 401, {
@@ -210,11 +201,11 @@ export const getAllProducts = async (req: Request, res: Response) : Promise <voi
 }
 
 /**
- *  Route update product
+ *  Route update composant
  *  @param {Request} req 
  *  @param {Response} res 
  */ 
-export const updateProduct = async (req: Request, res: Response): Promise<void> => {
+export const updateComposant = async (req: Request, res: Response): Promise<void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
@@ -224,47 +215,44 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                if(!isValidLength(id, 24, 24) || await ProductModel.countDocuments({ _id: id}) === 0){
+                if(!isValidLength(id, 24, 24) || await ComposantModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
-                    const product: ProductInterface | null = await ProductModel.findById(id);
-                    if(product === null || product === undefined){
+                    const composant: ComposantInterface | null = await ComposantModel.findById(id);
+                    if(composant === null || composant === undefined){
                         return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !"})
                     }else{
                         let isOnError: boolean = false;
                         let toUpdate: any = {
-                            "nom": exist(data.nom) ? textFormat(data.nom) ? data.nom : (isOnError = true) : product.nom,
-                            "description": exist(data.description) ? isValidLength(data.description, 1, 300) ? data.description : (isOnError = true) : product.description,
-                            "type": exist(data.type) ? textFormat(data.type) ? firstLetterMaj(data.type) : (isOnError = true) : product.type,
-                            "sousType": exist(data.sousType) ? textFormat(data.sousType) ? firstLetterMaj(data.sousType) : (isOnError = true) : product.sousType,
-                            "matieres": existTab(data.matieres) ? tabFormat(data.matieres) ? data.matieres.map((el: string) => firstLetterMaj(el)) : (isOnError = true) : product.matieres,
-                            "couleurs": existTab(data.couleurs) ? tabFormat(data.couleurs) ? data.couleurs.map((el: string) => firstLetterMaj(el)) : (isOnError = true) : product.couleurs,
-                            "poids":  exist(data.poids) ? numberFormat(data.poids) ? data.poids : (isOnError = true) : product.poids,
-                            "longueur": exist(data.longueur) ? numberFormat(data.longueur) ? data.longueur : (isOnError = true) : product.longueur,
-                            "largeur": exist(data.largeur) ? numberFormat(data.largeur) ? data.largeur : (isOnError = true) : product.largeur,
-                            "profondeur": exist(data.profondeur) ? numberFormat(data.profondeur) ? data.profondeur : (isOnError = true) : product.profondeur,
-                            "prix": exist(data.prix) ? floatFormat(data.prix) ? data.prix : (isOnError = true) : product.prix,
-                            "taxe": exist(data.taxe) ? floatFormat(data.taxe) ? data.taxe : (isOnError = true) : product.taxe,
-                            "quantite": exist(data.quantite) ? numberFormat(data.quantite) ? data.quantite : (isOnError = true) : product.quantite,
-                            "composants": existTab(data.composants) ? tabFormat(data.composants) ? data.composants : (isOnError = true) : product.composants,
+                            "nom": exist(data.nom) ? textFormat(data.nom) ? data.nom : (isOnError = true) : composant.nom,
+                            "description": exist(data.description) ? isValidLength(data.description, 1, 300) ? data.description : (isOnError = true) : composant.description,
+                            "type": exist(data.type) ? textFormat(data.type) ? firstLetterMaj(data.type) : (isOnError = true) : composant.type,
+                            "matieres": existTab(data.matieres) ? tabFormat(data.matieres) ? data.matieres.map((el: string) => firstLetterMaj(el)) : (isOnError = true) : composant.matieres,
+                            "couleurs": existTab(data.couleurs) ? tabFormat(data.couleurs) ? data.couleurs.map((el: string) => firstLetterMaj(el)) : (isOnError = true) : composant.couleurs,
+                            "poids":  exist(data.poids) ? numberFormat(data.poids) ? data.poids : (isOnError = true) : composant.poids,
+                            "longueur": exist(data.longueur) ? numberFormat(data.longueur) ? data.longueur : (isOnError = true) : composant.longueur,
+                            "largeur": exist(data.largeur) ? numberFormat(data.largeur) ? data.largeur : (isOnError = true) : composant.largeur,
+                            "profondeur": exist(data.profondeur) ? numberFormat(data.profondeur) ? data.profondeur : (isOnError = true) : composant.profondeur,
+                            "prix": exist(data.prix) ? floatFormat(data.prix) ? data.prix : (isOnError = true) : composant.prix,
+                            "quantite": exist(data.quantite) ? numberFormat(data.quantite) ? data.quantite : (isOnError = true) : composant.quantite
                         }
                         if(isOnError){
                             return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
                         }else{
-                            let imgFile = fs.readFileSync(process.cwd() + '/public/canape.jpg'/*, { encoding: "base64"}*/);//import img from form/data
+                            let imgFile = fs.readFileSync(process.cwd() + '/public/chaise.jpg'/*, { encoding: "base64"}*/);//import img from form/data
                             /*const imgObj = {//import img from form/data
                                 imgFile: imgFile,
-                                imgName: 'canape.jpg'
+                                imgName: 'chaise.jpg'
                             }*/
                             const imgObj = null; //ne pas update l'img
-                            await updateProductStripe(product.idStripeProduct, '[PRODUIT] - ' + toUpdate.nom, toUpdate.description, false, imgObj).then(async(resp: any) => {// update produit stripe
-                                toUpdate.imgLink = !resp.hasOwnProperty('imgLink') || !exist(resp.imgLink) ? product.imgLink : resp.imgLink;
-                                await ProductModel.findByIdAndUpdate(id, toUpdate, null, async(err: Error, resp: any) => {
+                            await updateProductStripe(composant.idStripeProduct, '[COMPOSANT] - ' + toUpdate.nom, toUpdate.description, false, imgObj).then(async(resp: any) => {// update composant stripe
+                                toUpdate.imgLink = !resp.hasOwnProperty('imgLink') || !exist(resp.imgLink) ? composant.imgLink : resp.imgLink;
+                                await ComposantModel.findByIdAndUpdate(id, toUpdate, null, async(err: Error, resp: any) => {
                                     if (err) {
                                         return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
                                     } else {
-                                        await generateAllImagesColors(process.cwd() + '/public/canape.jpg' , product.get("_id"), data.couleurs)
-                                        return dataResponse(res, 200, { error: false, message: "Le produit a bien été mise à jour" })
+                                        await generateAllImagesColors(process.cwd() + '/public/chaise.jpg' , composant.get("_id"), data.couleurs)
+                                        return dataResponse(res, 200, { error: false, message: "Le composant a bien été mise à jour" })
                                     }
                                 });
                             });

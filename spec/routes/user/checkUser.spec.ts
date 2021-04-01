@@ -27,7 +27,7 @@ export const checkUserSpec = () => {
             .get('/user/check/'+ randomChars(100))
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .expect(498, {
+            .expect(401, {
                 error: true,
                 message: 'Votre token n\'est pas correct'
             }, done);

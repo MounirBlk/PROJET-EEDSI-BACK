@@ -1,8 +1,9 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
 import { dataResponse, dateFormatFr, deleteMapper, emailFormat, dateFormatEn, exist, getJwtPayload, isEmptyObject, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, textFormat } from '../middlewares';
-const axios = require('axios').default;
 import EntrepriseInterface from '../interfaces/EntrepriseInterface';
 import EntrepriseModel from '../models/EntrepriseModel';
+import axios, { AxiosResponse, Method } from "axios"
+//const axios = require('axios').default;
 
 /**
  *  Route ajout entreprise manuelle
@@ -12,7 +13,7 @@ import EntrepriseModel from '../models/EntrepriseModel';
 export const newEntreprise = async (req: Request, res: Response): Promise<void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const data = req.body;
             if(isEmptyObject(data) || !exist(data.nom) || !exist(data.adresse) || !exist(data.categorieEntreprise) || 
@@ -57,7 +58,7 @@ export const newEntreprise = async (req: Request, res: Response): Promise<void> 
 export const newEntrepriseAuto = async (req: Request, res: Response): Promise<void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const data = req.body;
             if(isEmptyObject(data) || !exist(data.siret)){
@@ -97,7 +98,7 @@ export const newEntrepriseAuto = async (req: Request, res: Response): Promise<vo
 export const updateEntreprise = async (req: Request, res: Response): Promise<void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const id = req.params.id;
             const data = req.body;
@@ -150,7 +151,7 @@ export const updateEntreprise = async (req: Request, res: Response): Promise<voi
 export const deleteEntreprise = async (req: Request, res: Response) : Promise <void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const id = req.params.id;
             if(!exist(id)){
@@ -177,7 +178,7 @@ export const deleteEntreprise = async (req: Request, res: Response) : Promise <v
 export const getEntreprise = async (req: Request, res: Response) : Promise <void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const id = req.params.id;
             if(!exist(id)){
@@ -225,7 +226,7 @@ export const getEntreprise = async (req: Request, res: Response) : Promise <void
 export const getAllEntreprises = async (req: Request, res: Response) : Promise <void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
-            return dataResponse(res, 498, { error: true, message: 'Votre token n\'est pas correct' })
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             await EntrepriseModel.find({}, (err: Error, results: any) => {
                 if (err) {
@@ -263,10 +264,10 @@ export const getAllEntreprises = async (req: Request, res: Response) : Promise <
  */ 
 const getInfosEntrepriseOnline = async (res: Response, siret: number): Promise<any> => {
     return new Promise(async(resolve, reject) => {
-        await axios(`https://entreprise.data.gouv.fr/api/sirene/v3/etablissements/${siret}`, getConfigAxios('get'))
-            .then(({ data: response } : any) => {//CIRCULAR JSON (RETURN response)
+        await axios(getConfigAxios(`https://entreprise.data.gouv.fr/api/sirene/v3/etablissements/${siret}`,'get'))
+            .then(({ data: response } : AxiosResponse) => {//CIRCULAR JSON (RETURN response)
                 //fs.writeFileSync('log.json', JSON.stringify(response))
-                if(response !== undefined || response !== null){
+                if(response !== undefined && response !== null){
                     let dataToReturn = {
                         siret: siret,
                         nom: exist(response.etablissement.unite_legale.denomination) ? response.etablissement.unite_legale.denomination : null,
@@ -293,12 +294,14 @@ const getInfosEntrepriseOnline = async (res: Response, siret: number): Promise<a
 
 /**
  *  Request config 
+ *  @param url url
  *  @param methodReq post / get / put / delete ...
  *  @param dataBody? data from body
  */ 
-const getConfigAxios = (methodReq: string, dataBody: any = null) => {
+const getConfigAxios = (url: string, methodReq: Method, dataBody: any = null) => {
     const configaxios = {
-        method: methodReq.trim().toLowerCase(),
+        url: url.trim(),
+        method: methodReq,
         headers: {
             Accept: "application/json",
             "Content-Type": "application/json",

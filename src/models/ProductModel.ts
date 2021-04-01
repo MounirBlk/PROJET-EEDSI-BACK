@@ -5,13 +5,18 @@ const ProductSchema = new mongoose.Schema<ProductInterface>({
     refID: {
         trim: true,
         index: true,
-        type: Number,
+        type: String,
         unique: true,
     },
     nom: {
         default: null,
         type: String,
         required: true
+    },
+    description: {
+        default: null,
+        type: String,
+        required: false
     },
     type: {
         default: null,
@@ -63,7 +68,7 @@ const ProductSchema = new mongoose.Schema<ProductInterface>({
         type: Number,
         required: true
     },
-    quantité: {
+    quantite: {
         default: null,
         type: Number,
         required: true
@@ -72,6 +77,21 @@ const ProductSchema = new mongoose.Schema<ProductInterface>({
         type: [String],
         required: false,
         default: undefined
+    },
+    idStripeProduct:{
+        default: null,
+        type: String,
+        required: false
+    },
+    idStripePrice:{
+        default: null,
+        type: String,
+        required: false
+    },
+    imgLink:{
+        default: null,
+        type: String,
+        required: false
     },
     createdAt: {
         default: new Date(),

@@ -5,13 +5,18 @@ const ComposantSchema = new mongoose.Schema<ComposantInterface>({
     refID: {
         trim: true,
         index: true,
-        type: Number,
+        type: String,
         unique: true,
     },
     nom: {
         default: null,
         type: String,
         required: true
+    },
+    description: {
+        default: null,
+        type: String,
+        required: false
     },
     type: {
         default: null,
@@ -53,10 +58,25 @@ const ComposantSchema = new mongoose.Schema<ComposantInterface>({
         type: Number,
         required: true
     }, 
-    quantité: {
+    quantite: {
         default: null,
         type: Number,
         required: true
+    },
+    idStripeProduct:{
+        default: null,
+        type: String,
+        required: false
+    },
+    idStripePrice:{
+        default: null,
+        type: String,
+        required: false
+    },
+    imgLink:{
+        default: null,
+        type: String,
+        required: false
     },
     createdAt: {
         default: new Date(),

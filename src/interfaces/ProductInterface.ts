@@ -1,8 +1,9 @@
 import { Document } from "mongoose"
 
 export default interface ProductInterface extends Document {
-    "refID": number,
+    "refID": string,
     "nom": string,
+    "description": string,
     "type": string,
     "sousType": string,
     "matieres": Array<string>,
@@ -13,6 +14,9 @@ export default interface ProductInterface extends Document {
     "profondeur": number,
     "prix": number,
     "taxe": number,
-    "quantité": number,
-    "composants": Array<any>
+    "quantite": number,
+    "composants": Array<string>,
+    "idStripeProduct": string,
+    "idStripePrice": string,
+    "imgLink": string
 }
