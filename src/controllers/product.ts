@@ -9,6 +9,7 @@ import { addProductStripe, deleteProductStripe, updatePriceStripe, updateProduct
 import { AxiosError, AxiosResponse } from 'axios';
 import firebase from 'firebase';
 import { generateAllImagesColors } from '../middlewares/generate';
+import { deleteCurrentFolderStorage } from '../middlewares/firebase';
 //const Jimp = require('jimp');
 
 /**
@@ -20,8 +21,8 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
-        }else{
-            const data = req.body;
+        }else{                        
+            const data = req.body;                            
             if(isEmptyObject(data) || !exist(data.nom) || !exist(data.type) || !exist(data.poids) || !exist(data.longueur) || 
             !exist(data.largeur) || !exist(data.profondeur) || !exist(data.prix) || !exist(data.taxe) || !exist(data.quantite) ||
             !existTab(data.matieres) || !existTab(data.couleurs)){
@@ -30,7 +31,7 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                 let isError = exist(data.sousType) ? textFormat(data.sousType) ? false : true : false;
                 isError = existTab(data.composants) ? tabFormat(data.composants) ? false : true : false;
                 isError = existTab(data.description) ? isValidLength(data.description, 1, 300) ? false : true : false;
-                if(isError || !textFormat(data.nom) || !textFormat(data.type) || !numberFormat(data.poids) || !numberFormat(data.longueur) || !numberFormat(data.largeur) || 
+                if(isError || !textFormat(data.nom) || !textFormat(data.type) || !numberFormat(data.poids) || !numberFormat(data.longueur) || !numberFormat(data.largeur) || parseFloat(data.taxe) > 1 || parseFloat(data.taxe) < 0 || 
                 !numberFormat(data.profondeur) || !floatFormat(data.prix) || !floatFormat(data.taxe) || !numberFormat(data.quantite) || !tabFormat(data.matieres) || !tabFormat(data.couleurs)){
                     return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"});
                 }else{
@@ -57,19 +58,26 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                             "idStripePrice": null,
                             "imgLink": null
                         };
-                        let imgFile = fs.readFileSync(process.cwd() + '/public/canape.jpg'/*, { encoding: "base64"}*/);//import img from form/data
-                        const imgObj = {//import img from form/data
-                            imgFile: imgFile,
-                            imgName: 'canape.jpg'
+                        let imgObj: any = null;
+                        if (!req.files || Object.keys(req.files).length === 0) {
+                            imgObj = null;
+                        }else{
+                            let files: any = req.files;
+                            let imgFile = fs.readFileSync(process.cwd() + '/temp/' + files[0].originalname/*, { encoding: "base64"}*/);//import img from form/data
+                            imgObj = {//import img from form/data
+                                imgFile: imgFile,
+                                imgName: files[0].originalname
+                            }
                         }
-                        //const imgObj = null; //ne pas ajouter d'img
                         await addProductStripe('[PRODUIT] - ' + toInsert.nom, toInsert.description, toInsert.prix, false, 'eur', imgObj).then(async(resp: any) => {// ajout du produit sur stripe
                             toInsert.idStripeProduct = !resp.hasOwnProperty('idStripeProduct') || !exist(resp.idStripeProduct) ? null : resp.idStripeProduct;
                             toInsert.idStripePrice = !resp.hasOwnProperty('idStripePrice') || !exist(resp.idStripePrice) ? null : resp.idStripePrice;
                             toInsert.imgLink = !resp.hasOwnProperty('imgLink') || !exist(resp.imgLink) ? null : resp.imgLink;
                             let product: ProductInterface = new ProductModel(toInsert);
                             await product.save().then(async(produit: ProductInterface) => {
-                                await generateAllImagesColors(process.cwd() + '/public/canape.jpg' , produit.get("_id"), data.couleurs)
+                                if(imgObj !== null && imgObj !== undefined){
+                                    await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, produit.get("_id"), imgObj, data.couleurs, false)
+                                }
                                 return dataResponse(res, 201, { error: false, message: "Le produit a bien été créé avec succès" });
                             }).catch(() => {
                                 return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
@@ -106,8 +114,9 @@ export const deleteProduct = async (req: Request, res: Response) : Promise <void
                         let ttPromise: Array<any> = []
                         ttPromise.push(await updatePriceStripe(results.idStripePrice, true));
                         ttPromise.push(await updateProductStripe(results.idStripeProduct,'[PRODUIT] - ' + results.nom, results.description, true));
-                        //ttPromise.push(await deleteProductStripe(results.idStripeProduct));
-                        ttPromise.push(await ProductModel.findOneAndDelete({ _id : id })); 
+                        //ttPromise.push(await deleteProductStripe(results.idStripeProduct));//TO FIX SOON
+                        ttPromise.push(await ProductModel.findOneAndDelete({ _id : id }));
+                        ttPromise.push(await deleteCurrentFolderStorage(id));
                         Promise.all(ttPromise).then((data) => {
                             return dataResponse(res, 200, { error: false, message: 'Le produit a été supprimé avec succès' })
                         }).catch((err) => {
@@ -244,26 +253,33 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
                             "largeur": exist(data.largeur) ? numberFormat(data.largeur) ? data.largeur : (isOnError = true) : product.largeur,
                             "profondeur": exist(data.profondeur) ? numberFormat(data.profondeur) ? data.profondeur : (isOnError = true) : product.profondeur,
                             "prix": exist(data.prix) ? floatFormat(data.prix) ? data.prix : (isOnError = true) : product.prix,
-                            "taxe": exist(data.taxe) ? floatFormat(data.taxe) ? data.taxe : (isOnError = true) : product.taxe,
+                            "taxe": exist(data.taxe) ? floatFormat(data.taxe) && parseFloat(data.taxe) < 1 && parseFloat(data.taxe) > 0  ? data.taxe : (isOnError = true) : product.taxe,
                             "quantite": exist(data.quantite) ? numberFormat(data.quantite) ? data.quantite : (isOnError = true) : product.quantite,
                             "composants": existTab(data.composants) ? tabFormat(data.composants) ? data.composants : (isOnError = true) : product.composants,
                         }
                         if(isOnError){
                             return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
                         }else{
-                            let imgFile = fs.readFileSync(process.cwd() + '/public/canape.jpg'/*, { encoding: "base64"}*/);//import img from form/data
-                            /*const imgObj = {//import img from form/data
-                                imgFile: imgFile,
-                                imgName: 'canape.jpg'
-                            }*/
-                            const imgObj = null; //ne pas update l'img
+                            let imgObj: any = null;
+                            if (!req.files || Object.keys(req.files).length === 0) {
+                                imgObj = null;
+                            }else{
+                                let files: any = req.files;
+                                let imgFile = fs.readFileSync(process.cwd() + '/temp/' + files[0].originalname/*, { encoding: "base64"}*/);//import img from form/data
+                                imgObj = {//import img from form/data
+                                    imgFile: imgFile,
+                                    imgName: files[0].originalname
+                                }
+                            }
                             await updateProductStripe(product.idStripeProduct, '[PRODUIT] - ' + toUpdate.nom, toUpdate.description, false, imgObj).then(async(resp: any) => {// update produit stripe
                                 toUpdate.imgLink = !resp.hasOwnProperty('imgLink') || !exist(resp.imgLink) ? product.imgLink : resp.imgLink;
                                 await ProductModel.findByIdAndUpdate(id, toUpdate, null, async(err: Error, resp: any) => {
                                     if (err) {
                                         return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
-                                    } else {
-                                        await generateAllImagesColors(process.cwd() + '/public/canape.jpg' , product.get("_id"), data.couleurs)
+                                    } else {                                
+                                        if(imgObj !== null && imgObj !== undefined){
+                                            await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, product.get("_id"), imgObj, data.couleurs, true)
+                                        }
                                         return dataResponse(res, 200, { error: false, message: "Le produit a bien été mise à jour" })
                                     }
                                 });

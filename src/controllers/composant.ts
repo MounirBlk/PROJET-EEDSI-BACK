@@ -8,6 +8,7 @@ import { addProductStripe, deleteProductStripe, updatePriceStripe, updateProduct
 import { AxiosError, AxiosResponse } from 'axios';
 import firebase from 'firebase';
 import { generateAllImagesColors } from '../middlewares/generate';
+import { deleteCurrentFolderStorage } from '../middlewares/firebase';
 
 /**
  *  Route new composant
@@ -50,19 +51,26 @@ export const addComposant = async (req: Request, res: Response): Promise<void> =
                             "idStripePrice": null,
                             "imgLink": null
                         };
-                        let imgFile = fs.readFileSync(process.cwd() + '/public/chaise.jpg'/*, { encoding: "base64"}*/);//import img from form/data
-                        const imgObj = {//import img from form/data
-                            imgFile: imgFile,
-                            imgName: 'chaise.jpg'
+                        let imgObj: any = null;
+                        if (!req.files || Object.keys(req.files).length === 0) {
+                            imgObj = null;
+                        }else{
+                            let files: any = req.files;
+                            let imgFile = fs.readFileSync(process.cwd() + '/temp/' + files[0].originalname/*, { encoding: "base64"}*/);//import img from form/data
+                            imgObj = {//import img from form/data
+                                imgFile: imgFile,
+                                imgName: files[0].originalname
+                            }
                         }
-                        //const imgObj = null; //ne pas ajouter d'img
                         await addProductStripe('[COMPOSANT] - ' + toInsert.nom, toInsert.description, toInsert.prix, false, 'eur', imgObj).then(async(resp: any) => {// ajout du composant sur stripe
                             toInsert.idStripeProduct = !resp.hasOwnProperty('idStripeProduct') || !exist(resp.idStripeProduct) ? null : resp.idStripeProduct;
                             toInsert.idStripePrice = !resp.hasOwnProperty('idStripePrice') || !exist(resp.idStripePrice) ? null : resp.idStripePrice;
                             toInsert.imgLink = !resp.hasOwnProperty('imgLink') || !exist(resp.imgLink) ? null : resp.imgLink;
                             let composant: ComposantInterface = new ComposantModel(toInsert);
                             await composant.save().then(async(respComp: ComposantInterface) => {
-                                await generateAllImagesColors(process.cwd() + '/public/chaise.jpg' , respComp.get("_id"), data.couleurs)
+                                if(imgObj !== null && imgObj !== undefined){
+                                    await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, respComp.get("_id"), imgObj, data.couleurs, false)
+                                }
                                 return dataResponse(res, 201, { error: false, message: "Le composant a bien été créé avec succès" });
                             }).catch(() => {
                                 return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
@@ -99,6 +107,7 @@ export const deleteComposant = async (req: Request, res: Response) : Promise <vo
                         ttPromise.push(await updatePriceStripe(results.idStripePrice, true));
                         ttPromise.push(await updateProductStripe(results.idStripeProduct,'[COMPOSANT] - ' +  results.nom, results.description, true));
                         ttPromise.push(await ComposantModel.findOneAndDelete({ _id : id })); 
+                        ttPromise.push(await deleteCurrentFolderStorage(id));
                         Promise.all(ttPromise).then((data) => {
                             return dataResponse(res, 200, { error: false, message: 'Le composant a été supprimé avec succès' })
                         }).catch((err) => {
@@ -239,19 +248,26 @@ export const updateComposant = async (req: Request, res: Response): Promise<void
                         if(isOnError){
                             return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
                         }else{
-                            let imgFile = fs.readFileSync(process.cwd() + '/public/chaise.jpg'/*, { encoding: "base64"}*/);//import img from form/data
-                            /*const imgObj = {//import img from form/data
-                                imgFile: imgFile,
-                                imgName: 'chaise.jpg'
-                            }*/
-                            const imgObj = null; //ne pas update l'img
+                            let imgObj: any = null;
+                            if (!req.files || Object.keys(req.files).length === 0) {
+                                imgObj = null;
+                            }else{
+                                let files: any = req.files;
+                                let imgFile = fs.readFileSync(process.cwd() + '/temp/' + files[0].originalname/*, { encoding: "base64"}*/);//import img from form/data
+                                imgObj = {//import img from form/data
+                                    imgFile: imgFile,
+                                    imgName: files[0].originalname
+                                }
+                            }
                             await updateProductStripe(composant.idStripeProduct, '[COMPOSANT] - ' + toUpdate.nom, toUpdate.description, false, imgObj).then(async(resp: any) => {// update composant stripe
                                 toUpdate.imgLink = !resp.hasOwnProperty('imgLink') || !exist(resp.imgLink) ? composant.imgLink : resp.imgLink;
                                 await ComposantModel.findByIdAndUpdate(id, toUpdate, null, async(err: Error, resp: any) => {
                                     if (err) {
                                         return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
                                     } else {
-                                        await generateAllImagesColors(process.cwd() + '/public/chaise.jpg' , composant.get("_id"), data.couleurs)
+                                        if(imgObj !== null && imgObj !== undefined){
+                                            await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, composant.get("_id"), imgObj, data.couleurs, true)
+                                        }
                                         return dataResponse(res, 200, { error: false, message: "Le composant a bien été mise à jour" })
                                     }
                                 });

@@ -3,6 +3,8 @@ import { addComposant, deleteComposant, getComposant, getAllComposants, updateCo
 import { addProduct, deleteProduct, getAllProducts, getProduct, updateProduct } from "../controllers/product";
 import { checkEmail, deleteUser, disableUser, forgotPassword, getAllUsers, getOneUser, getOwnUser, login, register, updateUser } from "../controllers/user";
 import { checkInternet, dataResponse } from "../middlewares";
+import multer from "multer";
+import { initUpload } from "../config";
 
 export default (app: Application): void => {
     //USER
@@ -16,18 +18,18 @@ export default (app: Application): void => {
     app.route('/user/disable/:id').put(checkInternet, disableUser);
     app.route('/user/forgot').put(checkInternet, forgotPassword);
     app.route('/user/check/:token').get(checkInternet, checkEmail);
-
+    
     //PRODUCT
-    app.route('/product/add').post(checkInternet, addProduct);
+    app.route('/product/add').post(checkInternet, multer(initUpload()).any(), addProduct);
     app.route('/product/delete/:id').delete(checkInternet, deleteProduct);
     app.route('/product/one/:id').get(checkInternet, getProduct);
     app.route('/product/all').get(checkInternet, getAllProducts);
-    app.route('/product/update/:id').put(checkInternet, updateProduct);
+    app.route('/product/update/:id').put(checkInternet, multer(initUpload()).any(), updateProduct);
 
     //COMPOSANT
-    app.route('/composant/add').post(checkInternet, addComposant);
+    app.route('/composant/add').post(checkInternet, multer(initUpload()).any(), addComposant);
     app.route('/composant/delete/:id').delete(checkInternet, deleteComposant);
     app.route('/composant/one/:id').get(checkInternet, getComposant);
     app.route('/composant/all').get(checkInternet, getAllComposants);
-    app.route('/composant/update/:id').put(checkInternet, updateComposant);
+    app.route('/composant/update/:id').put(checkInternet, multer(initUpload()).any(), updateComposant);
 }
