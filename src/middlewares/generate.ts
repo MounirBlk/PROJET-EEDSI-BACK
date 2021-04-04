@@ -1,17 +1,21 @@
 import fs from 'fs';
 import Jimp from 'jimp'
 import firebase from 'firebase';
+import path from "path";
+import { deleteCurrentFolderStorage, uploadFirebaseStorage } from './firebase';
+import ProductModel from '../models/ProductModel';
 //const Jimp = require('jimp');
 
 /**
  *  Generate les images avec les couleurs de la spécification du produit/composant
+ *  @param {string} racinePath 
  *  @param {string} filePath 
  *  @param {string} idProduct 
  *  @param {Array<string>} colors 
  */ 
-export const generateAllImagesColors = async (filePath: string, idProduct: string, selectionColors: Array<string>): Promise<void> => {
-    if(!fs.existsSync('./temp/')) fs.mkdirSync('./temp/');//add temp folder
-    let destPath: string = process.cwd() + `/temp/${idProduct}/`;// process.cwd()
+export const generateAllImagesColors = async (racinePath: string, filePath: string, idProduct: string, imgObj: any, selectionColors: Array<string>, isEdit: boolean = false): Promise<void> => {
+    if(!fs.existsSync(racinePath + '/temp/')) fs.mkdirSync(racinePath + '/temp/');//add temp folder
+    let destPath: string = racinePath + `/temp/${idProduct}/`;// process.cwd()
     if(!fs.existsSync(destPath)){
         fs.mkdirSync(destPath);//add destPath folder in temp
     }
@@ -39,32 +43,90 @@ export const generateAllImagesColors = async (filePath: string, idProduct: strin
             }
         })
     });
-    let ttPromise: Array<any> = []
-    tabColorSelected.forEach(async(element) => {
-        ttPromise.push(await generateImg(filePath, destPath, element))
-    });
-    Promise.all(ttPromise).then((data) => {
+    await resizeFile(filePath);
+    await generateImgs(idProduct, filePath, destPath, tabColorSelected).then(async() => {
         console.log('OK')
-        //fs.existsSync(pathDest) ? fs.rmdirSync(pathDest, { recursive: true }) : null;//delete folder temp
+        fs.copyFileSync(filePath, destPath + imgObj.imgName);
+        if(isEdit){
+            await deleteCurrentFolderStorage(idProduct);
+        }
+        let tabImgLinks: Array<string> = []
+        for await (const file of fs.readdirSync(destPath)) {
+            tabImgLinks.push(await uploadFirebaseStorage(file, idProduct, destPath))
+        }
+        await ProductModel.findByIdAndUpdate(idProduct, { tabImgLinks: tabImgLinks }, null, async(err: any, resp: any) => {
+            if(err){
+                throw err;
+            } 
+            //fs.existsSync(destPath) ? fs.rmdirSync(path.join(destPath), { recursive: true }) : null;//delete folder img temp
+            let contentTemp: any = await getFiles(racinePath + '/temp/');
+            cleanTempFolder(racinePath, contentTemp)
+        });
     }).catch((err) => {
-        throw err
+        throw err;
     })
 };
 
 /**
- *  Generate image
+ *  Generate images
  */ 
-const generateImg = async (filePath: string, destPath: string, element: any): Promise<void> => {
+const generateImgs = async (idProduct: string, filePath: string, destPath: string, tabColorSelected: any): Promise<void> => {
     return new Promise(async(resolve, reject) => {
         await Jimp.read(filePath, async(err: any, resp: any) => {
             if (err) reject(err);
             else{
+                tabColorSelected.forEach(async(element: any) => {
+                    await resp
+                        .resize(400, 350) // resize
+                        .quality(60) // set JPEG quality
+                        .color([{ apply: element.color, params: [100] }, { apply: 'hue', params: [element.hue] }])
+                        .write(destPath + 'img_' + element.selected + '.jpg'); // save
+                });
+                resolve()
+            }
+        });
+    });
+}
+
+/**
+ * Recuperation des fichiers d'un dossier promise
+ */
+const getFiles = (folderPath: string) => {
+    return new Promise((resolve, reject) => {
+        fs.readdir(folderPath, (err, files) => {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else
+                resolve(files);
+        });
+    });
+};
+
+/**
+ * Redimensionne le fichier
+ */
+const resizeFile = async(filePath: string) => {
+    return new Promise(async(resolve, reject) => {
+        await Jimp.read(filePath, async(err: any, resp: any) => {
+            if(err){
+                reject(err);
+            }else{
                 resolve(await resp
                     .resize(400, 350) // resize
                     .quality(60) // set JPEG quality
-                    .color([{ apply: element.color, params: [100] }, { apply: 'hue', params: [element.hue] }])
-                    .write(destPath + 'img-' + element.selected + '.jpg')); // save
+                    //.greyscale()
+                    .write(filePath)); // save
             }
         });
+    });
+};
+
+/**
+ * Clean le dossier temp
+ */
+const cleanTempFolder = (racinePath: string, contentTemp: Array<any>) => {
+    contentTemp.forEach((element: string) => {
+        fs.rmdirSync(path.join(racinePath + '/temp/' + element), { recursive: true })
     });
 }

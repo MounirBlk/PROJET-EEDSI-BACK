@@ -78,6 +78,11 @@ const ComposantSchema = new mongoose.Schema<ComposantInterface>({
         type: String,
         required: false
     },
+    tabImgLinks:{
+        default: undefined,
+        type: [String],
+        required: false
+    },
     createdAt: {
         default: new Date(),
         type: Date,

@@ -18,5 +18,6 @@ export default interface ProductInterface extends Document {
     "composants": Array<string>,
     "idStripeProduct": string,
     "idStripePrice": string,
-    "imgLink": string
+    "imgLink": string,
+    "tabImgLinks": Array<string>,
 }

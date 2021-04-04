@@ -15,5 +15,6 @@ export default interface ComposantInterface extends Document {
     "quantite": number,
     "idStripeProduct": string,
     "idStripePrice": string,
-    "imgLink": string
+    "imgLink": string,
+    "tabImgLinks": Array<string>,
 }

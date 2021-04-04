@@ -49,7 +49,7 @@ app.get('*', (req: Request, res: Response) => {
   res.status(404).sendFile(path.join(__dirname + '/public/error.html'))
 });
 
-initUpload(app);
+//initUpload();
 mongooseConnect(app);
 
 export default app; //export to call app to test spec
