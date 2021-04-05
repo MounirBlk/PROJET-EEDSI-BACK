@@ -73,6 +73,11 @@ const UserSchema = new mongoose.Schema<UserInterface>({
         type: String,
         required: false
     },
+    idPanier:{
+        default: null,
+        type: String,
+        required: false
+    },
     disabled: {
         default: false,
         type: Boolean,

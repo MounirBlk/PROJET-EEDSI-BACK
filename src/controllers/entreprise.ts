@@ -1,5 +1,5 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
-import { dataResponse, dateFormatFr, deleteMapper, emailFormat, dateFormatEn, exist, getJwtPayload, isEmptyObject, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, textFormat } from '../middlewares';
+import { dataResponse, dateFormatFr, deleteMapper, emailFormat, dateFormatEn, exist, getJwtPayload, isEmptyObject, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, textFormat, isObjectIdValid } from '../middlewares';
 import EntrepriseInterface from '../interfaces/EntrepriseInterface';
 import EntrepriseModel from '../models/EntrepriseModel';
 import axios, { AxiosResponse, Method } from "axios"
@@ -105,7 +105,7 @@ export const updateEntreprise = async (req: Request, res: Response): Promise<voi
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                if(!isValidLength(id, 24, 24) || await EntrepriseModel.countDocuments({ _id: id}) === 0){
+                if(!isObjectIdValid(id) || await EntrepriseModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
                     const entreprise: EntrepriseInterface | null = await EntrepriseModel.findById(id);
@@ -157,7 +157,7 @@ export const deleteEntreprise = async (req: Request, res: Response) : Promise <v
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                if(!isValidLength(id, 24, 24) || !textFormat(id) || await EntrepriseModel.countDocuments({ _id: id}) === 0){
+                if(!isObjectIdValid(id) || await EntrepriseModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
                     await EntrepriseModel.findOneAndDelete({ _id : id });
@@ -184,7 +184,7 @@ export const getEntreprise = async (req: Request, res: Response) : Promise <void
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                if(!isValidLength(id, 24, 24) || !textFormat(id) || await EntrepriseModel.countDocuments({ _id: id}) === 0){
+                if(!isObjectIdValid(id) || await EntrepriseModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
                     await EntrepriseModel.findOne({ _id: id }, (err: Error, results: Response) => {

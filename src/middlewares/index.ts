@@ -2,6 +2,7 @@ import { Application, Request, Response, NextFunction, Errback } from 'express';
 import UserModel from '../models/UserModel';
 import jwt from 'jsonwebtoken';
 const isOnline = require('is-online');
+import { isValidObjectId, Types } from 'mongoose'
 //import { random } from "lodash";
 
 /**
@@ -359,6 +360,12 @@ const checkInternet = (req: Request, res: Response, next: NextFunction): Promise
     });
 }
 
+/**
+ *  Validité de l'object ID
+ */ 
+const isObjectIdValid = (id: string): boolean => {
+    return isValidObjectId(id) && Types.ObjectId.isValid(id) && isValidLength(id, 24, 24) && textFormat(id) ? true : false
+}
 
-export { dataResponse, existTab, tabFormat, firstLetterMaj, isEmptyObject, checkInternet, getJwtPayload, renameKey, randFileName, randomNumber, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
+export { dataResponse, isObjectIdValid, existTab, tabFormat, firstLetterMaj, isEmptyObject, checkInternet, getJwtPayload, renameKey, randFileName, randomNumber, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
 

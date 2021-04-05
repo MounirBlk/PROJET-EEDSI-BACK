@@ -2,12 +2,13 @@ import * as mongoose from 'mongoose';
 import PanierInterface from '../interfaces/PanierInterface';
 
 const PanierSchema = new mongoose.Schema<PanierInterface>({
-    idUser: {
+    refID: {
+        trim: true,
         index: true,
         type: String,
-        unique: true
+        unique: true,
     },
-    articles: {
+    articles: {//idProductSelected
         type: [String],
         required: true,
         default: undefined
@@ -29,7 +30,7 @@ const PanierSchema = new mongoose.Schema<PanierInterface>({
 });
 
 PanierSchema.index({
-    idUser: 1
+    refID: 1
 });
 
 export default mongoose.model<PanierInterface>("PanierModel", PanierSchema);

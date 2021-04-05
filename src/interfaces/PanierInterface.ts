@@ -1,7 +1,7 @@
 import { Document } from "mongoose"
 
 export default interface PanierInterface extends Document {
-    idUser: string;
+    refID: string,
     articles: Array<string>;//idProductSelected
 }
 

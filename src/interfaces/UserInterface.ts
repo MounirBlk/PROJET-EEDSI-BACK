@@ -21,6 +21,7 @@ export default interface UserInterface extends Document {
     disabled?: boolean;
     checked?: boolean;
     idEntreprise?: string;
-    
+    idPanier?: string;
+
     verifyPasswordSync: any;
 }

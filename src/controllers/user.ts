@@ -1,11 +1,13 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
 import UserInterface from '../interfaces/UserInterface';
-import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, firstLetterMaj, getJwtPayload, isEmptyObject, isValidLength, passwordFormat, randChars, randomNumber, textFormat } from '../middlewares';
+import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, firstLetterMaj, getJwtPayload, isEmptyObject, isObjectIdValid, isValidLength, passwordFormat, randChars, randomNumber, textFormat } from '../middlewares';
 import { mailCheckEmail, mailforgotPw, mailRegister } from '../middlewares/sendMail';
 import UserModel from '../models/UserModel';
 import jwt from 'jsonwebtoken';
 import PanierInterface from '../interfaces/PanierInterface';
 import PanierModel from '../models/PanierModel';
+import EntrepriseModel from '../models/EntrepriseModel';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  *  Route register user
@@ -26,6 +28,12 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             if(await UserModel.countDocuments({ email: data.email.trim().toLowerCase() }) !== 0){// Email already exist
                 return dataResponse(res, 409, { error: true, message: "Un compte utilisant cette adresse mail est déjà enregistré" });
             }else{
+                let idEntreprise = null;
+                if(data.role.toLowerCase() === "prospect" && exist(data.idEntreprise)){
+                    if(isObjectIdValid(data.idEntreprise) && await EntrepriseModel.countDocuments({ _id: data.idEntreprise}) !== 0){
+                        idEntreprise = data.idEntreprise; 
+                    }
+                }
                 let toInsert = {
                     email: data.email.trim().toLowerCase(),
                     password: data.password,
@@ -34,14 +42,17 @@ export const register = async (req: Request, res: Response): Promise<void> => {
                     dateNaissance: data.dateNaissance.trim(),
                     civilite: data.civilite.trim(),
                     portable: exist(data.portable) ? data.portable : null,
-                    role: data.role
+                    role: data.role,
+                    idEntreprise: idEntreprise,
+                    idPanier: null
                 };
-                let user: UserInterface = new UserModel(toInsert);
-                await user.save().then(async(user: UserInterface) => {
-                    if(user.role.toLowerCase() === 'client' || user.role.toLowerCase() === 'prospect'){
-                        const panier: PanierInterface = new PanierModel({ idUser: user.get("_id"), articles: [] });
-                        await panier.save();
-                    }
+                if(data.role.toLowerCase() === 'client' || data.role.toLowerCase() === 'prospect'){
+                    const panier: PanierInterface = new PanierModel({ refID: uuidv4(), articles: [] });
+                    const panierSaved: PanierInterface = await panier.save();
+                    toInsert.idPanier = panierSaved.get('_id');
+                }
+                let utilisateur: UserInterface = new UserModel(toInsert);
+                await utilisateur.save().then(async(user: UserInterface) => {
                     if(String(process.env.ENV).trim().toLowerCase() !== "test"){
                         await mailRegister(user.email, `${user.firstname} ${user.lastname}`);
                     } 
@@ -135,11 +146,30 @@ export const deleteUser = async (req: Request, res: Response) : Promise <void> =
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                if(!isValidLength(id, 24, 24) || !textFormat(id) || await UserModel.countDocuments({ _id: id}) === 0){
+                if(!isObjectIdValid(id) || await UserModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
-                    await UserModel.findOneAndDelete({ _id : id });
-                    return dataResponse(res, 200, { error: false, message: 'L\'utilisateur a été supprimé avec succès' })// to transform to disabled user
+                    await UserModel.findOne({ _id: id }, async(err: Error, results: UserInterface) => {
+                        if (err) {
+                            return dataResponse(res, 500, {
+                                error: true,
+                                message: "Erreur dans la requête !"
+                            });
+                        }else if (results === undefined || results === null){// Si le resultat n'existe pas
+                            return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
+                        } else {
+                            if (results) {
+                                await UserModel.findOneAndDelete({ _id : id });
+                                await PanierModel.findOneAndDelete({ _id : results.idPanier });
+                                return dataResponse(res, 200, { error: false, message: 'L\'utilisateur a été supprimé avec succès' })// to transform to disabled user
+                            } else {
+                                return dataResponse(res, 401, {
+                                    error: true,
+                                    message: "La requête en base de donnée n'a pas fonctionné"
+                                });
+                            }
+                        }
+                    });
                 }
             }
         }
@@ -198,7 +228,7 @@ export const getOneUser = async (req: Request, res: Response) : Promise <void> =
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const id: any = req.params.id;
-            if(!isValidLength(id, 24, 24) || !textFormat(id) || await UserModel.countDocuments({ _id: id}) === 0){
+            if(!isObjectIdValid(id) || await UserModel.countDocuments({ _id: id}) === 0){
                 return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
             }else{
                 await UserModel.findOne({ _id: id }, (err: Error, results: Response) => {
@@ -298,7 +328,7 @@ export const updateUser = async (req: Request, res: Response) : Promise <void> =
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                if(!isValidLength(id, 24, 24) || !textFormat(id) || await UserModel.countDocuments({ _id: id}) === 0){
+                if(!isObjectIdValid(id) || await UserModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
                     if(isEmptyObject(data)){
@@ -310,12 +340,19 @@ export const updateUser = async (req: Request, res: Response) : Promise <void> =
                         }else{
                             let isOnError: boolean = false;
                             isOnError = exist(data.portable) ? isValidLength(data.portable, 1, 30) ? false : true : false;
+                            let idEntreprise = null;
+                            if(user.role.toLowerCase() === "prospect" && exist(data.idEntreprise)){
+                                idEntreprise = isObjectIdValid(data.idEntreprise) && await EntrepriseModel.countDocuments({ _id: data.idEntreprise}) !== 0 ? data.idEntreprise : user.idEntreprise
+                            }else{
+                                idEntreprise = user.idEntreprise
+                            }
                             let toUpdate = {
                                 firstname: exist(data.firstname) ? !textFormat(data.firstname) ? (isOnError = true) : firstLetterMaj(data.firstname) : user.firstname,
                                 lastname: exist(data.lastname) ? !textFormat(data.lastname) ? (isOnError = true) : firstLetterMaj(data.lastname) : user.lastname,
                                 civilite: exist(data.civilite) ? (data.civilite.toLowerCase() !== "homme" && data.civilite.toLowerCase() !== "femme") ? (isOnError = true) : data.civilite : user.civilite,
                                 dateNaissance: exist(data.dateNaissance) ? !dateFormatEn(data.dateNaissance) ? (isOnError = true) : data.dateNaissance : user.dateNaissance,
-                                portable: exist(data.portable) ? data.portable : user.portable
+                                portable: exist(data.portable) ? data.portable : user.portable,
+                                idEntreprise: idEntreprise
                             }
                             if(isOnError){
                                 return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
@@ -352,7 +389,7 @@ export const disableUser = async (req: Request, res: Response) : Promise <void> 
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                if(!isValidLength(id, 24, 24) || !textFormat(id) || await UserModel.countDocuments({ _id: id}) === 0){
+                if(!isObjectIdValid(id) || await UserModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
                     await UserModel.findByIdAndUpdate(id, { disabled: true }, null, async(err: Error, resp: any) => {

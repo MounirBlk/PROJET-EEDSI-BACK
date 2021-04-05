@@ -33,5 +33,5 @@ export default (app: Application): void => {
     app.route('/composant/all').get(checkInternet, getAllComposants);
     app.route('/composant/update/:id').put(checkInternet, multer(initUpload()).any(), updateComposant);
 
-    //COMMANDE (LIVRAISON/SIGNALEMENT)
+    //COMMANDE (ATTENTE/LIVRAISON/SIGNALEMENT/TERMINE)
 }
