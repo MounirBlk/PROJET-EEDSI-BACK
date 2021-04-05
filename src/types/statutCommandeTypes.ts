@@ -1,0 +1,1 @@
+export type statutCommandeTypes = "Attente" | "EnCours" | "Signalement" | "Termine";

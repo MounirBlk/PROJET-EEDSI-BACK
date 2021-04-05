@@ -4,13 +4,9 @@ import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import ProductModel from '../models/ProductModel';
 import ProductInterface from '../interfaces/ProductInterface';
-import Jimp from 'jimp'
 import { addProductStripe, deleteProductStripe, updatePriceStripe, updateProductStripe } from '../middlewares/stripe';
-import { AxiosError, AxiosResponse } from 'axios';
-import firebase from 'firebase';
 import { generateAllImagesColors } from '../middlewares/generate';
 import { deleteCurrentFolderStorage } from '../middlewares/firebase';
-//const Jimp = require('jimp');
 
 /**
  *  Route new produit
@@ -82,7 +78,7 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                             }).catch(() => {
                                 return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
                             });
-                        }).catch((err: AxiosError) => {
+                        }).catch((err: Error) => {
                             return dataResponse(res, 500, { error: true, message: "Erreur dans la requête pour l'ajout du produit !" });
                         });
                     }

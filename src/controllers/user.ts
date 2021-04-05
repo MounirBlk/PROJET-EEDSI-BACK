@@ -4,6 +4,8 @@ import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, ex
 import { mailCheckEmail, mailforgotPw, mailRegister } from '../middlewares/sendMail';
 import UserModel from '../models/UserModel';
 import jwt from 'jsonwebtoken';
+import PanierInterface from '../interfaces/PanierInterface';
+import PanierModel from '../models/PanierModel';
 
 /**
  *  Route register user
@@ -36,6 +38,10 @@ export const register = async (req: Request, res: Response): Promise<void> => {
                 };
                 let user: UserInterface = new UserModel(toInsert);
                 await user.save().then(async(user: UserInterface) => {
+                    if(user.role.toLowerCase() === 'client' || user.role.toLowerCase() === 'prospect'){
+                        const panier: PanierInterface = new PanierModel({ idUser: user.get("_id"), articles: [] });
+                        await panier.save();
+                    }
                     if(String(process.env.ENV).trim().toLowerCase() !== "test"){
                         await mailRegister(user.email, `${user.firstname} ${user.lastname}`);
                     } 

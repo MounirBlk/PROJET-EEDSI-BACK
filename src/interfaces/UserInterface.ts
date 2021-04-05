@@ -20,6 +20,7 @@ export default interface UserInterface extends Document {
     lastLogin? : Date;
     disabled?: boolean;
     checked?: boolean;
+    idEntreprise?: string;
     
     verifyPasswordSync: any;
 }
