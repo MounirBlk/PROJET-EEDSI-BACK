@@ -1,4 +1,5 @@
 import { Document } from "mongoose"
+import ComposantSelectedInterface from "./ComposantSelectedInterface";
 
 export default interface ProduitSelectedInterface extends Document {
     "refID": string,
@@ -11,5 +12,6 @@ export default interface ProduitSelectedInterface extends Document {
     //"poids": number,
     "imgLinkSelected"?: string;
     "quantite": number,//
-    "listeComposantsSelected": Array<string>//idComposantSelected
+    "isCommande": boolean,
+    "listeComposantsSelected": Array<ComposantSelectedInterface>//idComposantSelected
 }

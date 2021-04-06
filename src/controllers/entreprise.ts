@@ -228,7 +228,7 @@ export const getAllEntreprises = async (req: Request, res: Response) : Promise <
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
-            await EntrepriseModel.find({}, (err: Error, results: any) => {
+            await EntrepriseModel.find({}, (err: Error, results: Array<EntrepriseInterface>) => {
                 if (err) {
                     return dataResponse(res, 500, {
                         error: true,

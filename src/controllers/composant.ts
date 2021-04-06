@@ -9,7 +9,9 @@ import { AxiosError, AxiosResponse } from 'axios';
 import firebase from 'firebase';
 import { generateAllImagesColors } from '../middlewares/generate';
 import { deleteCurrentFolderStorage } from '../middlewares/firebase';
-import ComposantSelectedModel from '../models/ComposantSelectedModel';
+import ProductSelectedModel from '../models/ProductSelectedModel';
+import ProduitSelectedInterface from '../interfaces/ProductSelectedInterface';
+import ComposantSelectedInterface from '../interfaces/ComposantSelectedInterface';
 
 /**
  *  Route new composant
@@ -103,13 +105,13 @@ export const deleteComposant = async (req: Request, res: Response) : Promise <vo
                 if(!isObjectIdValid(id) || await ComposantModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
+                    await deleteAllComposantSelected(id, res);
                     await ComposantModel.findOne({ _id: id }, async(err: Error, results: ComposantInterface) => {
                         let ttPromise: Array<any> = []
                         ttPromise.push(await updatePriceStripe(results.idStripePrice, true));
                         ttPromise.push(await updateProductStripe(results.idStripeProduct,'[COMPOSANT] - ' +  results.nom, results.description, true));
                         ttPromise.push(await ComposantModel.findOneAndDelete({ _id : id })); 
                         ttPromise.push(await deleteCurrentFolderStorage(id));
-                        ttPromise.push(await ComposantSelectedModel.findOneAndDelete({ _id : id })); 
                         Promise.all(ttPromise).then((data) => {
                             return dataResponse(res, 200, { error: false, message: 'Le composant a été supprimé avec succès' })
                         }).catch((err) => {
@@ -281,5 +283,30 @@ export const updateComposant = async (req: Request, res: Response): Promise<void
         }
     }).catch((error) => {
         throw error;
+    });
+}
+
+/**
+ *  Route delete all composants selected
+ *  @param {String} id 
+ */ 
+export const deleteAllComposantSelected = async (id: string, res: Response): Promise<void> => {
+    await ProductSelectedModel.find({}, async(err: Error, results: Array<ProduitSelectedInterface>) => {
+        if(err){
+            return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
+        }else{
+            let isCommandActive: boolean = false;
+            results.forEach(async(item: ProduitSelectedInterface) => {
+                if(item.isCommande){
+                    isCommandActive = true;
+                }
+                item.listeComposantsSelected.filter((el: ComposantSelectedInterface) => el.idComposant !== id);
+            });
+            if(isCommandActive){
+                return dataResponse(res, 400, { error: true, message: "Erreur, une commande est en cours !" });
+            }else{
+                console.log(results)//TODO
+            }
+        }
     });
 }

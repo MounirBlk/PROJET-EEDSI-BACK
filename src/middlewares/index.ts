@@ -28,15 +28,16 @@ const dataResponse = (res: Response, status: number = 500, data: any = { error: 
  *  @param {string} mapperNameRoute? Nom de la route
  */ 
 const deleteMapper = (data: any, mapperNameRoute?: string): any => {
-    //data._id = mapperNameRoute === 'getEntreprise' || mapperNameRoute === 'getEntreprises' ? data._id : null;
-    data.token = null;
-    data.attempt = null;
-    data.password = null;
-    data.updatedAt = null;
-    data.__v = null;
-    data.active = null;
-    data.idStripeProduct = null;
-    data.idStripePrice = null;
+    //data._id = mapperNameRoute === 'getEntreprise' || mapperNameRoute === 'getEntreprises' ? data._id : undefined;
+    data.token = undefined;
+    data.attempt = undefined;
+    data.password = undefined;
+    data.updatedAt = undefined;
+    data.__v = undefined;
+    data.active = undefined;
+    data.idStripeProduct = undefined;
+    data.idStripePrice = undefined;
+    mapperNameRoute === 'getArticle' ? data.idProduct = undefined : null;
     return data;
 }
 

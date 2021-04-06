@@ -281,7 +281,7 @@ export const getAllUsers = async (req: Request, res: Response) : Promise <void> 
                 }else{
                     const roleFind = firstLetterMaj(role)              
                     let filterFind: any = role.trim().toLowerCase() === 'commercial' ? { $or: [{role: roleFind}, {role: 'Administrateur'}] } : { role: roleFind }
-                    await UserModel.find(filterFind, (err: Error, results: any) => {
+                    await UserModel.find(filterFind, (err: Error, results: Array<UserInterface>) => {
                         if (err) {
                             return dataResponse(res, 500, {
                                 error: true,

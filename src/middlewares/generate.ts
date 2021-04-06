@@ -82,7 +82,7 @@ const generateImgs = async (idProduct: string, filePath: string, destPath: strin
                         .resize(400, 350) // resize
                         .quality(60) // set JPEG quality
                         .color([{ apply: element.color, params: [100] }, { apply: 'hue', params: [element.hue] }])
-                        .write(destPath + 'img_' + element.selected + '.jpg'); // save
+                        .write(destPath + element.selected + '.jpg'); // save
                 });
                 resolve()
             }
