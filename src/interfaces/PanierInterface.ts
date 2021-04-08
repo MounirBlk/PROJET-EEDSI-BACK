@@ -1,8 +1,8 @@
-import { Document } from "mongoose"
+import { Document, Schema } from "mongoose"
 
 export default interface PanierInterface extends Document {
     refID: string,
-    articles: Array<string>;//idProductSelected
+    articles: Array<Schema.Types.ObjectId>//idProductSelected
 }
 
 /*interface ArticlePanier extends Document {

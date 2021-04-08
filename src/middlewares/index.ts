@@ -37,7 +37,6 @@ const deleteMapper = (data: any, mapperNameRoute?: string): any => {
     data.active = undefined;
     data.idStripeProduct = undefined;
     data.idStripePrice = undefined;
-    mapperNameRoute === 'getArticle' ? data.idProduct = undefined : null;
     return data;
 }
 

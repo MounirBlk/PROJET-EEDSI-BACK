@@ -9,9 +9,10 @@ const ProductSelectedSchema = new mongoose.Schema<ProductSelectedInterface>({
         unique: true,
     },
     idProduct: {
-        default: null,
-        type: String,
-        required: true
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ProductModel',
+        required: false,
+        default: null
     },
     matiere: {
         type: String,
@@ -59,7 +60,17 @@ const ProductSelectedSchema = new mongoose.Schema<ProductSelectedInterface>({
         default: false
     },
     listeComposantsSelected: {
-        type: [{ "idComposant": String, "matiere": String, "couleur": String, "quantite": Number }],
+        type: [{ 
+            "idComposant": {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'ComposantModel',
+                required: false,
+                default: null
+            }, 
+            "matiere": String, 
+            "couleur": String, 
+            "quantite": Number 
+        }],
         required: false,
         default: undefined
     },
@@ -74,7 +85,7 @@ const ProductSelectedSchema = new mongoose.Schema<ProductSelectedInterface>({
         required: false
     },
 }, {
-    collection: "produits_selected",
+    collection: "articles",// article
     timestamps: true,
     autoCreate: true
 });

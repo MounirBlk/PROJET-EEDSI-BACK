@@ -8,6 +8,8 @@ import { addProductStripe, deleteProductStripe, updatePriceStripe, updateProduct
 import { generateAllImagesColors } from '../middlewares/generate';
 import { deleteCurrentFolderStorage } from '../middlewares/firebase';
 import ProductSelectedModel from '../models/ProductSelectedModel';
+import { CallbackError } from 'mongoose';
+import ComposantInterface from '../interfaces/ComposantInterface';
 
 /**
  *  Route new produit
@@ -146,16 +148,14 @@ export const getProduct = async (req: Request, res: Response) : Promise <void> =
                 if(!isObjectIdValid(id) || await ProductModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
-                    await ProductModel.findOne({ _id: id }, (err: Error, results: Response) => {
+                    ProductModel.findOne({ _id: id }).populate('composants').exec((err: CallbackError, results: ProductInterface | null) => {
                         if (err) {
-                            return dataResponse(res, 500, {
-                                error: true,
-                                message: "Erreur dans la requête !"
-                            });
+                            return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
                         }else if (results === undefined || results === null){// Si le resultat n'existe pas
                             return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
                         } else {
                             if (results) {
+                                results.composants = results.composants !== null && results.composants !== undefined ? results.composants.map((item: any) => deleteMapper(item)) : results.composants
                                 return dataResponse(res, 200, {
                                     error: false,
                                     message: "Les informations du produit ont bien été récupéré",
@@ -187,16 +187,16 @@ export const getAllProducts = async (req: Request, res: Response) : Promise <voi
             if(payload === null || payload === undefined){
                 return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
             }else{
-                await ProductModel.find({}, (err: Error, results: any) => {
+                ProductModel.find({}).populate('composants').exec((err: CallbackError, results: ProductInterface[]) => {
                     if (err) {
-                        return dataResponse(res, 500, {
-                            error: true,
-                            message: "Erreur dans la requête !"
-                        });
+                        return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
                     }else if (results === undefined || results === null){// Si le resultat n'existe pas
                         return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
                     } else {
                         if (results) {
+                            results.forEach((el: ProductInterface) => {
+                                el.composants = el.composants !== null && el.composants !== undefined ? el.composants.map((item: any) => deleteMapper(item)) : el.composants
+                            });
                             return dataResponse(res, 200, {
                                 error: false,
                                 message: "Les produits ont bien été récupéré",

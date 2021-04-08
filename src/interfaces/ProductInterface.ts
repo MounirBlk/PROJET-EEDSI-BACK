@@ -1,4 +1,4 @@
-import { Document } from "mongoose"
+import { Document, Schema } from "mongoose"
 
 export default interface ProductInterface extends Document {
     "refID": string,
@@ -15,7 +15,7 @@ export default interface ProductInterface extends Document {
     "prix": number,
     "taxe": number,
     "quantite": number,
-    "composants": Array<string>,
+    "composants": Array<Schema.Types.ObjectId>,// ?
     "idStripeProduct": string,
     "idStripePrice": string,
     "imgLink": string,

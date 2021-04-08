@@ -8,11 +8,12 @@ const PanierSchema = new mongoose.Schema<PanierInterface>({
         type: String,
         unique: true,
     },
-    articles: {//idProductSelected
-        type: [String],
-        required: true,
-        default: undefined
-    },
+    articles: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ProductSelectedModel',
+        required: false,
+        default: null
+    }],
     createdAt: {
         default: new Date(),
         type: Date,

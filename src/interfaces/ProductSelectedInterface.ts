@@ -1,9 +1,9 @@
-import { Document } from "mongoose"
+import { Document, Schema } from "mongoose"
 import ComposantSelectedInterface from "./ComposantSelectedInterface";
 
 export default interface ProduitSelectedInterface extends Document {
     "refID": string,
-    "idProduct": string,
+    "idProduct": Schema.Types.ObjectId,
     "matiere": string,
     "couleur": string,
     //"longueur": number,

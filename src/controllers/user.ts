@@ -8,6 +8,7 @@ import PanierInterface from '../interfaces/PanierInterface';
 import PanierModel from '../models/PanierModel';
 import EntrepriseModel from '../models/EntrepriseModel';
 import { v4 as uuidv4 } from 'uuid';
+import { CallbackError } from 'mongoose';
 
 /**
  *  Route register user
@@ -188,20 +189,19 @@ export const getOwnUser = async (req: Request, res: Response) : Promise <void> =
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
-            await UserModel.findOne({ _id: payload.id }, (err: Error, results: Response) => {
+            UserModel.findOne({ _id: payload.id }).populate('idEntreprise').populate('idPanier').exec((err: CallbackError, results: UserInterface | null) => {
                 if (err) {
-                    return dataResponse(res, 500, {
-                        error: true,
-                        message: "Erreur dans la requête !"
-                    });
+                    return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
                 }else if (results === undefined || results === null){// Si le resultat n'existe pas
                     return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
                 } else {
                     if (results) {
+                        results.idEntreprise = results.idEntreprise !== null && results.idEntreprise !== undefined ? deleteMapper(results.idEntreprise) : results.idEntreprise
+                        results.idPanier = results.idPanier !== null && results.idPanier !== undefined ? deleteMapper(results.idPanier) : results.idPanier
                         return dataResponse(res, 200, {
                             error: false,
                             message: "Les informations ont bien été récupéré",
-                            user: deleteMapper(results) 
+                            user: deleteMapper(results),
                         });
                     } else {
                         return dataResponse(res, 401, {
@@ -231,20 +231,19 @@ export const getOneUser = async (req: Request, res: Response) : Promise <void> =
             if(!isObjectIdValid(id) || await UserModel.countDocuments({ _id: id}) === 0){
                 return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
             }else{
-                await UserModel.findOne({ _id: id }, (err: Error, results: Response) => {
+                UserModel.findOne({ _id: id }).populate('idEntreprise').populate('idPanier').exec((err: CallbackError, results: UserInterface | null) => {
                     if (err) {
-                        return dataResponse(res, 500, {
-                            error: true,
-                            message: "Erreur dans la requête !"
-                        });
+                        return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
                     }else if (results === undefined || results === null){// Si le resultat n'existe pas
                         return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
                     } else {
                         if (results) {
+                            results.idEntreprise = results.idEntreprise !== null && results.idEntreprise !== undefined ? deleteMapper(results.idEntreprise) : results.idEntreprise
+                            results.idPanier = results.idPanier !== null && results.idPanier !== undefined ? deleteMapper(results.idPanier) : results.idPanier
                             return dataResponse(res, 200, {
                                 error: false,
                                 message: "Les informations ont bien été récupéré",
-                                user: deleteMapper(results) 
+                                user: deleteMapper(results),
                             });
                         } else {
                             return dataResponse(res, 401, {
@@ -281,16 +280,17 @@ export const getAllUsers = async (req: Request, res: Response) : Promise <void> 
                 }else{
                     const roleFind = firstLetterMaj(role)              
                     let filterFind: any = role.trim().toLowerCase() === 'commercial' ? { $or: [{role: roleFind}, {role: 'Administrateur'}] } : { role: roleFind }
-                    await UserModel.find(filterFind, (err: Error, results: Array<UserInterface>) => {
+                    UserModel.find(filterFind).populate('idEntreprise').populate('idPanier').exec((err: CallbackError, results: UserInterface[]) => {
                         if (err) {
-                            return dataResponse(res, 500, {
-                                error: true,
-                                message: "Erreur dans la requête !"
-                            });
+                            return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
                         }else if (results === undefined || results === null){// Si le resultat n'existe pas
                             return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
                         } else {
                             if (results) {
+                                results.forEach((el: UserInterface) => {
+                                    el.idEntreprise = el.idEntreprise !== null && el.idEntreprise !== undefined ? deleteMapper(el.idEntreprise) : el.idEntreprise
+                                    el.idPanier = el.idPanier !== null && el.idPanier !== undefined ? deleteMapper(el.idPanier) : el.idPanier
+                                });
                                 let roleMessage = role.trim().toLowerCase() === 'commercial' ? "commerciaux" : role.trim().toLowerCase().concat('s')
                                 return dataResponse(res, 200, {
                                     error: false,

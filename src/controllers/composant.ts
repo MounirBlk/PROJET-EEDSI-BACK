@@ -300,7 +300,7 @@ export const deleteAllComposantSelected = async (id: string, res: Response): Pro
                 if(item.isCommande){
                     isCommandActive = true;
                 }
-                item.listeComposantsSelected.filter((el: ComposantSelectedInterface) => el.idComposant !== id);
+                item.listeComposantsSelected.filter((el: ComposantSelectedInterface) => el.idComposant.toString() !== id);
             });
             if(isCommandActive){
                 return dataResponse(res, 400, { error: true, message: "Erreur, une commande est en cours !" });

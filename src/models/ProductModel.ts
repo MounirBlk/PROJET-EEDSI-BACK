@@ -73,11 +73,12 @@ const ProductSchema = new mongoose.Schema<ProductInterface>({
         type: Number,
         required: true
     },
-    composants: {
-        type: [String],
+    composants: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ComposantModel',
         required: false,
-        default: undefined
-    },
+        default: null
+    }],
     idStripeProduct:{
         default: null,
         type: String,
