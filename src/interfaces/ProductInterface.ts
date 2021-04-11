@@ -20,4 +20,5 @@ export default interface ProductInterface extends Document {
     "idStripePrice": string,
     "imgLink": string,
     "tabImgLinks": Array<string>,
+    "archive": boolean
 }

@@ -1,3 +1,4 @@
+import { NextFunction } from 'express';
 import * as mongoose from 'mongoose';
 import EntrepriseInterface from '../interfaces/EntrepriseInterface';
 

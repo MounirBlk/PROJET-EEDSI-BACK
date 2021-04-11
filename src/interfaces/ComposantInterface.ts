@@ -17,4 +17,5 @@ export default interface ComposantInterface extends Document {
     "idStripePrice": string,
     "imgLink": string,
     "tabImgLinks": Array<string>,
+    "archive": boolean
 }

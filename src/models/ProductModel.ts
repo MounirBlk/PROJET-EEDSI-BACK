@@ -99,6 +99,11 @@ const ProductSchema = new mongoose.Schema<ProductInterface>({
         type: [String],
         required: false
     },
+    archive:{
+        default: false,
+        type: Boolean,
+        required: false
+    },
     createdAt: {
         default: new Date(),
         type: Date,

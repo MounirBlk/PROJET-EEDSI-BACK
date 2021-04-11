@@ -318,8 +318,7 @@ const randChars = (length: number = 10): string => {
 
 /**
  *  Function qui test le token et recupere le payload du token
- *  @param {Request} req 
- *  @param {Response} res 
+ *  @param {string} token (with Bearer)
  */ 
 const getJwtPayload = async(tokenHeader: string | undefined): Promise < any | null > => {
     try {

@@ -114,7 +114,7 @@ export const deleteProduct = async (req: Request, res: Response) : Promise <void
                         ttPromise.push(await updatePriceStripe(results.idStripePrice, true));
                         ttPromise.push(await updateProductStripe(results.idStripeProduct,'[PRODUIT] - ' + results.nom, results.description, true));
                         //ttPromise.push(await deleteProductStripe(results.idStripeProduct));//TO FIX SOON
-                        ttPromise.push(await ProductModel.findOneAndDelete({ _id : id }));
+                        ttPromise.push(await ProductModel.findOneAndUpdate({ _id : id }, { archive: true }));
                         ttPromise.push(await deleteCurrentFolderStorage(id));
                         ttPromise.push(await ProductSelectedModel.findOneAndDelete({ _id : id }));
                         Promise.all(ttPromise).then((data) => {

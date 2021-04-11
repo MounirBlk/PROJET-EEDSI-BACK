@@ -67,6 +67,11 @@ const ProductSelectedSchema = new mongoose.Schema<ProductSelectedInterface>({
                 required: false,
                 default: null
             }, 
+            "imgLinkSelected": {
+                type: String,
+                required: false,
+                default: null
+            },
             "matiere": String, 
             "couleur": String, 
             "quantite": Number 

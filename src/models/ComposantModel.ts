@@ -83,6 +83,11 @@ const ComposantSchema = new mongoose.Schema<ComposantInterface>({
         type: [String],
         required: false
     },
+    archive:{
+        default: false,
+        type: Boolean,
+        required: false
+    },
     createdAt: {
         default: new Date(),
         type: Date,

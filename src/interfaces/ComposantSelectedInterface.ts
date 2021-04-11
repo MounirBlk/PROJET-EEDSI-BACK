@@ -5,5 +5,6 @@ export default interface ComposantSelectedInterface extends Document {
     "idComposant": Schema.Types.ObjectId,
     "matiere": string,
     "couleur": string,
-    "quantite": number
+    "quantite": number,
+    "imgLinkSelected"?: string
 }

@@ -12,7 +12,7 @@ import UserInterface from '../interfaces/UserInterface';
 import ComposantSelectedInterface from '../interfaces/ComposantSelectedInterface';
 import ComposantModel from '../models/ComposantModel';
 import ProductInterface from '../interfaces/ProductInterface';
-import { CallbackError } from 'mongoose';
+import { CallbackError, Schema } from 'mongoose';
 
 /**
  *  Route add article panier
@@ -35,11 +35,17 @@ export const addArticle = async (req: Request, res: Response): Promise<void> => 
                     let isComposantErrorExist: boolean = false;
                     let isComposantErrorInvalide: boolean = false;
                     if(data.listeComposantsSelected.length > 0){
+                        let produit: any = await ProductModel.findOne({ _id: data.idProduct })
                         data.listeComposantsSelected.forEach(async(el: any) => {
                             if(!exist(el.idComposant) || !exist(el.matiere) || !exist(el.couleur) || !exist(el.quantite)){
                                 isComposantErrorExist = true;
                             }else{
-                                if(!isObjectIdValid(el.idComposant) || !textFormat(el.matiere) || !numberFormat(el.quantite) || !textFormat(el.couleur) || await ComposantModel.countDocuments({ _id: el.idComposant}) === 0){
+                                //produit.composants.some((item: any) => { el.idComposant === item.toString() })
+                                let isComposantNotAvailable: boolean = false;
+                                produit.composants.forEach((item: any) => { 
+                                    isComposantNotAvailable = el.idComposant !== item.toString() ? true : isComposantNotAvailable
+                                })
+                                if(!isObjectIdValid(el.idComposant) || !textFormat(el.matiere) || !numberFormat(el.quantite) || !textFormat(el.couleur) || isComposantNotAvailable){
                                     isComposantErrorInvalide = true;
                                 }
                             }
@@ -254,5 +260,68 @@ export const getAllArticles = async (req: Request, res: Response): Promise<void>
  *  @param {Response} res 
  */ 
 export const updateArticle = async (req: Request, res: Response): Promise<void> => {
-    //TODO
+    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+        if(payload === null || payload === undefined){
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
+        }else{
+            const id = req.params.id;
+            if(!exist(id)){
+                return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
+            }else{
+                if(!isObjectIdValid(id) || await ProductSelectedModel.countDocuments({ _id: id}) === 0){
+                    return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
+                }else{
+                    const data = req.body;
+                    if(!exist(data.idProduct) || !exist(data.matiere) || !exist(data.couleur) || !exist(data.quantite) || !existTab(data.listeComposantsSelected)){
+                        return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
+                    }else{
+                        if((!isObjectIdValid(data.idProduct) || await ProductModel.countDocuments({ _id: data.idProduct}) === 0) || 
+                        !textFormat(data.matiere) || !textFormat(data.couleur) || !numberFormat(data.quantite) || !tabFormat(data.listeComposantsSelected)){
+                            return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
+                        }else{
+                            let isComposantErrorExist: boolean = false;
+                            let isComposantErrorInvalide: boolean = false;
+                            if(data.listeComposantsSelected.length > 0){
+                                let produit: any = await ProductModel.findOne({ _id: data.idProduct })
+                                data.listeComposantsSelected.forEach(async(el: any) => {
+                                    if(!exist(el.idComposant) || !exist(el.matiere) || !exist(el.couleur) || !exist(el.quantite)){
+                                        isComposantErrorExist = true;
+                                    }else{
+                                        //produit.composants.some((item: any) => { el.idComposant === item.toString() })
+                                        let isComposantNotAvailable: boolean = false;
+                                        produit.composants.forEach((item: any) => { 
+                                            isComposantNotAvailable = el.idComposant !== item.toString() ? true : isComposantNotAvailable
+                                        })
+                                        if(!isObjectIdValid(el.idComposant) || !textFormat(el.matiere) || !numberFormat(el.quantite) || !textFormat(el.couleur) || isComposantNotAvailable){
+                                            isComposantErrorInvalide = true;
+                                        }
+                                    }
+                                });
+                            }
+                            if(isComposantErrorExist){
+                                return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
+                            }else if(isComposantErrorInvalide){
+                                return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
+                            }else{
+                                let toUpdate = {
+                                    "idProduct": data.idProduct,
+                                    "matiere": data.matiere,
+                                    "couleur": data.couleur,
+                                    "quantite": data.quantite,
+                                    "listeComposantsSelected": data.listeComposantsSelected,//idComposantSelected
+                                };
+                                await ProductSelectedModel.findByIdAndUpdate(id, toUpdate, null, (err: any, resp: ProduitSelectedInterface | null) => {
+                                    if (err) {
+                                        return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
+                                    } else {
+                                        return dataResponse(res, 200, { error: false, message: "L'article a bien été mise à jour" })
+                                    }
+                                })
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
 };
