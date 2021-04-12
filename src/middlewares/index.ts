@@ -2,6 +2,7 @@ import { Application, Request, Response, NextFunction, Errback } from 'express';
 import UserModel from '../models/UserModel';
 import jwt from 'jsonwebtoken';
 const isOnline = require('is-online');
+import { isValidObjectId, Types } from 'mongoose'
 //import { random } from "lodash";
 
 /**
@@ -27,15 +28,15 @@ const dataResponse = (res: Response, status: number = 500, data: any = { error: 
  *  @param {string} mapperNameRoute? Nom de la route
  */ 
 const deleteMapper = (data: any, mapperNameRoute?: string): any => {
-    //data._id = mapperNameRoute === 'getEntreprise' || mapperNameRoute === 'getEntreprises' ? data._id : null;
-    data.token = null;
-    data.attempt = null;
-    data.password = null;
-    data.updatedAt = null;
-    data.__v = null;
-    data.active = null;
-    data.idStripeProduct = null;
-    data.idStripePrice = null;
+    //data._id = mapperNameRoute === 'getEntreprise' || mapperNameRoute === 'getEntreprises' ? data._id : undefined;
+    data.token = undefined;
+    data.attempt = undefined;
+    data.password = undefined;
+    data.updatedAt = undefined;
+    data.__v = undefined;
+    data.active = undefined;
+    data.idStripeProduct = undefined;
+    data.idStripePrice = undefined;
     return data;
 }
 
@@ -317,8 +318,7 @@ const randChars = (length: number = 10): string => {
 
 /**
  *  Function qui test le token et recupere le payload du token
- *  @param {Request} req 
- *  @param {Response} res 
+ *  @param {string} token (with Bearer)
  */ 
 const getJwtPayload = async(tokenHeader: string | undefined): Promise < any | null > => {
     try {
@@ -359,6 +359,12 @@ const checkInternet = (req: Request, res: Response, next: NextFunction): Promise
     });
 }
 
+/**
+ *  Validité de l'object ID
+ */ 
+const isObjectIdValid = (id: string): boolean => {
+    return isValidObjectId(id) && Types.ObjectId.isValid(id) && isValidLength(id, 24, 24) && textFormat(id) ? true : false
+}
 
-export { dataResponse, existTab, tabFormat, firstLetterMaj, isEmptyObject, checkInternet, getJwtPayload, renameKey, randFileName, randomNumber, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
+export { dataResponse, isObjectIdValid, existTab, tabFormat, firstLetterMaj, isEmptyObject, checkInternet, getJwtPayload, renameKey, randFileName, randomNumber, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
 

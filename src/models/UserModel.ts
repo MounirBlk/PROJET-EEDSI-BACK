@@ -68,10 +68,17 @@ const UserSchema = new mongoose.Schema<UserInterface>({
         type: String,
         required: false
     },
-    idEntreprise:{
-        default: null,
-        type: String,
-        required: false
+    idEntreprise: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'EntrepriseModel',
+        required: false,
+        default: null
+    },
+    idPanier: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'PanierModel',
+        required: false,
+        default: null
     },
     disabled: {
         default: false,

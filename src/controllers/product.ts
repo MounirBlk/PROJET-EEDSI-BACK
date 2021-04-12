@@ -1,16 +1,15 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
-import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, existTab, firstLetterMaj, floatFormat, getJwtPayload, isEmptyObject, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, tabFormat, textFormat } from '../middlewares';
+import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, existTab, firstLetterMaj, floatFormat, getJwtPayload, isEmptyObject, isObjectIdValid, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, tabFormat, textFormat } from '../middlewares';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import ProductModel from '../models/ProductModel';
 import ProductInterface from '../interfaces/ProductInterface';
-import Jimp from 'jimp'
 import { addProductStripe, deleteProductStripe, updatePriceStripe, updateProductStripe } from '../middlewares/stripe';
-import { AxiosError, AxiosResponse } from 'axios';
-import firebase from 'firebase';
 import { generateAllImagesColors } from '../middlewares/generate';
 import { deleteCurrentFolderStorage } from '../middlewares/firebase';
-//const Jimp = require('jimp');
+import ProductSelectedModel from '../models/ProductSelectedModel';
+import { CallbackError } from 'mongoose';
+import ComposantInterface from '../interfaces/ComposantInterface';
 
 /**
  *  Route new produit
@@ -82,7 +81,7 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                             }).catch(() => {
                                 return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
                             });
-                        }).catch((err: AxiosError) => {
+                        }).catch((err: Error) => {
                             return dataResponse(res, 500, { error: true, message: "Erreur dans la requête pour l'ajout du produit !" });
                         });
                     }
@@ -107,7 +106,7 @@ export const deleteProduct = async (req: Request, res: Response) : Promise <void
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                if(!isValidLength(id, 24, 24) || !textFormat(id) || await ProductModel.countDocuments({ _id: id}) === 0){
+                if(!isObjectIdValid(id) || await ProductModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
                     await ProductModel.findOne({ _id: id }, async(err: Error, results: ProductInterface) => {
@@ -115,8 +114,9 @@ export const deleteProduct = async (req: Request, res: Response) : Promise <void
                         ttPromise.push(await updatePriceStripe(results.idStripePrice, true));
                         ttPromise.push(await updateProductStripe(results.idStripeProduct,'[PRODUIT] - ' + results.nom, results.description, true));
                         //ttPromise.push(await deleteProductStripe(results.idStripeProduct));//TO FIX SOON
-                        ttPromise.push(await ProductModel.findOneAndDelete({ _id : id }));
+                        ttPromise.push(await ProductModel.findOneAndUpdate({ _id : id }, { archive: true }));
                         ttPromise.push(await deleteCurrentFolderStorage(id));
+                        ttPromise.push(await ProductSelectedModel.findOneAndDelete({ _id : id }));
                         Promise.all(ttPromise).then((data) => {
                             return dataResponse(res, 200, { error: false, message: 'Le produit a été supprimé avec succès' })
                         }).catch((err) => {
@@ -145,19 +145,17 @@ export const getProduct = async (req: Request, res: Response) : Promise <void> =
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                if(!isValidLength(id, 24, 24) || !textFormat(id) || await ProductModel.countDocuments({ _id: id}) === 0){
+                if(!isObjectIdValid(id) || await ProductModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
-                    await ProductModel.findOne({ _id: id }, (err: Error, results: Response) => {
+                    ProductModel.findOne({ _id: id }).populate('composants').exec((err: CallbackError, results: ProductInterface | null) => {
                         if (err) {
-                            return dataResponse(res, 500, {
-                                error: true,
-                                message: "Erreur dans la requête !"
-                            });
+                            return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
                         }else if (results === undefined || results === null){// Si le resultat n'existe pas
                             return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
                         } else {
                             if (results) {
+                                results.composants = results.composants !== null && results.composants !== undefined ? results.composants.map((item: any) => deleteMapper(item)) : results.composants
                                 return dataResponse(res, 200, {
                                     error: false,
                                     message: "Les informations du produit ont bien été récupéré",
@@ -189,16 +187,16 @@ export const getAllProducts = async (req: Request, res: Response) : Promise <voi
             if(payload === null || payload === undefined){
                 return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
             }else{
-                await ProductModel.find({}, (err: Error, results: any) => {
+                ProductModel.find({}).populate('composants').exec((err: CallbackError, results: ProductInterface[]) => {
                     if (err) {
-                        return dataResponse(res, 500, {
-                            error: true,
-                            message: "Erreur dans la requête !"
-                        });
+                        return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
                     }else if (results === undefined || results === null){// Si le resultat n'existe pas
                         return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
                     } else {
                         if (results) {
+                            results.forEach((el: ProductInterface) => {
+                                el.composants = el.composants !== null && el.composants !== undefined ? el.composants.map((item: any) => deleteMapper(item)) : el.composants
+                            });
                             return dataResponse(res, 200, {
                                 error: false,
                                 message: "Les produits ont bien été récupéré",
@@ -233,7 +231,7 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                if(!isValidLength(id, 24, 24) || await ProductModel.countDocuments({ _id: id}) === 0){
+                if(!isObjectIdValid(id) || await ProductModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
                     const product: ProductInterface | null = await ProductModel.findById(id);

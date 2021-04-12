@@ -1,4 +1,4 @@
-import { Document } from "mongoose"
+import { Document, Schema } from "mongoose"
 import { civiliteTypes } from "../types/civiliteTypes";
 import { roleTypes } from "../types/roleTypes";
 
@@ -20,6 +20,8 @@ export default interface UserInterface extends Document {
     lastLogin? : Date;
     disabled?: boolean;
     checked?: boolean;
-    
+    idEntreprise?: Schema.Types.ObjectId;
+    idPanier?: Schema.Types.ObjectId;
+
     verifyPasswordSync: any;
 }

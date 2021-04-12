@@ -11,7 +11,9 @@ import ProductModel from '../models/ProductModel';
  *  @param {string} racinePath 
  *  @param {string} filePath 
  *  @param {string} idProduct 
+ *  @param {Object} imgObj 
  *  @param {Array<string>} colors 
+ *  @param {boolean} isEdit 
  */ 
 export const generateAllImagesColors = async (racinePath: string, filePath: string, idProduct: string, imgObj: any, selectionColors: Array<string>, isEdit: boolean = false): Promise<void> => {
     if(!fs.existsSync(racinePath + '/temp/')) fs.mkdirSync(racinePath + '/temp/');//add temp folder
@@ -80,7 +82,7 @@ const generateImgs = async (idProduct: string, filePath: string, destPath: strin
                         .resize(400, 350) // resize
                         .quality(60) // set JPEG quality
                         .color([{ apply: element.color, params: [100] }, { apply: 'hue', params: [element.hue] }])
-                        .write(destPath + 'img_' + element.selected + '.jpg'); // save
+                        .write(destPath + element.selected + '.jpg'); // save
                 });
                 resolve()
             }

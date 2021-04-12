@@ -1,5 +1,5 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
-import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, existTab, firstLetterMaj, floatFormat, getJwtPayload, isEmptyObject, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, tabFormat, textFormat } from '../middlewares';
+import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, existTab, firstLetterMaj, floatFormat, getJwtPayload, isEmptyObject, isObjectIdValid, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, tabFormat, textFormat } from '../middlewares';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import ComposantModel from '../models/ComposantModel';
@@ -9,6 +9,10 @@ import { AxiosError, AxiosResponse } from 'axios';
 import firebase from 'firebase';
 import { generateAllImagesColors } from '../middlewares/generate';
 import { deleteCurrentFolderStorage } from '../middlewares/firebase';
+import ProductSelectedModel from '../models/ProductSelectedModel';
+import ProduitSelectedInterface from '../interfaces/ProductSelectedInterface';
+import ComposantSelectedInterface from '../interfaces/ComposantSelectedInterface';
+import { CallbackError } from 'mongoose';
 
 /**
  *  Route new composant
@@ -99,14 +103,18 @@ export const deleteComposant = async (req: Request, res: Response) : Promise <vo
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                if(!isValidLength(id, 24, 24) || !textFormat(id) || await ComposantModel.countDocuments({ _id: id}) === 0){
+                if(!isObjectIdValid(id) || await ComposantModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
+                    /*let isCommande: boolean = false;//TODO
+                    if(isCommande){
+                        return dataResponse(res, 400, { error: true, message: "Erreur, une commande est en cours !" });
+                    }*/
                     await ComposantModel.findOne({ _id: id }, async(err: Error, results: ComposantInterface) => {
                         let ttPromise: Array<any> = []
                         ttPromise.push(await updatePriceStripe(results.idStripePrice, true));
-                        ttPromise.push(await updateProductStripe(results.idStripeProduct,'[COMPOSANT] - ' +  results.nom, results.description, true));
-                        ttPromise.push(await ComposantModel.findOneAndDelete({ _id : id })); 
+                        ttPromise.push(await updateProductStripe(results.idStripeProduct, '[COMPOSANT] - ' +  results.nom, results.description, true));
+                        ttPromise.push(await ComposantModel.findOneAndUpdate({ _id : id }, { archive: true }));
                         ttPromise.push(await deleteCurrentFolderStorage(id));
                         Promise.all(ttPromise).then((data) => {
                             return dataResponse(res, 200, { error: false, message: 'Le composant a été supprimé avec succès' })
@@ -136,7 +144,7 @@ export const getComposant = async (req: Request, res: Response) : Promise <void>
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                if(!isValidLength(id, 24, 24) || !textFormat(id) || await ComposantModel.countDocuments({ _id: id}) === 0){
+                if(!isObjectIdValid(id) || await ComposantModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
                     await ComposantModel.findOne({ _id: id }, (err: Error, results: Response) => {
@@ -224,7 +232,7 @@ export const updateComposant = async (req: Request, res: Response): Promise<void
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                if(!isValidLength(id, 24, 24) || await ComposantModel.countDocuments({ _id: id}) === 0){
+                if(!isObjectIdValid(id) || await ComposantModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
                     const composant: ComposantInterface | null = await ComposantModel.findById(id);
@@ -281,3 +289,4 @@ export const updateComposant = async (req: Request, res: Response): Promise<void
         throw error;
     });
 }
+

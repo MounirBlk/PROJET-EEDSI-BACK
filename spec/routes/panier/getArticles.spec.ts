@@ -5,10 +5,10 @@ import fs from 'fs';
 import path from 'path';
 import ProductInterface from "../../../src/interfaces/ProductInterface";
 
-export const getComposantsSpec = () => {
-    it('Test get Composants: token incorrect', (done: DoneFn) => { 
+export const getArticlesSpec = () => {
+    it('Test get Articles: token incorrect', (done: DoneFn) => { 
         request(app)
-            .get('/composant/all')
+            .get('/panier/all')
             .set('Accept', 'application/json')
             .auth(randomChars(100), { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -18,9 +18,9 @@ export const getComposantsSpec = () => {
             }, done);
     }, getTimeout());
 
-    /*it('Test get Composants: success', (done: DoneFn) => {
+    /*it('Test get Articles: success', (done: DoneFn) => {
         request(app)
-            .get('/composant/all')
+            .get('/panier/all')
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -29,11 +29,11 @@ export const getComposantsSpec = () => {
                 expect(response.status).toEqual(200)
                 expect(response.body).toEqual({
                     error: false,
-                    message: "Les composants ont bien été récupéré",
-                    composants: response.body.composants
+                    message: "Les articles ont bien été récupéré",
+                    articles: response.body.articles
                 })
-                const composantSelected: Array<ProductInterface> = response.body.composants.filter((item: ProductInterface) => item.nom === globalThis.nomComposant);
-                globalThis.idComposant = composantSelected[0]._id;//forcément que un element
+                const articleSelected: Array<ProduitSelectedInterface> = response.body.products.filter((item: ProductInterface) => item.nom === globalThis.nomArticle);
+                globalThis.idArticle = articleSelected[0]._id;//forcément que un element
                 return done();
             })
             .catch(err => {

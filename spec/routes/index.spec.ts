@@ -1,6 +1,6 @@
 import { deleteComposantSpec } from "./composant/deleteComposant.spec";
 import { getComposantSpec } from "./composant/getComposant.spec";
-import { getProduitsSpec } from "./composant/getComposants.spec";
+import { getComposantsSpec } from "./composant/getComposants.spec";
 import { newComposantSpec } from "./composant/newComposant.spec";
 import { updateComposantSpec } from "./composant/updateComposant.spec";
 import { deleteEntrepriseSpec } from "./entreprise/deleteEntreprise.spec";
@@ -9,9 +9,14 @@ import { getEntreprisesSpec } from "./entreprise/getEntreprises.spec";
 import { newEntrepriseSpec } from "./entreprise/newEntreprise.spec";
 import { newEntrepriseAutoSpec } from "./entreprise/newEntrepriseAuto.spec";
 import { updateEntrepriseSpec } from "./entreprise/updateEntreprise.spec";
+import { deleteArticleSpec } from "./panier/deleteArticle.spec";
+import { getArticleSpec } from "./panier/getArticle.spec";
+import { getArticlesSpec } from "./panier/getArticles.spec";
+import { newArticleSpec } from "./panier/newArticle.spec";
+import { updateArticleSpec } from "./panier/updateArticle.spec";
 import { deleteProduitSpec } from "./produit/deleteProduit.spec";
 import { getProduitSpec } from "./produit/getProduit.spec";
-import { getComposantsSpec } from "./produit/getProduits.spec";
+import { getProduitsSpec } from "./produit/getProduits.spec";
 import { newProduitSpec } from "./produit/newProduit.spec";
 import { updateProduitSpec } from "./produit/updateProduit.spec";
 import { checkUserSpec } from "./user/checkUser.spec";
@@ -67,4 +72,13 @@ export const composantSpec = () => {
     updateComposantSpec()//3
     getComposantSpec()//4
     deleteComposantSpec()//5
+}
+
+//ATTENTION: l'ordre des functions est très important !!!
+export const articleSpec = () => {
+    newArticleSpec()//1
+    getArticlesSpec()//2
+    updateArticleSpec()//3
+    getArticleSpec()//4
+    deleteArticleSpec()//5
 }

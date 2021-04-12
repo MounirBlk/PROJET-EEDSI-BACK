@@ -30,7 +30,6 @@ export const getUsersSpec = (selectedRole: string) => {
                 message: 'Le role de l\'utilisateur est manquant'
             }, done);
     }, getTimeout());*/
-
     it('Test getUsers: données non-conformes', (done: DoneFn) => {
         request(app)
             .get('/user/all/President')
