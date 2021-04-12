@@ -4,8 +4,8 @@
     "description": "API SITE E-COMMERCE",
     "main": "dist/app.js",
     "scripts": {
-        "start": "pm2 kill && pm2 start dist/app.js --ignore-watch='./temp' --watch && pm2 logs",
-        "serve": "pm2 kill && set ENV=DEV && npm run clean && npm run build && pm2 start dist/app.js --ignore-watch='./temp' --watch && pm2 logs",
+        "start": "pm2 kill && pm2 start dist/app.js && pm2 logs",
+        "serve": "pm2 kill && set ENV=DEV && npm run clean && npm run build && pm2 start dist/app.js && pm2 logs",
         "dev": "pm2 kill && nodemon app.ts",
         "clean": "rimraf ./dist",
         "build": "tsc -p ./tsconfig.json && npm run copy-assets",
