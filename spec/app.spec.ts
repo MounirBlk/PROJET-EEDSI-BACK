@@ -33,7 +33,8 @@ for(let i = 0; i < iteratorTest; i++){
         index.entrepriseSpec(); // All tests entreprise
         index.productSpec(); // All tests produit
         index.composantSpec(); // All tests composant
-        
+        index.articleSpec();// All tests articles du panier
+
         afterAll(deleteUserTest(), getTimeout(60));// After all tests of specs
     })
 }

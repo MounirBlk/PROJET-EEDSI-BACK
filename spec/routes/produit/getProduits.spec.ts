@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import ProductInterface from "../../../src/interfaces/ProductInterface";
 
-export const getComposantsSpec = () => {
+export const getProduitsSpec = () => {
     it('Test get Produits: token incorrect', (done: DoneFn) => { 
         request(app)
             .get('/product/all')
