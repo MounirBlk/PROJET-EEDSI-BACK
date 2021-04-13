@@ -26,7 +26,6 @@
     },
     "homepage": "https://github.com/MounirBlk/PROJET-EEDSI-SERVER#readme",
     "dependencies": {
-        "@google-cloud/storage": "^5.8.3",
         "@types/async": "^3.2.5",
         "@types/cors": "^2.8.10",
         "@types/ejs": "^3.0.6",
@@ -37,6 +36,7 @@
         "@types/mongoose": "^5.10.3",
         "@types/multer": "^1.4.5",
         "@types/sharp": "^0.27.2",
+        "@types/socket.io": "^2.1.13",
         "@types/uuid": "^8.3.0",
         "async": "^3.2.0",
         "bluebird": "^3.7.2",
@@ -47,7 +47,6 @@
         "express-rate-limit": "^5.2.6",
         "firebase": "^8.3.1",
         "firebase-admin": "^9.6.0",
-        "firebase-functions": "^3.13.2",
         "is-online": "^9.0.0",
         "jimp": "^0.16.1",
         "jsonwebtoken": "^8.5.1",
@@ -61,6 +60,7 @@
         "pm2": "^4.5.5",
         "rimraf": "^3.0.2",
         "sharp": "^0.27.2",
+        "socket.io": "^4.0.1",
         "stripe": "^8.140.0",
         "uuid": "^8.3.2"
     },

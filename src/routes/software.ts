@@ -9,4 +9,6 @@ export default (app: Application): void => {
     app.route('/entreprise/:id').delete(checkInternet, deleteEntreprise);
     app.route('/entreprise/:id').get(checkInternet, getEntreprise);
     app.route('/entreprises').get(checkInternet, getAllEntreprises);
+
+    //app.route('/synchro').get(checkInternet); //synchronise les données de la base
 }

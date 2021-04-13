@@ -5,7 +5,7 @@ import { checkEmail, deleteUser, disableUser, forgotPassword, getAllUsers, getOn
 import { checkInternet, dataResponse } from "../middlewares";
 import multer from "multer";
 import { initUpload } from "../config";
-import { addCommande, deleteCommande, getCommande, getAllCommandesByStatut, getAllCommandesByUser, updateCommande } from "../controllers/commande";
+import { addCommande, deleteCommande, getCommande, getAllCommandesByStatut, updateCommande, getAllCommandesByUser } from "../controllers/commande";
 
 export default (app: Application): void => {
     //USER
@@ -34,11 +34,11 @@ export default (app: Application): void => {
     app.route('/composant/all').get(checkInternet, getAllComposants);
     app.route('/composant/update/:id').put(checkInternet, multer(initUpload()).any(), updateComposant);
 
-    //COMMANDE (ATTENTE/LIVRAISON/SIGNALEMENT/TERMINE)
+    //COMMANDE (ATTENTE/LIVRAISON/SIGNALEMENT/TERMINE/ALL)
     app.route('/commande/add').post(checkInternet, addCommande);
     app.route('/commande/delete/:id').delete(checkInternet, deleteCommande);
     app.route('/commande/one/:id').get(checkInternet, getCommande);
     app.route('/commande/all/:statut').get(checkInternet, getAllCommandesByStatut);
-    app.route('/commande/user/:id').get(checkInternet, getAllCommandesByUser);
+    app.route('/commande/user/:role/:id').get(checkInternet, getAllCommandesByUser);
     app.route('/commande/update/:id').put(checkInternet, updateCommande);
 }

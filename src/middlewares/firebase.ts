@@ -1,9 +1,9 @@
 import fs from 'fs';
 import Jimp from 'jimp'
-import firebase from 'firebase';
 import admin from 'firebase-admin';
 import path from "path";
-import { Storage } from "@google-cloud/storage";
+//import firebase from 'firebase';
+//import { Storage } from "@google-cloud/storage";
 import mime from "mime-types";
 import { serviceAccountKey } from '../config';
 
