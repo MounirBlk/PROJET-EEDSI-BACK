@@ -319,7 +319,7 @@ export const updateCommande = async (req: Request, res: Response): Promise<void>
                 if(!isObjectIdValid(id) || await CommandeModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
-                    if(isEmptyObject(data) || (!exist(data.livreurID) && !exist(data.dateLivraison) && !exist(data.adresseLivraison))){
+                    if(isEmptyObject(data) || (!exist(data.statut) && !exist(data.livreurID) && !exist(data.dateLivraison) && !exist(data.adresseLivraison))){
                         return dataResponse(res, 200, { error: false, message: "Vos données sont déjà à jour" })
                     }else{
                         const commande: CommandeInterface | null = await CommandeModel.findById(id);
@@ -327,15 +327,20 @@ export const updateCommande = async (req: Request, res: Response): Promise<void>
                             return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !"})
                         }else{
                             let isError: boolean = false;
+                            let isValidStatut: boolean = exist(data.statut) ? data.statut.trim().toLowerCase() === "signalement" || data.statut.trim().toLowerCase() === "termine" ? true : false : false;
+                            let isVerifLivreur: boolean = await UserModel.countDocuments({ $and: [{ _id: data.livreurID }, { role: "Livreur" }] } ) === 0 ? false : true; 
                             let toUpdate = {
-                                livreurID: exist(data.livreurID) ? isObjectIdValid(data.livreurID) ? data.livreurID : (isError = true) : commande.livreurID,
+                                livreurID: exist(data.livreurID) ? isObjectIdValid(data.livreurID) && isVerifLivreur ? data.livreurID : (isError = true) : commande.livreurID,
                                 dateLivraison: exist(data.dateLivraison) ? dateHourMinuFormatEn(data.dateLivraison) ? data.dateLivraison : (isError = true) : commande.dateLivraison,
-                                adresseLivraison: exist(data.adresseLivraison) ? textFormat(data.adresseLivraison) ? data.adresseLivraison : (isError = true) : commande.adresseLivraison
+                                adresseLivraison: exist(data.adresseLivraison) ? textFormat(data.adresseLivraison) ? data.adresseLivraison : (isError = true) : commande.adresseLivraison,
+                                statut: exist(data.statut) ? textFormat(data.statut) && isValidStatut ? firstLetterMaj(data.statut) : (isError = true) : commande.statut
                             }
-                            //TODO SEND MAIL IF DATELIVRAISON/ADRESSELIVRAISON/LIVREURDID UPDATED
+                            //TODO SEND MAIL IF DATELIVRAISON/ADRESSELIVRAISON/LIVREURDID/STATUT UPDATED
                             if(isError){
                                 return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
                             }else{
+                                toUpdate.statut = commande.statut.trim().toLowerCase() === "attente" && isObjectIdValid(data.livreurID) && isVerifLivreur ? "Livraison" : toUpdate.statut;
+                                toUpdate.statut = commande.statut.trim().toLowerCase() === "termine" ? commande.statut : toUpdate.statut;
                                 await CommandeModel.findByIdAndUpdate(id, toUpdate, null, (err: any, resp: CommandeInterface | null) => {
                                     if (err) {
                                         return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
