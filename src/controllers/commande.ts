@@ -11,6 +11,9 @@ import ProductSelectedModel from '../models/ProductSelectedModel';
 import ProduitSelectedInterface from '../interfaces/ProductSelectedInterface';
 import { roleTypes } from '../types/roleTypes';
 import { statutCommandeTypes } from '../types/statutCommandeTypes';
+import { getInvoiceData, generateInvoice } from '../middlewares/invoice';
+import { mailInvoice } from '../middlewares/sendMail';
+import { uploadFirebaseStorage } from '../middlewares/firebase';
 
 /**
  *  Route new commande
@@ -52,6 +55,7 @@ export const addCommande = async (req: Request, res: Response): Promise<void> =>
                                                     prixTotal = prixTotal + (parseInt(article.quantite) * (parseInt(composant.quantite) * parseFloat(composant.idComposant.prix)));
                                                 });
                                             });
+                                            prixTotal = prixTotal + 10 + (prixTotal * 0.05) //Frais de livraison de 10 € + 5% du total (taxe/impôt)
                                             let toInsert = {
                                                 "refID": uuidv4(),
                                                 "clientID": payload.id,
@@ -63,9 +67,23 @@ export const addCommande = async (req: Request, res: Response): Promise<void> =>
                                                 "prixTotal": prixTotal.toFixed(2)
                                             }
                                             let commande: CommandeInterface = new CommandeModel(toInsert);
-                                            await commande.save();
-                                            //TODO UPDATE QUANTITE DU PRODUIT/COMPOSANT AND SEND MAIL CLIENT
-                                            return dataResponse(res, 201, { error: false, message: "La commande a bien été ajouté" });
+                                            await commande.save().then(async(commandeSaved: CommandeInterface) => {
+                                                CommandeModel.findOne({ _id: commandeSaved.get('_id')}).populate('clientID').populate('livreurID').populate('articles.idProduct').populate('articles.listeComposantsSelected.idComposant').exec(async(err: CallbackError, data: any) => {
+                                                    if (err) {
+                                                        return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
+                                                    }else if (data === undefined || data === null){// Si le resultat n'existe pas
+                                                        return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
+                                                    }else{
+                                                        await generateInvoice(getInvoiceData(data), data.refID);// TO FIX INVOICE BUG ATTACHMENT MAIL
+                                                        //await uploadFirebaseStorage();
+                                                        await mailInvoice(data.clientID.email, `${data.clientID.firstname} ${data.clientID.lastname}`, data.refID);
+                                                        //TODO UPDATE QUANTITE DU PRODUIT/COMPOSANT AND PAYMENT CARD/CUSTOMER STRIPE AND GENERATE INVOICE AND STORE TO FIREBASE AND SEND MAIL CLIENT INVOICE
+                                                        return dataResponse(res, 201, { error: false, message: "La commande a bien été ajouté" });
+                                                    }
+                                                });
+                                            }).catch((err: any) => {
+                                                throw err;
+                                            });
                                         }
                                     }
                                 });

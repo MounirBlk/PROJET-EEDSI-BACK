@@ -239,7 +239,8 @@ const binaryToText = (idBinary: any) => {
  *  Function qui return la date du jour à la seconde près aaaa/mm/jj hh:mm:ss
  */ 
 const getCurrentDate = (dt: Date = new Date()) => {
-    return `${dt.getFullYear().toString().padStart(4, '0')}-${(dt.getMonth()+1).toString().padStart(2, '0')}-${dt.getDate().toString().padStart(2, '0')} ${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}:${dt.getSeconds().toString().padStart(2, '0')}`   
+    //:${dt.getSeconds().toString().padStart(2, '0')}
+    return `${dt.getFullYear().toString().padStart(4, '0')}-${(dt.getMonth()+1).toString().padStart(2, '0')}-${dt.getDate().toString().padStart(2, '0')} ${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}`
 }
 
 /**

@@ -2,7 +2,7 @@ import { Application, Request, Response, NextFunction, Errback } from 'express';
 import { dataResponse, dateFormatFr, deleteMapper, emailFormat, dateFormatEn, exist, getJwtPayload, isEmptyObject, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, textFormat, isObjectIdValid } from '../middlewares';
 import EntrepriseInterface from '../interfaces/EntrepriseInterface';
 import EntrepriseModel from '../models/EntrepriseModel';
-import axios, { AxiosResponse, Method } from "axios"
+import axios, { AxiosRequestConfig, AxiosResponse, Method } from "axios"
 //const axios = require('axios').default;
 
 /**
@@ -299,7 +299,7 @@ const getInfosEntrepriseOnline = async (res: Response, siret: number): Promise<a
  *  @param dataBody? data from body
  */ 
 const getConfigAxios = (url: string, methodReq: Method, dataBody: any = null) => {
-    const configaxios = {
+    const configaxios: AxiosRequestConfig  = {
         url: url.trim(),
         method: methodReq,
         headers: {
