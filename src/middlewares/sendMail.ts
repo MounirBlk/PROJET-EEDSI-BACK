@@ -53,7 +53,7 @@ export const mailInvoice = async (email: string, name: string, refID: string): P
                 filename: 'CGV.pdf',
                 path: __dirname + '/templates/CGV.pdf',
                 cid: 'CGV',
-            }, {
+            },{
                 filename: `${refID}.pdf`,
                 path: `${process.cwd()}/tmp/${refID}.pdf`,
                 cid: 'facture',

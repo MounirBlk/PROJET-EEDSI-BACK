@@ -236,7 +236,7 @@ const binaryToText = (idBinary: any) => {
 }
 
 /**
- *  Function qui return la date du jour à la seconde près aaaa/mm/jj hh:mm:ss
+ *  Function qui return la date du jour à la seconde près aaaa/mm/jj hh:mm
  */ 
 const getCurrentDate = (dt: Date = new Date()) => {
     //:${dt.getSeconds().toString().padStart(2, '0')}

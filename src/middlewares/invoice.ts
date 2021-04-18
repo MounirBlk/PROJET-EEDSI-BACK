@@ -7,7 +7,7 @@ import https from "https";
 import { ClientRequest, IncomingMessage } from 'http';
 import { exist, getCurrentDate } from '.';
 
-export const generateInvoice = async (invoiceData: any, filename: string): Promise<void> => {
+export const generateInvoice = async (invoiceData: any, filename: string): Promise<any> => {
     return new Promise<any>((resolve, reject) => {
         const postData: string = JSON.stringify(setInvoiceData(invoiceData));
         if(!fs.existsSync(process.cwd() + '/tmp/')){
@@ -20,7 +20,7 @@ export const generateInvoice = async (invoiceData: any, filename: string): Promi
             }).on('end', () => {
                 resolve(file.end());
                 //if (typeof success === 'function') success();
-            });
+            })
         });
         req.write(postData);
         resolve(req.end());

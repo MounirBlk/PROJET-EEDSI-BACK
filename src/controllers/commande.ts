@@ -32,7 +32,7 @@ export const addCommande = async (req: Request, res: Response): Promise<void> =>
                 if(!dateHourMinuFormatEn(data.dateLivraison) || !textFormat(data.adresseLivraison)){
                     return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
                 }else if(new Date(data.dateLivraison).getTime() < new Date().getTime() + (7 * 24 * 60 * 60000)){// 7 jours d'écart minimum
-                    return dataResponse(res, 400, { error: true, message: "La date de livraison est indisponible (7 jours d'écart minimum)"}) 
+                    return dataResponse(res, 400, { error: true, message: "La date de livraison est indisponible (7 jours d'écart minimum)" }) 
                 }else{
                     UserModel.findOne({ _id: payload.id }).populate('idEntreprise').populate('idPanier').exec(async(err: CallbackError, user: any) => {
                         if (err) {
@@ -74,10 +74,12 @@ export const addCommande = async (req: Request, res: Response): Promise<void> =>
                                                     }else if (data === undefined || data === null){// Si le resultat n'existe pas
                                                         return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
                                                     }else{
-                                                        await generateInvoice(getInvoiceData(data), data.refID);// TO FIX INVOICE BUG ATTACHMENT MAIL
-                                                        //await uploadFirebaseStorage();
-                                                        await mailInvoice(data.clientID.email, `${data.clientID.firstname} ${data.clientID.lastname}`, data.refID);
-                                                        //TODO UPDATE QUANTITE DU PRODUIT/COMPOSANT AND PAYMENT CARD/CUSTOMER STRIPE AND GENERATE INVOICE AND STORE TO FIREBASE AND SEND MAIL CLIENT INVOICE
+                                                        if(String(process.env.ENV).trim().toLowerCase() !== "test"){
+                                                            await generateInvoice(getInvoiceData(data), data.refID);// TO FIX INVOICE BUG ATTACHMENT MAIL
+                                                            //await uploadFirebaseStorage();
+                                                            await mailInvoice(data.clientID.email, `${data.clientID.firstname} ${data.clientID.lastname}`, data.refID);
+                                                            //TODO UPDATE QUANTITE DU PRODUIT/COMPOSANT AND PAYMENT CARD/CUSTOMER STRIPE AND GENERATE INVOICE AND STORE TO FIREBASE AND SEND MAIL CLIENT INVOICE
+                                                        }
                                                         return dataResponse(res, 201, { error: false, message: "La commande a bien été ajouté" });
                                                     }
                                                 });
@@ -271,7 +273,7 @@ export const getAllCommandesByUser = async (req: Request, res: Response): Promis
                 return dataResponse(res, 400, { error: true, message: "L'id ou le role est manquant !" })
             }else{
                 if(role.trim().toLowerCase() !== 'livreur' && role.trim().toLowerCase() !== 'client' && role.trim().toLowerCase() !== 'prospect'){
-                    return dataResponse(res, 400, { error: true, message: "Le role n'est pas valide !" })
+                    return dataResponse(res, 409, { error: true, message: "Le role n'est pas valide !" })
                 }else if(!isObjectIdValid(id)){// condition doit etre teste avant la vérification en base
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else if(await UserModel.countDocuments({ $and: [{ _id: id }, { role: role }] } ) === 0){

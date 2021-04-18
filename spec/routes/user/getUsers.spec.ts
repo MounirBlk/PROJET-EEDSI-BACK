@@ -4,9 +4,10 @@ import { convertToFormBody, getTimeout, randNumber, randomChars, randomFileName 
 import fs from 'fs';
 import path from 'path';
 import UserInterface from "../../../src/interfaces/UserInterface";
+import { roleTypes } from "../../../src/types/roleTypes";
 
 
-export const getUsersSpec = (selectedRole: string) => {
+export const getUsersSpec = (selectedRole: roleTypes) => {
     it('Test getUsers: token incorrect', (done: DoneFn) => { 
         request(app)
             .get('/user/all/toto')

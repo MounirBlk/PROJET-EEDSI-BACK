@@ -1,3 +1,10 @@
+import { roleTypes } from "../../src/types/roleTypes";
+import { deleteCommandeSpec } from "./commande/deleteCommande.spec";
+import { getCommandeSpec } from "./commande/getCommande.spec";
+import { getCommandesStatutSpec } from "./commande/getCommandesStatut.spec";
+import { getCommandesUserSpec } from "./commande/getCommandesUser.spec";
+import { newCommandeSpec } from "./commande/newCommande.spec";
+import { updateCommandeSpec } from "./commande/updateCommande.spec";
 import { deleteComposantSpec } from "./composant/deleteComposant.spec";
 import { getComposantSpec } from "./composant/getComposant.spec";
 import { getComposantsSpec } from "./composant/getComposants.spec";
@@ -9,6 +16,7 @@ import { getEntreprisesSpec } from "./entreprise/getEntreprises.spec";
 import { newEntrepriseSpec } from "./entreprise/newEntreprise.spec";
 import { newEntrepriseAutoSpec } from "./entreprise/newEntrepriseAuto.spec";
 import { updateEntrepriseSpec } from "./entreprise/updateEntreprise.spec";
+import { getFactureSpec } from "./facture/getFacture.spec";
 import { deleteArticleSpec } from "./panier/deleteArticle.spec";
 import { getArticleSpec } from "./panier/getArticle.spec";
 import { getArticlesSpec } from "./panier/getArticles.spec";
@@ -32,7 +40,7 @@ import { registerUserSpec } from "./user/register.spec"
 import { updateUserSpec } from "./user/updateUser.spec";
 
 //ATTENTION: l'ordre des functions est très important !!!
-export const userSpec = (selectedRole: string) => {
+export const userSpec = (selectedRole: roleTypes) => {
     htmlSpec();//1
     getUsersSpec(selectedRole);//2
     deleteUserSpec();//3
@@ -81,4 +89,19 @@ export const articleSpec = () => {
     updateArticleSpec()//3
     getArticleSpec()//4
     deleteArticleSpec()//5
+}
+
+//ATTENTION: l'ordre des functions est très important !!!
+export const commandeSpec = (selectedRole: roleTypes) => {
+    newCommandeSpec()//1
+    getCommandesStatutSpec()//2
+    getCommandesUserSpec(selectedRole)//3
+    updateCommandeSpec()//4
+    getCommandeSpec()//5
+    deleteCommandeSpec()//6
+}
+
+//ATTENTION: l'ordre des functions est très important !!!
+export const factureSpec = () => {
+    getFactureSpec()
 }

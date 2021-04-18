@@ -51,3 +51,13 @@ export const deleteCurrentFolderStorage = async(idProduct: string): Promise<void
         });     
     });
 }
+
+/**
+ * Get file
+ */ 
+export const getFile = async(folder: string, name: string) => {
+    return new Promise(async(resolve, reject) => {
+        let file = bucket.file(`http://storage.googleapis.com/${bucket.name}/${folder}/${encodeURIComponent(name)}`)
+        resolve(file.createReadStream())
+    });
+}

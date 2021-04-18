@@ -3,6 +3,7 @@ import app from "../../../app";
 import { convertToFormBody, getTimeout, randNumber, randomChars, randomDateEn, randomFileName } from "../../helpers";
 import fs from 'fs';
 import path from 'path';
+import { roleTypes } from "../../../src/types/roleTypes";
 
 export const registerUserTest = (selectedRole: string) => {
     return (done: DoneFn) => {
@@ -36,7 +37,7 @@ export const registerUserTest = (selectedRole: string) => {
     };
 };
 
-export const registerUserSpec = (selectedRole: string) => {
+export const registerUserSpec = (selectedRole: roleTypes) => {
     it('Test Register: données manquantes', (done: DoneFn) => {
         const data = {}
         request(app)
