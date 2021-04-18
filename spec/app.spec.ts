@@ -15,7 +15,7 @@ import { loginUserTest } from "./routes/user/login.spec";
 import { registerUserTest } from "./routes/user/register.spec";
 
 const role: Array<roleTypes> = ["Administrateur", "Commercial", "Livreur", "Client", "Prospect"]
-const selectedRole: string = role[randNumber(0, (role.length - 1))];
+const selectedRole: roleTypes = role[randNumber(0, (role.length - 1))];
 
 const iteratorTest: number = randNumber(1, 1); // random number btw min and max pour le nbre d'iteration des tests (ATTENTION AU LIMITER 200 REQUESTS)
 
@@ -33,7 +33,9 @@ for(let i = 0; i < iteratorTest; i++){
         index.entrepriseSpec(); // All tests entreprise
         index.productSpec(); // All tests produit
         index.composantSpec(); // All tests composant
-        index.articleSpec();// All tests articles du panier
+        index.articleSpec();// All tests article du panier
+        index.commandeSpec(selectedRole);// All tests commande
+        index.factureSpec();// All tests facture
 
         afterAll(deleteUserTest(), getTimeout(60));// After all tests of specs
     })

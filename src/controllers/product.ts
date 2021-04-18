@@ -51,7 +51,7 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                             "profondeur": data.profondeur,// centimetre
                             "prix": data.prix,// xx.xx (€)
                             "taxe": data.taxe,// x.xx (1 = 100%)
-                            "quantite": data.quantite,// xxx
+                            "quantite": data.quantite < 1 ? 1 : data.quantite,// xxx
                             "composants": data.composants !== null && data.composants !== undefined ? data.composants : [],// [composants]
                             "idStripeProduct": null,
                             "idStripePrice": null,
@@ -252,7 +252,7 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
                             "profondeur": exist(data.profondeur) ? numberFormat(data.profondeur) ? data.profondeur : (isOnError = true) : product.profondeur,
                             "prix": exist(data.prix) ? floatFormat(data.prix) ? data.prix : (isOnError = true) : product.prix,
                             "taxe": exist(data.taxe) ? floatFormat(data.taxe) && parseFloat(data.taxe) < 1 && parseFloat(data.taxe) > 0  ? data.taxe : (isOnError = true) : product.taxe,
-                            "quantite": exist(data.quantite) ? numberFormat(data.quantite) ? data.quantite : (isOnError = true) : product.quantite,
+                            "quantite": exist(data.quantite) ? numberFormat(data.quantite) ? data.quantite > 0 ? data.quantite : 1 : (isOnError = true) : product.quantite,
                             "composants": existTab(data.composants) ? tabFormat(data.composants) ? data.composants : (isOnError = true) : product.composants,
                         }
                         if(isOnError){

@@ -50,7 +50,7 @@ export const addComposant = async (req: Request, res: Response): Promise<void> =
                             "largeur": data.largeur,// centimetre
                             "profondeur": data.profondeur,// centimetre
                             "prix": data.prix,// xx.xx (€)
-                            "quantite": data.quantite,// xxx
+                            "quantite": data.quantite < 1 ? 1 : data.quantite,// xxx
                             "idStripeProduct": null,
                             "idStripePrice": null,
                             "imgLink": null
@@ -251,7 +251,7 @@ export const updateComposant = async (req: Request, res: Response): Promise<void
                             "largeur": exist(data.largeur) ? numberFormat(data.largeur) ? data.largeur : (isOnError = true) : composant.largeur,
                             "profondeur": exist(data.profondeur) ? numberFormat(data.profondeur) ? data.profondeur : (isOnError = true) : composant.profondeur,
                             "prix": exist(data.prix) ? floatFormat(data.prix) ? data.prix : (isOnError = true) : composant.prix,
-                            "quantite": exist(data.quantite) ? numberFormat(data.quantite) ? data.quantite : (isOnError = true) : composant.quantite
+                            "quantite": exist(data.quantite) ? numberFormat(data.quantite) ? data.quantite > 0 ? data.quantite : 1 : (isOnError = true) : composant.quantite
                         }
                         if(isOnError){
                             return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 

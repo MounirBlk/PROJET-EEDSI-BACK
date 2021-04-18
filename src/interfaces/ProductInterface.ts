@@ -22,3 +22,4 @@ export default interface ProductInterface extends Document {
     "tabImgLinks": Array<string>,
     "archive": boolean
 }
+//NON DISPONIBLE if archive = true ou quantite = 0

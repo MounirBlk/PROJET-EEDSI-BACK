@@ -323,5 +323,7 @@ export const updateArticle = async (req: Request, res: Response): Promise<void> 
                 }
             }
         }
-    });
+    }).catch((error) => {
+        throw error;
+    });;
 };

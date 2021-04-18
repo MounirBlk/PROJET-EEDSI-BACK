@@ -1,9 +1,9 @@
 import fs from 'fs';
 import Jimp from 'jimp'
-import firebase from 'firebase';
 import admin from 'firebase-admin';
 import path from "path";
-import { Storage } from "@google-cloud/storage";
+//import firebase from 'firebase';
+//import { Storage } from "@google-cloud/storage";
 import mime from "mime-types";
 import { serviceAccountKey } from '../config';
 
@@ -16,11 +16,11 @@ const bucket = FirebaseApp.storage().bucket(process.env.FIREBASE_BUCKET);
 /**
  * Upload file to Firebase STORAGE
  */ 
-export const uploadFirebaseStorage = async(file: any, idProduct: string, pathFolderImg: string): Promise<string> => {
+export const uploadFirebaseStorage = async(file: any, pathFolderFB: string, pathFolderImg: string): Promise<string> => {
     return new Promise(async(resolve, reject) => {
             let localFilePath = `${pathFolderImg}${file}`;
             bucket.upload(localFilePath, {
-                destination: `${idProduct}/${file}`,
+                destination: `${pathFolderFB}/${file}`,
                 public: true,
                 predefinedAcl: 'publicRead',
                 metadata: { contentType: mime.lookup(localFilePath), cacheControl: "public, max-age=300" }
@@ -29,7 +29,7 @@ export const uploadFirebaseStorage = async(file: any, idProduct: string, pathFol
                     console.log(err);
                     reject(err)
                 }
-                resolve(`http://storage.googleapis.com/${bucket.name}/${idProduct}/${encodeURIComponent(file)}`) ;
+                resolve(`http://storage.googleapis.com/${bucket.name}/${pathFolderFB}/${encodeURIComponent(file)}`) ;
             });
     });
 }
@@ -49,5 +49,15 @@ export const deleteCurrentFolderStorage = async(idProduct: string): Promise<void
                 resolve()
             }
         });     
+    });
+}
+
+/**
+ * Get file
+ */ 
+export const getFile = async(folder: string, name: string) => {
+    return new Promise(async(resolve, reject) => {
+        let file = bucket.file(`http://storage.googleapis.com/${bucket.name}/${folder}/${encodeURIComponent(name)}`)
+        resolve(file.createReadStream())
     });
 }

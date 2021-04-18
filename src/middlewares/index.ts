@@ -95,6 +95,17 @@ const dateFormatEn = (data: string): Boolean => {
 }
 
 /**
+ *  Function vérification de si la date est dans le bon format à l'envoi (US) YYYY-MM-DD HH:mm
+ */ 
+const dateHourMinuFormatEn = (data: string): Boolean => {
+    let regexDate = /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]$/
+    if (data.match(regexDate) == null)
+        return false
+    else
+        return true
+}
+
+/**
  *  Function vérification de si l'email est dans le bon format
  */ 
 const emailFormat = (data: string): Boolean => {
@@ -225,10 +236,11 @@ const binaryToText = (idBinary: any) => {
 }
 
 /**
- *  Function qui return la date du jour à la seconde près aaaa/mm/jj hh:mm:ss
+ *  Function qui return la date du jour à la seconde près aaaa/mm/jj hh:mm
  */ 
 const getCurrentDate = (dt: Date = new Date()) => {
-    return `${dt.getFullYear().toString().padStart(4, '0')}-${(dt.getMonth()+1).toString().padStart(2, '0')}-${dt.getDate().toString().padStart(2, '0')} ${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}:${dt.getSeconds().toString().padStart(2, '0')}`   
+    //:${dt.getSeconds().toString().padStart(2, '0')}
+    return `${dt.getFullYear().toString().padStart(4, '0')}-${(dt.getMonth()+1).toString().padStart(2, '0')}-${dt.getDate().toString().padStart(2, '0')} ${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}`
 }
 
 /**
@@ -366,5 +378,5 @@ const isObjectIdValid = (id: string): boolean => {
     return isValidObjectId(id) && Types.ObjectId.isValid(id) && isValidLength(id, 24, 24) && textFormat(id) ? true : false
 }
 
-export { dataResponse, isObjectIdValid, existTab, tabFormat, firstLetterMaj, isEmptyObject, checkInternet, getJwtPayload, renameKey, randFileName, randomNumber, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
+export { dataResponse, isObjectIdValid, existTab, tabFormat, dateHourMinuFormatEn, firstLetterMaj, isEmptyObject, checkInternet, getJwtPayload, renameKey, randFileName, randomNumber, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
 

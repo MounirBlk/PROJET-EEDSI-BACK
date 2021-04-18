@@ -9,14 +9,14 @@ const CommandeSchema = new mongoose.Schema<CommandeInterface>({
         unique: true,
     },
     clientID: {
-        default: null,
-        type: String,
-        required: true
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'UserModel',
+        required: true,
     },
     livreurID: {
-        default: null,
-        type: String,
-        required: true
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'UserModel',
+        required: false,
     },
     dateLivraison: {
         default: null,
@@ -31,11 +31,53 @@ const CommandeSchema = new mongoose.Schema<CommandeInterface>({
     statut: {
         type: String,
         default: "Attente",
-        enum: ["Attente", "EnCours", "Signalement", "Termine"],
+        enum: ["All", "Attente", "Livraison", "Signalement", "Termine"],
     },
-    articles: {//idProductSelected
-        type: [String],
-        required: true,
+    prixTotal: {
+        default: 0,
+        type: Number,
+        required: true
+    },
+    articles:{
+        type: [{ 
+            "idProduct": {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'ProductModel',
+                required: false,
+                default: null
+            }, 
+            "imgLinkSelected": {
+                type: String,
+                required: false,
+                default: null
+            },
+            "refID": String, 
+            "matiere": String, 
+            "couleur": String, 
+            "quantite": Number,
+            "isCommande": Boolean, 
+            "listeComposantsSelected": {
+                type:[{
+                    idComposant:{
+                        type: mongoose.Schema.Types.ObjectId,
+                        ref: 'ComposantModel',
+                        required: false,
+                        default: null
+                    },
+                    "imgLinkSelected": {
+                        type: String,
+                        required: false,
+                        default: null
+                    },
+                    "matiere": String, 
+                    "couleur": String, 
+                    "quantite": Number 
+                }],
+                required: false,
+                default: undefined
+            }
+        }],
+        required: false,
         default: undefined
     },
     createdAt: {
