@@ -1,5 +1,5 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
-import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, existTab, firstLetterMaj, floatFormat, getJwtPayload, isEmptyObject, isObjectIdValid, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, tabFormat, textFormat } from '../middlewares';
+import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, existTab, firstLetterMaj, floatFormat, getJwtPayload, isEmptyObject, isObjectIdValid, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, setFormDataTab, tabFormat, textFormat } from '../middlewares';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import ProductModel from '../models/ProductModel';
@@ -21,12 +21,13 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{                        
-            const data = req.body;                            
+            let data = req.body;      
             if(isEmptyObject(data) || !exist(data.nom) || !exist(data.type) || !exist(data.poids) || !exist(data.longueur) || 
             !exist(data.largeur) || !exist(data.profondeur) || !exist(data.prix) || !exist(data.taxe) || !exist(data.quantite) ||
             !existTab(data.matieres) || !existTab(data.couleurs)){
                 return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' });
             }else{
+                if(String(process.env.ENV).trim().toLowerCase() !== "test") data = setFormDataTab(data);
                 let isError = exist(data.sousType) ? textFormat(data.sousType) ? false : true : false;
                 isError = existTab(data.composants) ? tabFormat(data.composants) ? false : true : false;
                 isError = existTab(data.description) ? isValidLength(data.description, 1, 300) ? false : true : false;
@@ -49,8 +50,8 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                             "longueur": data.longueur,// centimetre
                             "largeur": data.largeur,// centimetre
                             "profondeur": data.profondeur,// centimetre
-                            "prix": data.prix,// xx.xx (€)
-                            "taxe": data.taxe,// x.xx (1 = 100%)
+                            "prix": parseFloat(data.prix).toFixed(2),// xx.xx (€)
+                            "taxe": parseFloat(data.taxe).toFixed(2),// x.xx (1 = 100%)
                             "quantite": data.quantite < 1 ? 1 : data.quantite,// xxx
                             "composants": data.composants !== null && data.composants !== undefined ? data.composants : [],// [composants]
                             "idStripeProduct": null,
@@ -68,7 +69,7 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                                 imgName: files[0].originalname
                             }
                         }
-                        await addProductStripe('[PRODUIT] - ' + toInsert.nom, toInsert.description, toInsert.prix, false, 'eur', imgObj).then(async(resp: any) => {// ajout du produit sur stripe
+                        await addProductStripe('[PRODUIT] - ' + toInsert.nom, toInsert.description, parseFloat(toInsert.prix), false, 'eur', imgObj).then(async(resp: any) => {// ajout du produit sur stripe
                             toInsert.idStripeProduct = !resp.hasOwnProperty('idStripeProduct') || !exist(resp.idStripeProduct) ? null : resp.idStripeProduct;
                             toInsert.idStripePrice = !resp.hasOwnProperty('idStripePrice') || !exist(resp.idStripePrice) ? null : resp.idStripePrice;
                             toInsert.imgLink = !resp.hasOwnProperty('imgLink') || !exist(resp.imgLink) ? null : resp.imgLink;
@@ -211,7 +212,8 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const id = req.params.id;
-            const data = req.body;
+            let data = req.body;      
+            if(String(process.env.ENV).trim().toLowerCase() !== "test") data = setFormDataTab(data);
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
@@ -234,8 +236,8 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
                             "longueur": exist(data.longueur) ? numberFormat(data.longueur) ? data.longueur : (isOnError = true) : product.longueur,
                             "largeur": exist(data.largeur) ? numberFormat(data.largeur) ? data.largeur : (isOnError = true) : product.largeur,
                             "profondeur": exist(data.profondeur) ? numberFormat(data.profondeur) ? data.profondeur : (isOnError = true) : product.profondeur,
-                            "prix": exist(data.prix) ? floatFormat(data.prix) ? data.prix : (isOnError = true) : product.prix,
-                            "taxe": exist(data.taxe) ? floatFormat(data.taxe) && parseFloat(data.taxe) < 1 && parseFloat(data.taxe) > 0  ? data.taxe : (isOnError = true) : product.taxe,
+                            "prix": exist(data.prix) ? floatFormat(data.prix) ? parseFloat(data.prix).toFixed(2) : (isOnError = true) : product.prix,
+                            "taxe": exist(data.taxe) ? floatFormat(data.taxe) && parseFloat(data.taxe) < 1 && parseFloat(data.taxe) > 0  ? parseFloat(data.taxe).toFixed(2) : (isOnError = true) : product.taxe,
                             "quantite": exist(data.quantite) ? numberFormat(data.quantite) ? data.quantite > 0 ? data.quantite : 1 : (isOnError = true) : product.quantite,
                             "composants": existTab(data.composants) ? tabFormat(data.composants) ? data.composants : (isOnError = true) : product.composants,
                         }

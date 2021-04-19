@@ -152,9 +152,9 @@ const textFormat = (data: string): Boolean => {
 
 /**
  *  Function qui vérifie la conformité d'un tableau de chaine de caracteres (Array<string>)
- *  @param {Array<string>} data
+ *  @param {any} data
  */ 
-const tabFormat = (data: Array<string>): Boolean => {
+const tabFormat = (data: any): Boolean => {
     if (!Array.isArray(data))
         return false
     else
@@ -378,5 +378,15 @@ const isObjectIdValid = (id: string): boolean => {
     return isValidObjectId(id) && Types.ObjectId.isValid(id) && isValidLength(id, 24, 24) && textFormat(id) ? true : false
 }
 
-export { dataResponse, isObjectIdValid, existTab, tabFormat, dateHourMinuFormatEn, firstLetterMaj, isEmptyObject, checkInternet, getJwtPayload, renameKey, randFileName, randomNumber, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
+/**
+ *  SET FORMDATA ARRAY
+ */ 
+const setFormDataTab = (data: any): any => {
+    data.matieres = existTab(data.matieres) && data.matieres.length > 0 ? data.matieres.filter((el:string) => el !== '') : []
+    data.couleurs = existTab(data.couleurs) && data.couleurs.length > 0 ? data.couleurs.filter((el:string) => el !== '') : []
+    data.composants = existTab(data.composants) && data.composants.length > 0 ? data.composants.filter((el:string) => el !== '')  : []
+    return data;
+}
+
+export { dataResponse, setFormDataTab, isObjectIdValid, existTab, tabFormat, dateHourMinuFormatEn, firstLetterMaj, isEmptyObject, checkInternet, getJwtPayload, renameKey, randFileName, randomNumber, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
 
