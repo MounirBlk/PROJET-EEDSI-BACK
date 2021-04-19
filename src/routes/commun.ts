@@ -40,7 +40,7 @@ export default (app: Application): void => {
     app.route('/commande/delete/:id').delete(checkInternet, deleteCommande);
     app.route('/commande/one/:id').get(checkInternet, getCommande);
     app.route('/commande/all/:statut').get(checkInternet, getAllCommandesByStatut);
-    app.route('/commande/user/:role/:id').get(checkInternet, getAllCommandesByUser);
+    app.route('/commande/user/:role/:id').get(checkInternet, getAllCommandesByUser);//payload token ?
     app.route('/commande/update/:id').put(checkInternet, updateCommande);
 
     //FACTURE
