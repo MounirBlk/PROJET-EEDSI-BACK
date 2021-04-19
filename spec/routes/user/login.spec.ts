@@ -20,7 +20,8 @@ export const loginUserTest = () => {
                 expect(response.body).toEqual({
                     error: false,
                     message: "L'utilisateur a été authentifié avec succès",
-                    token: response.body.token
+                    token: response.body.token,
+                    user: response.body.user
                 })
                 const token: string = response.body.token;
                 globalThis.tokenInfos = token;
