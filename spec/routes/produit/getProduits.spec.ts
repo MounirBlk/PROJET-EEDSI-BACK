@@ -6,7 +6,7 @@ import path from 'path';
 import ProductInterface from "../../../src/interfaces/ProductInterface";
 
 export const getProduitsSpec = () => {
-    it('Test get Produits: token incorrect', (done: DoneFn) => { 
+    /*it('Test get Produits: token incorrect', (done: DoneFn) => { 
         request(app)
             .get('/product/all')
             .set('Accept', 'application/json')
@@ -16,7 +16,7 @@ export const getProduitsSpec = () => {
                 error: true,
                 message: 'Votre token n\'est pas correct'
             }, done);
-    }, getTimeout());
+    }, getTimeout());*/
 
     /*it('Test get Produits: success', (done: DoneFn) => {
         request(app)

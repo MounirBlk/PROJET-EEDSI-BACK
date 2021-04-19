@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 
 export const getProduitSpec = () => {
-    it('Test get Produit: token incorrect', (done: DoneFn) => {       
+    /*it('Test get Produit: token incorrect', (done: DoneFn) => {       
         request(app)
             .get('/product/one/' + randomChars(randNumber(1,5)))
             .set('Accept', 'application/json')
@@ -15,7 +15,7 @@ export const getProduitSpec = () => {
                 error: true,
                 message: 'Votre token n\'est pas correct'
             }, done);
-    }, getTimeout());
+    }, getTimeout());*/
 
     it('Test get Produit: id non valide', (done: DoneFn) => { 
         request(app)
