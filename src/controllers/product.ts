@@ -137,44 +137,36 @@ export const deleteProduct = async (req: Request, res: Response) : Promise <void
  *  @param {Response} res 
  */ 
 export const getProduct = async (req: Request, res: Response) : Promise <void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
-        if(payload === null || payload === undefined){
-            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
+    const id = req.params.id;
+    if(!exist(id)){
+        return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
+    }else{
+        if(!isObjectIdValid(id) || await ProductModel.countDocuments({ _id: id}) === 0){
+            return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
         }else{
-            const id = req.params.id;
-            if(!exist(id)){
-                return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
-            }else{
-                if(!isObjectIdValid(id) || await ProductModel.countDocuments({ _id: id}) === 0){
-                    return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
-                }else{
-                    ProductModel.findOne({ _id: id }).populate('composants').exec((err: CallbackError, results: ProductInterface | null) => {
-                        if (err) {
-                            return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
-                        }else if (results === undefined || results === null){// Si le resultat n'existe pas
-                            return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
-                        } else {
-                            if (results) {
-                                results.composants = results.composants !== null && results.composants !== undefined ? results.composants.map((item: any) => deleteMapper(item)) : results.composants
-                                return dataResponse(res, 200, {
-                                    error: false,
-                                    message: "Les informations du produit ont bien été récupéré",
-                                    product: deleteMapper(results) 
-                                });
-                            } else {
-                                return dataResponse(res, 401, {
-                                    error: true,
-                                    message: "La requête en base de donnée n'a pas fonctionné"
-                                });
-                            }
-                        }
-                    });
+            ProductModel.findOne({ _id: id }).populate('composants').exec((err: CallbackError, results: ProductInterface | null) => {
+                if (err) {
+                    return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
+                }else if (results === undefined || results === null){// Si le resultat n'existe pas
+                    return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
+                } else {
+                    if (results) {
+                        results.composants = results.composants !== null && results.composants !== undefined ? results.composants.map((item: any) => deleteMapper(item)) : results.composants
+                        return dataResponse(res, 200, {
+                            error: false,
+                            message: "Les informations du produit ont bien été récupéré",
+                            product: deleteMapper(results) 
+                        });
+                    } else {
+                        return dataResponse(res, 401, {
+                            error: true,
+                            message: "La requête en base de donnée n'a pas fonctionné"
+                        });
+                    }
                 }
-            }
+            });
         }
-    }).catch((error) => {
-        throw error;
-    });
+    }
 }
 
 /**
@@ -183,37 +175,29 @@ export const getProduct = async (req: Request, res: Response) : Promise <void> =
  *  @param {Response} res 
  */ 
 export const getAllProducts = async (req: Request, res: Response) : Promise <void> => {
-        await getJwtPayload(req.headers.authorization).then(async (payload) => {
-            if(payload === null || payload === undefined){
-                return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
-            }else{
-                ProductModel.find({}).populate('composants').exec((err: CallbackError, results: ProductInterface[]) => {
-                    if (err) {
-                        return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
-                    }else if (results === undefined || results === null){// Si le resultat n'existe pas
-                        return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
-                    } else {
-                        if (results) {
-                            results.forEach((el: ProductInterface) => {
-                                el.composants = el.composants !== null && el.composants !== undefined ? el.composants.map((item: any) => deleteMapper(item)) : el.composants
-                            });
-                            return dataResponse(res, 200, {
-                                error: false,
-                                message: "Les produits ont bien été récupéré",
-                                products: results.map((item: ProductInterface) => deleteMapper(item, 'getAllProducts'))
-                            });
-                        } else {
-                            return dataResponse(res, 401, {
-                                error: true,
-                                message: "La requête en base de donnée n'a pas fonctionné"
-                            });
-                        }
-                    }
+    ProductModel.find({}).populate('composants').exec((err: CallbackError, results: ProductInterface[]) => {
+        if (err) {
+            return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
+        }else if (results === undefined || results === null){// Si le resultat n'existe pas
+            return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
+        } else {
+            if (results) {
+                results.forEach((el: ProductInterface) => {
+                    el.composants = el.composants !== null && el.composants !== undefined ? el.composants.map((item: any) => deleteMapper(item)) : el.composants
+                });
+                return dataResponse(res, 200, {
+                    error: false,
+                    message: "Les produits ont bien été récupéré",
+                    products: results.map((item: ProductInterface) => deleteMapper(item, 'getAllProducts'))
+                });
+            } else {
+                return dataResponse(res, 401, {
+                    error: true,
+                    message: "La requête en base de donnée n'a pas fonctionné"
                 });
             }
-        }).catch((error) => {
-            throw error;
-        });
+        }
+    });
 }
 
 /**
