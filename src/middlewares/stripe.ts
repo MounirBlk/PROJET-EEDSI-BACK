@@ -191,7 +191,7 @@ const addPriceProductStripe = async(idProduct: string, unitAmount: number, isRec
             payload['recurring[interval_count]'] = "1";
             payload['recurring[trial_period_days]'] = "0";
             payload['recurring[usage_type]'] = "licensed";
-        } 
+        }         
         const dataBody = convertToFormBody(payload);
         await axios(getConfigAxios(`https://api.stripe.com/v1/prices`, 'post', dataBody)).then((resp: AxiosResponse) => {
             resolve(resp)

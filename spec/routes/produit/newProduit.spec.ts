@@ -36,11 +36,11 @@ export const newProduitSpec = () => {
     it('Test new Produit: données erronées', (done: DoneFn) => {
         const data = {
             "nom" : "Chaise en " + randomChars(randNumber(5,10)),
-            "description": "description " +randomChars(randNumber(5,10)),
+            "description": "description " + randomChars(randNumber(5,10)),
             "type": randNumber(5,10),//errone
             "sousType": null,
-            "matieres": ["Metal", "Bois", "Plastique", "Polymére"],
-            "couleurs": ["rouge", "orange", "jaune", "chartreuse","vert"],
+            "matieres": ["Metal", "Bois", "Plastique", "Polymére"],//errone
+            "couleurs": ["rouge", "orange", "jaune", "chartreuse","vert"],//errone
             "poids": randNumber(50,1000), 
             "longueur": randNumber(30,400),
             "largeur": randNumber(30,200),

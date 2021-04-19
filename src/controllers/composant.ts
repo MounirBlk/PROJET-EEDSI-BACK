@@ -1,5 +1,5 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
-import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, existTab, firstLetterMaj, floatFormat, getJwtPayload, isEmptyObject, isObjectIdValid, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, tabFormat, textFormat } from '../middlewares';
+import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, existTab, firstLetterMaj, floatFormat, getJwtPayload, isEmptyObject, isObjectIdValid, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, setFormDataTab, tabFormat, textFormat } from '../middlewares';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import ComposantModel from '../models/ComposantModel';
@@ -24,7 +24,8 @@ export const addComposant = async (req: Request, res: Response): Promise<void> =
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
-            const data = req.body;
+            let data = req.body;      
+            if(String(process.env.ENV).trim().toLowerCase() !== "test") data = setFormDataTab(data);
             if(isEmptyObject(data) || !exist(data.nom) || !exist(data.type) || !exist(data.poids) || !exist(data.longueur) || 
             !exist(data.largeur) || !exist(data.profondeur) || !exist(data.prix) || !exist(data.quantite) ||
             !existTab(data.matieres) || !existTab(data.couleurs)){
@@ -49,7 +50,7 @@ export const addComposant = async (req: Request, res: Response): Promise<void> =
                             "longueur": data.longueur,// centimetre
                             "largeur": data.largeur,// centimetre
                             "profondeur": data.profondeur,// centimetre
-                            "prix": data.prix,// xx.xx (€)
+                            "prix": parseFloat(data.prix).toFixed(2),// xx.xx (€)
                             "quantite": data.quantite < 1 ? 1 : data.quantite,// xxx
                             "idStripeProduct": null,
                             "idStripePrice": null,
@@ -66,7 +67,7 @@ export const addComposant = async (req: Request, res: Response): Promise<void> =
                                 imgName: files[0].originalname
                             }
                         }
-                        await addProductStripe('[COMPOSANT] - ' + toInsert.nom, toInsert.description, toInsert.prix, false, 'eur', imgObj).then(async(resp: any) => {// ajout du composant sur stripe
+                        await addProductStripe('[COMPOSANT] - ' + toInsert.nom, toInsert.description, parseFloat(toInsert.prix), false, 'eur', imgObj).then(async(resp: any) => {// ajout du composant sur stripe
                             toInsert.idStripeProduct = !resp.hasOwnProperty('idStripeProduct') || !exist(resp.idStripeProduct) ? null : resp.idStripeProduct;
                             toInsert.idStripePrice = !resp.hasOwnProperty('idStripePrice') || !exist(resp.idStripePrice) ? null : resp.idStripePrice;
                             toInsert.imgLink = !resp.hasOwnProperty('imgLink') || !exist(resp.imgLink) ? null : resp.imgLink;
@@ -212,7 +213,8 @@ export const updateComposant = async (req: Request, res: Response): Promise<void
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             const id = req.params.id;
-            const data = req.body;
+            let data = req.body;      
+            if(String(process.env.ENV).trim().toLowerCase() !== "test") data = setFormDataTab(data);
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
@@ -234,7 +236,7 @@ export const updateComposant = async (req: Request, res: Response): Promise<void
                             "longueur": exist(data.longueur) ? numberFormat(data.longueur) ? data.longueur : (isOnError = true) : composant.longueur,
                             "largeur": exist(data.largeur) ? numberFormat(data.largeur) ? data.largeur : (isOnError = true) : composant.largeur,
                             "profondeur": exist(data.profondeur) ? numberFormat(data.profondeur) ? data.profondeur : (isOnError = true) : composant.profondeur,
-                            "prix": exist(data.prix) ? floatFormat(data.prix) ? data.prix : (isOnError = true) : composant.prix,
+                            "prix": exist(data.prix) ? floatFormat(data.prix) ? parseFloat(data.prix).toFixed(2) : (isOnError = true) : composant.prix,
                             "quantite": exist(data.quantite) ? numberFormat(data.quantite) ? data.quantite > 0 ? data.quantite : 1 : (isOnError = true) : composant.quantite
                         }
                         if(isOnError){
