@@ -136,46 +136,38 @@ export const deleteComposant = async (req: Request, res: Response) : Promise <vo
  *  @param {Response} res 
  */ 
 export const getComposant = async (req: Request, res: Response) : Promise <void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
-        if(payload === null || payload === undefined){
-            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
+    const id = req.params.id;
+    if(!exist(id)){
+        return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
+    }else{
+        if(!isObjectIdValid(id) || await ComposantModel.countDocuments({ _id: id}) === 0){
+            return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
         }else{
-            const id = req.params.id;
-            if(!exist(id)){
-                return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
-            }else{
-                if(!isObjectIdValid(id) || await ComposantModel.countDocuments({ _id: id}) === 0){
-                    return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
-                }else{
-                    await ComposantModel.findOne({ _id: id }, (err: Error, results: Response) => {
-                        if (err) {
-                            return dataResponse(res, 500, {
-                                error: true,
-                                message: "Erreur dans la requête !"
-                            });
-                        }else if (results === undefined || results === null){// Si le resultat n'existe pas
-                            return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
-                        } else {
-                            if (results) {
-                                return dataResponse(res, 200, {
-                                    error: false,
-                                    message: "Les informations du composant ont bien été récupéré",
-                                    composant: deleteMapper(results) 
-                                });
-                            } else {
-                                return dataResponse(res, 401, {
-                                    error: true,
-                                    message: "La requête en base de donnée n'a pas fonctionné"
-                                });
-                            }
-                        }
+            await ComposantModel.findOne({ _id: id }, (err: Error, results: Response) => {
+                if (err) {
+                    return dataResponse(res, 500, {
+                        error: true,
+                        message: "Erreur dans la requête !"
                     });
+                }else if (results === undefined || results === null){// Si le resultat n'existe pas
+                    return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
+                } else {
+                    if (results) {
+                        return dataResponse(res, 200, {
+                            error: false,
+                            message: "Les informations du composant ont bien été récupéré",
+                            composant: deleteMapper(results) 
+                        });
+                    } else {
+                        return dataResponse(res, 401, {
+                            error: true,
+                            message: "La requête en base de donnée n'a pas fonctionné"
+                        });
+                    }
                 }
-            }
+            });
         }
-    }).catch((error) => {
-        throw error;
-    });
+    }
 }
 
 /**
@@ -184,37 +176,29 @@ export const getComposant = async (req: Request, res: Response) : Promise <void>
  *  @param {Response} res 
  */ 
 export const getAllComposants = async (req: Request, res: Response) : Promise <void> => {
-        await getJwtPayload(req.headers.authorization).then(async (payload) => {
-            if(payload === null || payload === undefined){
-                return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
-            }else{
-                await ComposantModel.find({}, (err: Error, results: any) => {
-                    if (err) {
-                        return dataResponse(res, 500, {
-                            error: true,
-                            message: "Erreur dans la requête !"
-                        });
-                    }else if (results === undefined || results === null){// Si le resultat n'existe pas
-                        return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
-                    } else {
-                        if (results) {
-                            return dataResponse(res, 200, {
-                                error: false,
-                                message: "Les composants ont bien été récupéré",
-                                composants: results.map((item: ComposantInterface) => deleteMapper(item, 'getAllComposants'))
-                            });
-                        } else {
-                            return dataResponse(res, 401, {
-                                error: true,
-                                message: "La requête en base de donnée n'a pas fonctionné"
-                            });
-                        }
-                    }
+    await ComposantModel.find({}, (err: Error, results: any) => {
+        if (err) {
+            return dataResponse(res, 500, {
+                error: true,
+                message: "Erreur dans la requête !"
+            });
+        }else if (results === undefined || results === null){// Si le resultat n'existe pas
+            return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
+        } else {
+            if (results) {
+                return dataResponse(res, 200, {
+                    error: false,
+                    message: "Les composants ont bien été récupéré",
+                    composants: results.map((item: ComposantInterface) => deleteMapper(item, 'getAllComposants'))
+                });
+            } else {
+                return dataResponse(res, 401, {
+                    error: true,
+                    message: "La requête en base de donnée n'a pas fonctionné"
                 });
             }
-        }).catch((error) => {
-            throw error;
-        });
+        }
+    });
 }
 
 /**
