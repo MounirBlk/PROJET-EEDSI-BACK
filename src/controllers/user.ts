@@ -110,7 +110,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
                                     await mailCheckEmail(checkData);
                                 } 
                             }
-                            return dataResponse(res, 200, { error: false, message: "L'utilisateur a été authentifié avec succès", token: user.token})
+                            return dataResponse(res, 200, { error: false, message: "L'utilisateur a été authentifié avec succès", token: user.token, user: deleteMapper(user) })
                         }
                     }else{// Password incorrect
                         if(<number>user.attempt >= 5 && ((<any>new Date() - <any>user.updateAt) / 1000 / 60) <= 2){
