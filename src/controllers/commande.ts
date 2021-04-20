@@ -347,7 +347,7 @@ export const updateCommande = async (req: Request, res: Response): Promise<void>
                             return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !"})
                         }else{
                             let isError: boolean = false;
-                            let isValidStatut: boolean = exist(data.statut) ? data.statut.trim().toLowerCase() === "signalement" || data.statut.trim().toLowerCase() === "termine" ? true : false : false;
+                            let isValidStatut: boolean = exist(data.statut) ? data.statut.trim().toLowerCase() === "attente" || data.statut.trim().toLowerCase() === "livraison" || data.statut.trim().toLowerCase() === "signalement" || data.statut.trim().toLowerCase() === "termine" ? true : false : false;
                             let isVerifLivreur: boolean = await UserModel.countDocuments({ $and: [{ _id: data.livreurID }, { role: "Livreur" }] } ) === 0 ? false : true; 
                             let toUpdate = {
                                 livreurID: exist(data.livreurID) ? isObjectIdValid(data.livreurID) && isVerifLivreur ? data.livreurID : (isError = true) : commande.livreurID,
