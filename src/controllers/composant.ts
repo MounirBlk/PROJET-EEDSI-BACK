@@ -45,7 +45,7 @@ export const addComposant = async (req: Request, res: Response): Promise<void> =
                             "description": data.description !== null && data.description !== undefined ? data.description : null,
                             "type": firstLetterMaj(data.type),
                             "matieres": data.matieres.map((el: string) => firstLetterMaj(el)),// [matieres]
-                            "couleurs": data.couleurs.map((color: string) => firstLetterMaj(color)),// [colors]
+                            "couleurs": data.couleurs,// [colors]
                             "poids": data.poids, // gramme
                             "longueur": data.longueur,// centimetre
                             "largeur": data.largeur,// centimetre
@@ -231,7 +231,7 @@ export const updateComposant = async (req: Request, res: Response): Promise<void
                             "description": exist(data.description) ? isValidLength(data.description, 1, 300) ? data.description : (isOnError = true) : composant.description,
                             "type": exist(data.type) ? textFormat(data.type) ? firstLetterMaj(data.type) : (isOnError = true) : composant.type,
                             "matieres": existTab(data.matieres) ? tabFormat(data.matieres) ? data.matieres.map((el: string) => firstLetterMaj(el)) : (isOnError = true) : composant.matieres,
-                            "couleurs": existTab(data.couleurs) ? tabFormat(data.couleurs) ? data.couleurs.map((el: string) => firstLetterMaj(el)) : (isOnError = true) : composant.couleurs,
+                            "couleurs": existTab(data.couleurs) ? tabFormat(data.couleurs) ? data.couleurs : (isOnError = true) : composant.couleurs,
                             "poids":  exist(data.poids) ? numberFormat(data.poids) ? data.poids : (isOnError = true) : composant.poids,
                             "longueur": exist(data.longueur) ? numberFormat(data.longueur) ? data.longueur : (isOnError = true) : composant.longueur,
                             "largeur": exist(data.largeur) ? numberFormat(data.largeur) ? data.largeur : (isOnError = true) : composant.largeur,

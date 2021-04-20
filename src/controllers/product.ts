@@ -45,7 +45,7 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                             "type": firstLetterMaj(data.type),
                             "sousType": data.sousType !== null && data.sousType !== undefined ? firstLetterMaj(data.sousType) : null,
                             "matieres": data.matieres.map((el: string) => firstLetterMaj(el)),// [matieres]
-                            "couleurs": data.couleurs.map((color: string) => firstLetterMaj(color)),// [colors]
+                            "couleurs": data.couleurs,// [colors]
                             "poids": data.poids, // gramme
                             "longueur": data.longueur,// centimetre
                             "largeur": data.largeur,// centimetre
@@ -231,7 +231,7 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
                             "type": exist(data.type) ? textFormat(data.type) ? firstLetterMaj(data.type) : (isOnError = true) : product.type,
                             "sousType": exist(data.sousType) ? textFormat(data.sousType) ? firstLetterMaj(data.sousType) : (isOnError = true) : product.sousType,
                             "matieres": existTab(data.matieres) ? tabFormat(data.matieres) ? data.matieres.map((el: string) => firstLetterMaj(el)) : (isOnError = true) : product.matieres,
-                            "couleurs": existTab(data.couleurs) ? tabFormat(data.couleurs) ? data.couleurs.map((el: string) => firstLetterMaj(el)) : (isOnError = true) : product.couleurs,
+                            "couleurs": existTab(data.couleurs) ? tabFormat(data.couleurs) ? data.couleurs : (isOnError = true) : product.couleurs,
                             "poids":  exist(data.poids) ? numberFormat(data.poids) ? data.poids : (isOnError = true) : product.poids,
                             "longueur": exist(data.longueur) ? numberFormat(data.longueur) ? data.longueur : (isOnError = true) : product.longueur,
                             "largeur": exist(data.largeur) ? numberFormat(data.largeur) ? data.largeur : (isOnError = true) : product.largeur,
