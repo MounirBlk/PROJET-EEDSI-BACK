@@ -31,7 +31,7 @@ export const addComposant = async (req: Request, res: Response): Promise<void> =
             !existTab(data.matieres) || !existTab(data.couleurs)){
                 return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' });
             }else{
-                let isError = existTab(data.description) ? isValidLength(data.description, 1, 300) ? false : true : false;
+                let isError = exist(data.description) ? isValidLength(data.description, 1, 300) ? false : true : false;
                 if(isError || !textFormat(data.nom) || !textFormat(data.type) || !numberFormat(data.poids) || !numberFormat(data.longueur) || !numberFormat(data.largeur) || 
                 !numberFormat(data.profondeur) || !floatFormat(data.prix) || !numberFormat(data.quantite) || !tabFormat(data.matieres) || !tabFormat(data.couleurs)){
                     return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"});
@@ -74,7 +74,7 @@ export const addComposant = async (req: Request, res: Response): Promise<void> =
                             let composant: ComposantInterface = new ComposantModel(toInsert);
                             await composant.save().then(async(respComp: ComposantInterface) => {
                                 if(imgObj !== null && imgObj !== undefined){
-                                    await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, respComp.get("_id"), imgObj, data.couleurs, false)
+                                    await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, respComp.get("_id"), imgObj, data.couleurs, false, false)
                                 }
                                 return dataResponse(res, 201, { error: false, message: "Le composant a bien été créé avec succès" });
                             }).catch(() => {
@@ -260,7 +260,7 @@ export const updateComposant = async (req: Request, res: Response): Promise<void
                                         return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
                                     } else {
                                         if(imgObj !== null && imgObj !== undefined){
-                                            await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, composant.get("_id"), imgObj, toUpdate.couleurs, true)
+                                            await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, composant.get("_id"), imgObj, toUpdate.couleurs, false, true)
                                         }
                                         return dataResponse(res, 200, { error: false, message: "Le composant a bien été mise à jour" })
                                     }
