@@ -4,20 +4,22 @@ import firebase from 'firebase';
 import path from "path";
 import { deleteCurrentFolderStorage, uploadFirebaseStorage } from './firebase';
 import ProductModel from '../models/ProductModel';
+import ComposantModel from '../models/ComposantModel';
 //const Jimp = require('jimp');
 
 /**
  *  Generate les images avec les couleurs de la spécification du produit/composant
  *  @param {string} racinePath 
  *  @param {string} filePath 
- *  @param {string} idProduct 
+ *  @param {string} id 
  *  @param {Object} imgObj 
  *  @param {Array<string>} colors 
+ *  @param {boolean} isProduct 
  *  @param {boolean} isEdit 
  */ 
-export const generateAllImagesColors = async (racinePath: string, filePath: string, idProduct: string, imgObj: any, selectionColors: Array<string>, isEdit: boolean = false): Promise<void> => {
+export const generateAllImagesColors = async (racinePath: string, filePath: string, id: string, imgObj: any, selectionColors: Array<string>, isProduct: boolean, isEdit: boolean): Promise<void> => {
     if(!fs.existsSync(racinePath + '/temp/')) fs.mkdirSync(racinePath + '/temp/');//add temp folder
-    let destPath: string = racinePath + `/temp/${idProduct}/`;// process.cwd()
+    let destPath: string = racinePath + `/temp/${id}/`;// process.cwd()
     if(!fs.existsSync(destPath)){
         fs.mkdirSync(destPath);//add destPath folder in temp
     }
@@ -46,24 +48,29 @@ export const generateAllImagesColors = async (racinePath: string, filePath: stri
         })
     });
     await resizeFile(filePath);
-    await generateImgs(idProduct, filePath, destPath, tabColorSelected).then(async() => {
+    await generateImgs(id, filePath, destPath, tabColorSelected).then(async() => {
         console.log('OK')
         fs.copyFileSync(filePath, destPath + imgObj.imgName);
         if(isEdit){
-            await deleteCurrentFolderStorage(idProduct);
+            await deleteCurrentFolderStorage(id);
         }
         let tabImgLinks: Array<string> = []
         for await (const file of fs.readdirSync(destPath)) {
-            tabImgLinks.push(await uploadFirebaseStorage(file, idProduct, destPath))
+            tabImgLinks.push(await uploadFirebaseStorage(file, id, destPath))
         }
-        await ProductModel.findByIdAndUpdate(idProduct, { tabImgLinks: tabImgLinks }, null, async(err: any, resp: any) => {
-            if(err){
-                throw err;
-            } 
-            //fs.existsSync(destPath) ? fs.rmdirSync(path.join(destPath), { recursive: true }) : null;//delete folder img temp
-            let contentTemp: any = await getFiles(racinePath + '/temp/');
-            cleanTempFolder(racinePath, contentTemp)
-        });
+        if(isProduct){
+            await ProductModel.findByIdAndUpdate(id, { tabImgLinks: tabImgLinks }, null, async(err: any, resp: any) => {
+                if(err) throw err; 
+                let contentTemp: any = await getFiles(racinePath + '/temp/');
+                cleanTempFolder(racinePath, contentTemp)
+            });
+        }else{
+            await ComposantModel.findByIdAndUpdate(id, { tabImgLinks: tabImgLinks }, null, async(err: any, resp: any) => {
+                if(err) throw err; 
+                let contentTemp: any = await getFiles(racinePath + '/temp/');
+                cleanTempFolder(racinePath, contentTemp)
+            });
+        }
     }).catch((err) => {
         throw err;
     })

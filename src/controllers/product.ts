@@ -30,7 +30,7 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                 if(String(process.env.ENV).trim().toLowerCase() !== "test") data = setFormDataTab(data);
                 let isError = exist(data.sousType) ? textFormat(data.sousType) ? false : true : false;
                 isError = existTab(data.composants) ? tabFormat(data.composants) ? false : true : false;
-                isError = existTab(data.description) ? isValidLength(data.description, 1, 300) ? false : true : false;
+                isError = exist(data.description) ? isValidLength(data.description, 1, 300) ? false : true : false;
                 if(isError || !textFormat(data.nom) || !textFormat(data.type) || !numberFormat(data.poids) || !numberFormat(data.longueur) || !numberFormat(data.largeur) || parseFloat(data.taxe) > 1 || parseFloat(data.taxe) < 0 || 
                 !numberFormat(data.profondeur) || !floatFormat(data.prix) || !floatFormat(data.taxe) || !numberFormat(data.quantite) || !tabFormat(data.matieres) || !tabFormat(data.couleurs)){
                     return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"});
@@ -76,7 +76,7 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                             let product: ProductInterface = new ProductModel(toInsert);
                             await product.save().then(async(produit: ProductInterface) => {
                                 if(imgObj !== null && imgObj !== undefined){
-                                    await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, produit.get("_id"), imgObj, data.couleurs, false)
+                                    await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, produit.get("_id"), imgObj, data.couleurs, true, false)
                                 }
                                 return dataResponse(res, 201, { error: false, message: "Le produit a bien été créé avec succès" });
                             }).catch(() => {
@@ -262,7 +262,7 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
                                         return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
                                     } else {                                
                                         if(imgObj !== null && imgObj !== undefined){
-                                            await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, product.get("_id"), imgObj, toUpdate.couleurs, true)
+                                            await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, product.get("_id"), imgObj, toUpdate.couleurs, true, true)
                                         }
                                         return dataResponse(res, 200, { error: false, message: "Le produit a bien été mise à jour" })
                                     }
