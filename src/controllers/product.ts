@@ -262,7 +262,7 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
                                         return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
                                     } else {                                
                                         if(imgObj !== null && imgObj !== undefined){
-                                            await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, product.get("_id"), imgObj, data.couleurs, true)
+                                            await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, product.get("_id"), imgObj, toUpdate.couleurs, true)
                                         }
                                         return dataResponse(res, 200, { error: false, message: "Le produit a bien été mise à jour" })
                                     }
