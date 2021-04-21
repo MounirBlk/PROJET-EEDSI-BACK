@@ -353,7 +353,10 @@ export const updateCommande = async (req: Request, res: Response): Promise<void>
                                 livreurID: exist(data.livreurID) ? isObjectIdValid(data.livreurID) && isVerifLivreur ? data.livreurID : (isError = true) : commande.livreurID,
                                 dateLivraison: exist(data.dateLivraison) ? dateHourMinuFormatEn(data.dateLivraison) ? data.dateLivraison : (isError = true) : commande.dateLivraison,
                                 adresseLivraison: exist(data.adresseLivraison) ? textFormat(data.adresseLivraison) ? data.adresseLivraison : (isError = true) : commande.adresseLivraison,
-                                statut: exist(data.statut) ? textFormat(data.statut) && isValidStatut ? firstLetterMaj(data.statut) : (isError = true) : commande.statut
+                                statut: exist(data.statut) ? textFormat(data.statut) && isValidStatut ? firstLetterMaj(data.statut) : (isError = true) : commande.statut,
+                                objetSignalement: exist(data.objetSignalement) ? isValidLength(data.objetSignalement,1,200) && isValidStatut ? data.objetSignalement : (isError = true) : commande.objetSignalement,
+                                typeSignalement: exist(data.typeSignalement) ? textFormat(data.typeSignalement) && isValidStatut ? data.typeSignalement : (isError = true) : commande.typeSignalement,
+                                cheminSignature: exist(data.statut) ? isValidLength(data.cheminSignature, 1, 500) && isValidStatut ? data.cheminSignature : (isError = true) : commande.cheminSignature,
                             }
                             //TODO SEND MAIL IF DATELIVRAISON/ADRESSELIVRAISON/LIVREURDID/STATUT UPDATED
                             if(isError){
