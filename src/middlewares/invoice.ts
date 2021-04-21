@@ -23,7 +23,7 @@ export const generateInvoice = async (invoiceData: any, filename: string): Promi
             })
         });
         req.write(postData);
-        resolve(req.end());
+        req.end();
         //if (typeof error === 'function') req.on('error', error);
     })
 }
