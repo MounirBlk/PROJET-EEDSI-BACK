@@ -362,8 +362,8 @@ export const updateCommande = async (req: Request, res: Response): Promise<void>
                             if(isError){
                                 return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
                             }else{
-                                toUpdate.statut = commande.statut.trim().toLowerCase() === "attente" && isObjectIdValid(data.livreurID) && isVerifLivreur ? "Livraison" : toUpdate.statut;
-                                toUpdate.statut = commande.statut.trim().toLowerCase() === "termine" ? commande.statut : toUpdate.statut;
+                                //toUpdate.statut = commande.statut.trim().toLowerCase() === "attente" && isObjectIdValid(data.livreurID) && isVerifLivreur ? "Livraison" : toUpdate.statut;
+                                //toUpdate.statut = commande.statut.trim().toLowerCase() === "termine" ? commande.statut : toUpdate.statut;
                                 await CommandeModel.findByIdAndUpdate(id, toUpdate, null, (err: any, resp: CommandeInterface | null) => {
                                     if (err) {
                                         return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
