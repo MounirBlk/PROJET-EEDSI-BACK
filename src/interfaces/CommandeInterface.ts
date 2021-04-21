@@ -9,4 +9,7 @@ export default interface CommandeInterface extends Document {
     "adresseLivraison": string,
     "statut": statutCommandeTypes,
     "articles": Array<string>//idProductSelected
+    "typeSignalement" :string,
+    "objetSignalement " :string,
+    "cheminSignature " :string
 }

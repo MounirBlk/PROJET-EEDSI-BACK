@@ -18,6 +18,21 @@ const CommandeSchema = new mongoose.Schema<CommandeInterface>({
         ref: 'UserModel',
         required: false,
     },
+    typeSignalement: {
+        default: null,
+        type: String,
+        required: false
+    },
+    objetSignalement: {
+        default: null,
+        type: String,
+        required: false
+    },
+    cheminSignature: {
+        default: null,
+        type: String,
+        required: false
+    },
     dateLivraison: {
         default: null,
         type: String,
