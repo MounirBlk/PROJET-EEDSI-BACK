@@ -356,7 +356,7 @@ export const updateCommande = async (req: Request, res: Response): Promise<void>
                                 statut: exist(data.statut) ? textFormat(data.statut) && isValidStatut ? firstLetterMaj(data.statut) : (isError = true) : commande.statut,
                                 objetSignalement: exist(data.objetSignalement) ? isValidLength(data.objetSignalement,1,200) && isValidStatut ? data.objetSignalement : (isError = true) : commande.objetSignalement,
                                 typeSignalement: exist(data.typeSignalement) ? textFormat(data.typeSignalement) && isValidStatut ? data.typeSignalement : (isError = true) : commande.typeSignalement,
-                                cheminSignature: exist(data.statut) ? isValidLength(data.cheminSignature, 1, 500) && isValidStatut ? data.cheminSignature : (isError = true) : commande.cheminSignature,
+                                cheminSignature: exist(data.cheminSignature) ? isValidLength(data.cheminSignature, 1, 500) && isValidStatut ? data.cheminSignature : (isError = true) : commande.cheminSignature,
                             }
                             //TODO SEND MAIL IF DATELIVRAISON/ADRESSELIVRAISON/LIVREURDID/STATUT UPDATED
                             if(isError){
