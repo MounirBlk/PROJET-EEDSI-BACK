@@ -16,7 +16,7 @@ const ProductSchema = new mongoose.Schema<ProductInterface>({
     description: {
         default: null,
         type: String,
-        required: false
+        required: true
     },
     type: {
         default: null,

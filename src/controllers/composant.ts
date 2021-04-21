@@ -26,13 +26,12 @@ export const addComposant = async (req: Request, res: Response): Promise<void> =
         }else{
             let data = req.body;      
             if(String(process.env.ENV).trim().toLowerCase() !== "test") data = setFormDataTab(data);
-            if(isEmptyObject(data) || !exist(data.nom) || !exist(data.type) || !exist(data.poids) || !exist(data.longueur) || 
+            if(isEmptyObject(data) || !exist(data.nom) || !exist(data.description) || !exist(data.type) || !exist(data.poids) || !exist(data.longueur) || 
             !exist(data.largeur) || !exist(data.profondeur) || !exist(data.prix) || !exist(data.quantite) ||
             !existTab(data.matieres) || !existTab(data.couleurs)){
                 return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' });
             }else{
-                let isError = exist(data.description) ? isValidLength(data.description, 1, 300) ? false : true : false;
-                if(isError || !textFormat(data.nom) || !textFormat(data.type) || !numberFormat(data.poids) || !numberFormat(data.longueur) || !numberFormat(data.largeur) || 
+                if(!textFormat(data.nom) || !isValidLength(data.description, 1, 300) || !textFormat(data.type) || !numberFormat(data.poids) || !numberFormat(data.longueur) || !numberFormat(data.largeur) || 
                 !numberFormat(data.profondeur) || !floatFormat(data.prix) || !numberFormat(data.quantite) || !tabFormat(data.matieres) || !tabFormat(data.couleurs)){
                     return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"});
                 }else{
@@ -42,7 +41,7 @@ export const addComposant = async (req: Request, res: Response): Promise<void> =
                         let toInsert = {
                             "refID": uuidv4(),// Unique ID
                             "nom": data.nom,
-                            "description": data.description !== null && data.description !== undefined ? data.description : null,
+                            "description": data.description,
                             "type": firstLetterMaj(data.type),
                             "matieres": data.matieres.map((el: string) => firstLetterMaj(el)),// [matieres]
                             "couleurs": data.couleurs,// [colors]

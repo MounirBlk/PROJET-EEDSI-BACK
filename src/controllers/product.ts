@@ -22,7 +22,7 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{                        
             let data = req.body;      
-            if(isEmptyObject(data) || !exist(data.nom) || !exist(data.type) || !exist(data.poids) || !exist(data.longueur) || 
+            if(isEmptyObject(data) || !exist(data.nom) || !exist(data.description) || !exist(data.type) || !exist(data.poids) || !exist(data.longueur) || 
             !exist(data.largeur) || !exist(data.profondeur) || !exist(data.prix) || !exist(data.taxe) || !exist(data.quantite) ||
             !existTab(data.matieres) || !existTab(data.couleurs)){
                 return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' });
@@ -30,9 +30,8 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                 if(String(process.env.ENV).trim().toLowerCase() !== "test") data = setFormDataTab(data);
                 let isError = exist(data.sousType) ? textFormat(data.sousType) ? false : true : false;
                 isError = existTab(data.composants) ? tabFormat(data.composants) ? false : true : false;
-                isError = exist(data.description) ? isValidLength(data.description, 1, 300) ? false : true : false;
                 if(isError || !textFormat(data.nom) || !textFormat(data.type) || !numberFormat(data.poids) || !numberFormat(data.longueur) || !numberFormat(data.largeur) || parseFloat(data.taxe) > 1 || parseFloat(data.taxe) < 0 || 
-                !numberFormat(data.profondeur) || !floatFormat(data.prix) || !floatFormat(data.taxe) || !numberFormat(data.quantite) || !tabFormat(data.matieres) || !tabFormat(data.couleurs)){
+                !numberFormat(data.profondeur) || !floatFormat(data.prix) || !floatFormat(data.taxe) || !numberFormat(data.quantite) || !tabFormat(data.matieres) || !tabFormat(data.couleurs) || !isValidLength(data.description, 1, 300)){
                     return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"});
                 }else{
                     if(await ProductModel.countDocuments({ nom: data.nom.trim()}) !== 0){// nom already exist
@@ -41,7 +40,7 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                         let toInsert = {
                             "refID": uuidv4(),// Unique ID
                             "nom": data.nom,
-                            "description": data.description !== null && data.description !== undefined ? data.description : null,
+                            "description": data.description,
                             "type": firstLetterMaj(data.type),
                             "sousType": data.sousType !== null && data.sousType !== undefined ? firstLetterMaj(data.sousType) : null,
                             "matieres": data.matieres.map((el: string) => firstLetterMaj(el)),// [matieres]
@@ -82,7 +81,8 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                             }).catch(() => {
                                 return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
                             });
-                        }).catch((err: Error) => {
+                        }).catch((err: any) => {
+                            console.log(err)
                             return dataResponse(res, 500, { error: true, message: "Erreur dans la requête pour l'ajout du produit !" });
                         });
                     }

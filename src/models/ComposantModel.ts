@@ -16,7 +16,7 @@ const ComposantSchema = new mongoose.Schema<ComposantInterface>({
     description: {
         default: null,
         type: String,
-        required: false
+        required: true
     },
     type: {
         default: null,
