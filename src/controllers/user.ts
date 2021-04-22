@@ -334,7 +334,7 @@ export const updateUser = async (req: Request, res: Response) : Promise <void> =
                     if(isEmptyObject(data)){
                         return dataResponse(res, 200, { error: false, message: "Vos données sont déjà à jour" })
                     }else{
-                        const user: UserInterface | null = await UserModel.findById(payload.id);
+                        const user: UserInterface | null = await UserModel.findById(id);
                         if(user === null || user === undefined){
                             return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !"})
                         }else{
