@@ -35,7 +35,8 @@ export const newEntrepriseSpec = () => {
 
     it('Test new Entreprise: données erronées', (done: DoneFn) => {
         const data = {
-            siret: randNumber(1000000000000, 9999999999999),//nécessite 14 chiffres
+            siret: "123456789012345",//nécessite 14 chiffres
+            siren: "1234567890",//nécessite 9 chiffres
             nom: randomChars(randNumber(5,10)),
             adresse: randomChars(randNumber(5,10)) + ' rue ' + randomChars(randNumber(10,10)) + ' ' + randNumber(10000,99999),
             categorieEntreprise : 'PME',
@@ -58,6 +59,7 @@ export const newEntrepriseSpec = () => {
         globalThis.siret = randNumber(10000000000000, 99999999999999)
         const data = {
             siret: globalThis.siret,
+            siren: '123456789',
             nom: randomChars(randNumber(5,10)),
             adresse: randomChars(randNumber(5,10)) + ' rue ' + randomChars(randNumber(10,10)) + ' ' + randNumber(10000,99999),
             categorieEntreprise : 'PME',
@@ -79,6 +81,7 @@ export const newEntrepriseSpec = () => {
     it('Test new Entreprise : existe deja', (done: DoneFn) => {
         const data = {
             siret: globalThis.siret,
+            siren: '123456789',
             nom: randomChars(randNumber(5,10)),
             adresse: randomChars(randNumber(5,10)) + ' rue ' + randomChars(randNumber(10,10)) + ' ' + randNumber(10000,99999),
             categorieEntreprise : 'PME',

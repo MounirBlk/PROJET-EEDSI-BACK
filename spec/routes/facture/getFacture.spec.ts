@@ -5,10 +5,10 @@ import fs from 'fs';
 import path from 'path';
 
 
-export const getFactureSpec = () => {
-    it('Test get facture: token incorrect', (done: DoneFn) => {       
+export const newDevisSpec = () => {
+    it('Test new devis: token incorrect', (done: DoneFn) => {       
         request(app)
-            .get('/facture/one/' + randomChars(randNumber(1,5)))
+            .post('/devis/add/' + randomChars(randNumber(1,5)))
             .set('Accept', 'application/json')
             .auth(randomChars(100), { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -18,9 +18,9 @@ export const getFactureSpec = () => {
             }, done);
     }, getTimeout());
 
-    it('Test get facture: id non valide', (done: DoneFn) => { 
+    it('Test new devis: id non valide', (done: DoneFn) => { 
         request(app)
-            .get('/facture/one/' + randomChars(randNumber(1,5)))
+            .post('/devis/add/' + randomChars(randNumber(1,5)))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
@@ -30,23 +30,4 @@ export const getFactureSpec = () => {
             }, done);
     }, getTimeout());
 
-    /*it('Test get facture: success', (done: DoneFn) => {
-        request(app)
-            .get('/facture/one/' + globalThis.idCommande)
-            .set('Accept', 'application/json')
-            .auth(globalThis.tokenInfos, { type: 'bearer' })
-            .expect('Content-Type', /json/)
-            .expect(200)
-            .then((response: any) => {
-                expect(response.status).toEqual(200)
-                expect(response.body).toEqual({
-                    error: false,
-                    message: "La facture a bien été envoyé par mail",
-                })
-                return done();
-            })
-            .catch(err => {
-                throw err;
-            })
-    }, getTimeout());*/
 }
