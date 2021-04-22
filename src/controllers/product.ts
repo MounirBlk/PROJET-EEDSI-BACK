@@ -78,7 +78,8 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                                     await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, produit.get("_id"), imgObj, data.couleurs, true, false)
                                 }
                                 return dataResponse(res, 201, { error: false, message: "Le produit a bien été créé avec succès" });
-                            }).catch(() => {
+                            }).catch((error: any) => {
+                                console.log(error)
                                 return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
                             });
                         }).catch((err: any) => {

@@ -82,7 +82,7 @@ export const addProductStripe = async(nom: string, description: string, unitAmou
             imgLink = urlFile;
         }
         await stripe.products.create(payload).then(async(respProduct: Stripe.Response<Stripe.Product>) => {//https://api.stripe.com/v1/products
-            const idStripePrice = (await addPriceProductStripe(respProduct.id, unitAmount, isRecurrent, currency)).data.id;
+            const idStripePrice = (await addPriceProductStripe(respProduct.id, unitAmount, isRecurrent, currency)).id;
             const toReturn = {
                 idStripeProduct : respProduct.id,
                 idStripePrice: idStripePrice,
@@ -90,6 +90,7 @@ export const addProductStripe = async(nom: string, description: string, unitAmou
             }
             resolve(toReturn);
         }).catch((err: any) => {
+            console.log(err)
             reject(err);
         })
     });
@@ -123,7 +124,8 @@ const addImgProduct = async(idFile: string): Promise<any> => {
         const dataBody = convertToFormBody(payload);
         await axios(getConfigAxios(`https://api.stripe.com/v1/file_links`, 'post', dataBody)).then(async(resp: AxiosResponse) => {
             resolve(resp.data);
-        }).catch((err: AxiosError) => {
+        }).catch((err: any) => {
+            console.log(err)
             reject(err);
         })
     });
@@ -178,7 +180,7 @@ export const updateProductStripe = async(idProduct: string, name: string, descri
 /**
  *  Ajout du price sur un produit
  */ 
-const addPriceProductStripe = async(idProduct: string, unitAmount: number, isRecurrent: boolean, currency: string = 'eur'): Promise<AxiosResponse> => {
+const addPriceProductStripe = async(idProduct: string, unitAmount: number, isRecurrent: boolean, currency: string = 'eur'): Promise<Stripe.Response<Stripe.Price>> => {
     return new Promise(async(resolve, reject) => {
         let payload: any = {
             "product": idProduct,
@@ -192,10 +194,10 @@ const addPriceProductStripe = async(idProduct: string, unitAmount: number, isRec
             payload['recurring[trial_period_days]'] = "0";
             payload['recurring[usage_type]'] = "licensed";
         }         
-        const dataBody = convertToFormBody(payload);
-        await axios(getConfigAxios(`https://api.stripe.com/v1/prices`, 'post', dataBody)).then((resp: AxiosResponse) => {
+        await stripe.prices.create(payload).then((resp: Stripe.Response<Stripe.Price>) => {
             resolve(resp)
-        }).catch((err: AxiosError) => {
+        }).catch((err: any) => {
+            console.log(err)
             reject(err);
         })
     });
