@@ -6,7 +6,7 @@ import { checkInternet, dataResponse } from "../middlewares";
 import multer from "multer";
 import { initUpload } from "../config";
 import { addCommande, deleteCommande, getCommande, getAllCommandesByStatut, updateCommande, getAllCommandesByUser } from "../controllers/commande";
-import { getFactureMail } from "../controllers/facture";
+import { generateDevisMail } from "../controllers/facture";
 
 export default (app: Application): void => {
     //USER
@@ -43,7 +43,7 @@ export default (app: Application): void => {
     app.route('/commande/user/:role/:id').get(checkInternet, getAllCommandesByUser);//payload token ?
     app.route('/commande/update/:id').put(checkInternet, updateCommande);
 
-    //FACTURE
-    app.route('/facture/one/:id').get(checkInternet, getFactureMail);
+    //Devis
+    app.route('/devis/add/:id').post(checkInternet, generateDevisMail);
 
 }

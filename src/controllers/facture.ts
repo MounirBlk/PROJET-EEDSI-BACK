@@ -8,16 +8,16 @@ import { mailInvoice } from '../middlewares/sendMail';
 import { generateInvoice, getInvoiceData } from '../middlewares/invoice';
 
 /**
- *  Route envoie facture par mail
+ *  Route envoie devis par mail
  *  @param {Request} req 
  *  @param {Response} res 
  */ 
-export const getFactureMail = async (req: Request, res: Response): Promise<void> => {
+export const generateDevisMail = async (req: Request, res: Response): Promise<void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
-            const id = req.params.id;
+            const id = req.params.id;//idUSER
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
