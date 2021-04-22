@@ -35,21 +35,19 @@ export const addArticle = async (req: Request, res: Response): Promise<void> => 
                     let isComposantErrorExist: boolean = false;
                     let isComposantErrorInvalide: boolean = false;
                     if(data.listeComposantsSelected.length > 0){
-                        let produit: any = await ProductModel.findOne({ _id: data.idProduct })
+                        let composantsData : string[] = []
                         data.listeComposantsSelected.forEach(async(el: any) => {
+                            composantsData.push(el.idComposant)
                             if(!exist(el.idComposant) || !exist(el.matiere) || !exist(el.couleur) || !exist(el.quantite)){
                                 isComposantErrorExist = true;
                             }else{
                                 //produit.composants.some((item: any) => { el.idComposant === item.toString() })
-                                let isComposantNotAvailable: boolean = false;
-                                produit.composants.forEach((item: any) => { 
-                                    isComposantNotAvailable = el.idComposant !== item.toString() ? true : isComposantNotAvailable
-                                })
-                                if(!isObjectIdValid(el.idComposant) || !textFormat(el.matiere) || !numberFormat(el.quantite) || !textFormat(el.couleur) || isComposantNotAvailable){
+                                if(!isObjectIdValid(el.idComposant) || !textFormat(el.matiere) || !numberFormat(el.quantite) || !textFormat(el.couleur)){
                                     isComposantErrorInvalide = true;
                                 }
                             }
                         });
+                        isComposantErrorInvalide = await ProductModel.countDocuments({ $and: [{ '_id': data.idProduct }, { 'composants': { $all: composantsData } }] } ) !== 1 ? true : isComposantErrorInvalide
                     }
                     if(isComposantErrorExist){
                         return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
@@ -282,21 +280,19 @@ export const updateArticle = async (req: Request, res: Response): Promise<void> 
                             let isComposantErrorExist: boolean = false;
                             let isComposantErrorInvalide: boolean = false;
                             if(data.listeComposantsSelected.length > 0){
-                                let produit: any = await ProductModel.findOne({ _id: data.idProduct })
+                                let composantsData : string[] = []
                                 data.listeComposantsSelected.forEach(async(el: any) => {
+                                    composantsData.push(el.idComposant)
                                     if(!exist(el.idComposant) || !exist(el.matiere) || !exist(el.couleur) || !exist(el.quantite)){
                                         isComposantErrorExist = true;
                                     }else{
                                         //produit.composants.some((item: any) => { el.idComposant === item.toString() })
-                                        let isComposantNotAvailable: boolean = false;
-                                        produit.composants.forEach((item: any) => { 
-                                            isComposantNotAvailable = el.idComposant !== item.toString() ? true : isComposantNotAvailable
-                                        })
-                                        if(!isObjectIdValid(el.idComposant) || !textFormat(el.matiere) || !numberFormat(el.quantite) || !textFormat(el.couleur) || isComposantNotAvailable){
+                                        if(!isObjectIdValid(el.idComposant) || !textFormat(el.matiere) || !numberFormat(el.quantite) || !textFormat(el.couleur)){
                                             isComposantErrorInvalide = true;
                                         }
                                     }
                                 });
+                                isComposantErrorInvalide = await ProductModel.countDocuments({ $and: [{ '_id': data.idProduct }, { 'composants': { $all: composantsData } }] } ) !== 1 ? true : isComposantErrorInvalide
                             }
                             if(isComposantErrorExist){
                                 return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
