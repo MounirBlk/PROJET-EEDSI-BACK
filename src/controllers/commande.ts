@@ -30,7 +30,7 @@ export const addCommande = async (req: Request, res: Response): Promise<void> =>
             if(isEmptyObject(data) || !exist(data.dateLivraison) || !exist(data.adresseLivraison)){
                 return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
             }else{
-                if(!dateHourMinuFormatEn(data.dateLivraison) || !textFormat(data.adresseLivraison)){
+                if(!dateHourMinuFormatEn(data.dateLivraison) || !isValidLength(data.adresseLivraison, 1, 100)){
                     return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
                 }else if(new Date(data.dateLivraison).getTime() < new Date().getTime() + (7 * 24 * 60 * 60000)){// 7 jours d'écart minimum
                     return dataResponse(res, 400, { error: true, message: "La date de livraison est indisponible (7 jours d'écart minimum)" }) 
@@ -354,7 +354,7 @@ export const updateCommande = async (req: Request, res: Response): Promise<void>
                             let toUpdate = {
                                 livreurID: exist(data.livreurID) ? isObjectIdValid(data.livreurID) && isVerifLivreur ? data.livreurID : (isError = true) : commande.livreurID,
                                 dateLivraison: exist(data.dateLivraison) ? dateHourMinuFormatEn(data.dateLivraison) ? data.dateLivraison : (isError = true) : commande.dateLivraison,
-                                adresseLivraison: exist(data.adresseLivraison) ? textFormat(data.adresseLivraison) ? data.adresseLivraison : (isError = true) : commande.adresseLivraison,
+                                adresseLivraison: exist(data.adresseLivraison) ? isValidLength(data.adresseLivraison,1,100) ? data.adresseLivraison : (isError = true) : commande.adresseLivraison,
                                 statut: exist(data.statut) ? textFormat(data.statut) && isValidStatut ? firstLetterMaj(data.statut) : (isError = true) : commande.statut,
                                 objetSignalement: exist(data.objetSignalement) ? isValidLength(data.objetSignalement,1,200) && isValidStatut ? data.objetSignalement : (isError = true) : commande.objetSignalement,
                                 typeSignalement: exist(data.typeSignalement) ? textFormat(data.typeSignalement) && isValidStatut ? data.typeSignalement : (isError = true) : commande.typeSignalement,
