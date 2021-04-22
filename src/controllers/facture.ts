@@ -78,7 +78,7 @@ export const generateDevisMail = async (req: Request, res: Response): Promise<vo
                                                             prixTotal = prixTotal + 10 + (prixTotal * 0.05) //Frais de livraison de 10 € + 5% du total (taxe/impôt)
                                                             let commandeToInsert = {
                                                                 "refID": uuidv4(),
-                                                                "clientID": payload.id,
+                                                                "clientID": id,
                                                                 "livreurID": null,
                                                                 "dateLivraison": getCurrentDateNextMonth(), // YYYY-MM-DD hh:mm
                                                                 "adresseLivraison": "Prospect's adress",
