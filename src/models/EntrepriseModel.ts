@@ -8,6 +8,11 @@ const EntrepriseSchema = new mongoose.Schema<EntrepriseInterface>({
         index: true,
         unique: true
     },
+    siren: {
+        default: null,
+        type: Number,
+        required: false
+    },
     nom: {
         default: null,
         type: String,
