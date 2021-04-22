@@ -14,6 +14,7 @@ import { statutCommandeTypes } from '../types/statutCommandeTypes';
 import { getInvoiceData, generateInvoice } from '../middlewares/invoice';
 import { mailInvoice } from '../middlewares/sendMail';
 import { uploadFirebaseStorage } from '../middlewares/firebase';
+import PanierModel from '../models/PanierModel';
 
 /**
  *  Route new commande
@@ -74,6 +75,7 @@ export const addCommande = async (req: Request, res: Response): Promise<void> =>
                                                     }else if (data === undefined || data === null){// Si le resultat n'existe pas
                                                         return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
                                                     }else{
+                                                        await PanierModel.findByIdAndUpdate(user.idPanier, { articles: [] });
                                                         if(String(process.env.ENV).trim().toLowerCase() !== "test"){
                                                             await generateInvoice(getInvoiceData(data), data.refID);// TO FIX INVOICE BUG ATTACHMENT MAIL
                                                             //await uploadFirebaseStorage();
