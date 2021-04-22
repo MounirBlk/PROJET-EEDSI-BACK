@@ -1,11 +1,17 @@
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
-import { dataResponse, dateHourMinuFormatEn, deleteMapper, exist, existTab, firstLetterMaj, getJwtPayload, isEmptyObject, isObjectIdValid, isValidLength, numberFormat, renameKey, tabFormat, textFormat } from '../middlewares';
+import { dataResponse, dateHourMinuFormatEn, deleteMapper, exist, existTab, firstLetterMaj, getCurrentDate, getCurrentDateNextMonth, getJwtPayload, isEmptyObject, isObjectIdValid, isValidLength, numberFormat, renameKey, tabFormat, textFormat } from '../middlewares';
 import { Application, Request, Response, NextFunction, Errback } from 'express';
 import { CallbackError, FilterQuery, Schema } from 'mongoose';
 import CommandeModel from '../models/CommandeModel';
 import { mailInvoice } from '../middlewares/sendMail';
 import { generateInvoice, getInvoiceData } from '../middlewares/invoice';
+import ProduitSelectedInterface from '../interfaces/ProductSelectedInterface';
+import PanierModel from '../models/PanierModel';
+import ProductModel from '../models/ProductModel';
+import ProductSelectedModel from '../models/ProductSelectedModel';
+import UserModel from '../models/UserModel';
+import CommandeInterface from '../interfaces/CommandeInterface';
 
 /**
  *  Route envoie devis par mail
@@ -21,20 +27,94 @@ export const generateDevisMail = async (req: Request, res: Response): Promise<vo
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
-                if(!isObjectIdValid(id) || await CommandeModel.countDocuments({ _id: id}) === 0){
+                if(!isObjectIdValid(id) || await UserModel.countDocuments({ _id: id}) === 0){
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
-                    CommandeModel.findOne({ _id: id}).populate('clientID').populate('livreurID').populate('articles.idProduct').populate('articles.listeComposantsSelected.idComposant').exec(async(err: CallbackError, data: any) => {
-                        if (err) {
-                            return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
-                        }else if (data === undefined || data === null){// Si le resultat n'existe pas
-                            return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
+                    const data = req.body;
+                    if(!exist(data.idProduct) || !exist(data.matiere) || !exist(data.couleur) || !exist(data.quantite)){
+                        return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
+                    }else{
+                        if((!isObjectIdValid(data.idProduct) || await ProductModel.countDocuments({ _id: data.idProduct}) === 0) || 
+                        !textFormat(data.matiere) || !textFormat(data.couleur) || !numberFormat(data.quantite)){
+                            return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
                         }else{
-                            await generateInvoice(getInvoiceData(data), data.refID);
-                            await mailInvoice(data.clientID.email, `${data.clientID.firstname} ${data.clientID.lastname}`, data.refID);
-                            return dataResponse(res, 201, { error: false, message: "La facture a bien été envoyé par mail" });
+                            let toInsert = {
+                                "refID": uuidv4(),
+                                "idProduct": data.idProduct,
+                                "matiere": data.matiere,
+                                "couleur": data.couleur,
+                                "quantite": data.quantite,
+                                "listeComposantsSelected": [],//
+                                "isCommande": false
+                            };
+                            let productSelected: ProduitSelectedInterface = new ProductSelectedModel(toInsert);
+                            const productSelectedSaved: ProduitSelectedInterface = await productSelected.save();
+                            UserModel.findOne({ _id: id }).populate('idPanier').exec(async(err: CallbackError, user: any) => {
+                                if (err) {
+                                    return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
+                                }else if (user === undefined || user === null){// Si le resultat n'existe pas
+                                    return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
+                                }else{
+                                    if (user) {
+                                        let panier: Array<ProduitSelectedInterface> = user.idPanier.articles;
+                                        panier.push(productSelectedSaved.get('_id'))
+                                        await PanierModel.findByIdAndUpdate(user.idPanier, { articles: panier }, null, async(err: Error, resp: any) => {
+                                            if (err) {
+                                                return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
+                                            } else {
+                                                let userInfos: any = await UserModel.findOne({ _id: id }).populate('idEntreprise').populate('idPanier');
+                                                ProductSelectedModel.find({ '_id': { $in: userInfos.idPanier.articles }}).populate('idProduct').populate('listeComposantsSelected.idComposant').exec(async(err: CallbackError, articles: any) => {
+                                                    if(err){
+                                                        return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
+                                                    }else{
+                                                        if (articles) {
+                                                            let prixTotal: number = 0;
+                                                            articles.forEach((article: any) => {
+                                                                prixTotal = prixTotal + parseInt(article.quantite) * parseFloat(article.idProduct.prix);
+                                                                article.listeComposantsSelected.forEach((composant: any) => {
+                                                                    prixTotal = prixTotal + (parseInt(article.quantite) * (parseInt(composant.quantite) * parseFloat(composant.idComposant.prix)));
+                                                                });
+                                                            });
+                                                            prixTotal = prixTotal + 10 + (prixTotal * 0.05) //Frais de livraison de 10 € + 5% du total (taxe/impôt)
+                                                            let commandeToInsert = {
+                                                                "refID": uuidv4(),
+                                                                "clientID": payload.id,
+                                                                "livreurID": null,
+                                                                "dateLivraison": getCurrentDateNextMonth(), // YYYY-MM-DD hh:mm
+                                                                "adresseLivraison": "Prospect's adress",
+                                                                "statut": "Attente",
+                                                                "articles": articles,
+                                                                "prixTotal": prixTotal.toFixed(2)
+                                                            }
+                                                            let commande: CommandeInterface = new CommandeModel(commandeToInsert);
+                                                            await commande.save().then(async(commandeSaved: CommandeInterface) => {
+                                                                CommandeModel.findOne({ _id: commandeSaved.get('_id')}).populate('clientID').populate('livreurID').populate('articles.idProduct').populate('articles.listeComposantsSelected.idComposant').exec(async(err: CallbackError, response: any) => {
+                                                                    if (err) {
+                                                                        return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
+                                                                    }else if (response === undefined || response === null){// Si le resultat n'existe pas
+                                                                        return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
+                                                                    }else{
+                                                                        await PanierModel.findByIdAndUpdate(user.idPanier, { articles: [] });
+                                                                        if(String(process.env.ENV).trim().toLowerCase() !== "test"){
+                                                                            await generateInvoice(getInvoiceData(response), response.refID);
+                                                                            await mailInvoice(response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID);
+                                                                        }
+                                                                        return dataResponse(res, 201, { error: false, message: "La commande a bien été ajouté" });
+                                                                    }
+                                                                });
+                                                            }).catch((err: any) => {
+                                                                throw err;
+                                                            });
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                                }
+                            });
                         }
-                    });
+                    }
                 }
             }
         }

@@ -16,7 +16,7 @@ import { getEntreprisesSpec } from "./entreprise/getEntreprises.spec";
 import { newEntrepriseSpec } from "./entreprise/newEntreprise.spec";
 import { newEntrepriseAutoSpec } from "./entreprise/newEntrepriseAuto.spec";
 import { updateEntrepriseSpec } from "./entreprise/updateEntreprise.spec";
-import { newDevisSpec } from "./facture/getFacture.spec";
+import { newDevisSpec } from "./facture/newDevis.spec";
 import { deleteArticleSpec } from "./panier/deleteArticle.spec";
 import { getArticleSpec } from "./panier/getArticle.spec";
 import { getArticlesSpec } from "./panier/getArticles.spec";

@@ -244,6 +244,14 @@ const getCurrentDate = (dt: Date = new Date()) => {
 }
 
 /**
+ *  Function qui return la date du jour +1 mois à la seconde près aaaa/mm/jj hh:mm
+ */ 
+const getCurrentDateNextMonth = () => {
+    let dt : Date = new Date();
+    return `${dt.getFullYear().toString().padStart(4, '0')}-${(dt.getMonth()+2).toString().padStart(2, '0')}-${dt.getDate().toString().padStart(2, '0')} ${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}`
+}
+
+/**
  *  Function qui return time en hh:mm:ss
  */ 
 const getTimeHourSecMin = (dt: Date = new Date()) => {
@@ -388,5 +396,5 @@ const setFormDataTab = (data: any): any => {
     return data;
 }
 
-export { dataResponse, setFormDataTab, isObjectIdValid, existTab, tabFormat, dateHourMinuFormatEn, firstLetterMaj, isEmptyObject, checkInternet, getJwtPayload, renameKey, randFileName, randomNumber, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
+export { dataResponse, setFormDataTab, getCurrentDateNextMonth, isObjectIdValid, existTab, tabFormat, dateHourMinuFormatEn, firstLetterMaj, isEmptyObject, checkInternet, getJwtPayload, renameKey, randFileName, randomNumber, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
 
