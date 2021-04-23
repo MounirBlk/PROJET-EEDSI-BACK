@@ -81,7 +81,7 @@ export const generateDevisMail = async (req: Request, res: Response): Promise<vo
                                                                 "clientID": id,
                                                                 "livreurID": null,
                                                                 "dateLivraison": getCurrentDateNextMonth(), // YYYY-MM-DD hh:mm
-                                                                "adresseLivraison": "Prospect's adress",
+                                                                "adresseLivraison": "70 Rue Marius Aufan, 92300 Levallois-Perret",
                                                                 "statut": "Attente",
                                                                 "articles": articles,
                                                                 "prixTotal": prixTotal.toFixed(2)

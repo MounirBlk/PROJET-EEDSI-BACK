@@ -54,7 +54,7 @@ const getConfigHttps = (postData: string) => {
 const setInvoiceData = (data: any) => {
     return {
         logo: "https://www.surmafacture.fr/wp-content/uploads/2019/11/icon-logo.png",//http://invoiced.com/img/logo-invoice.png
-        from: "E-Commerce city\n17 Av. des Champs-Élysées\nParis, 75008",
+        from: "IMIE PARIS\n70 Rue Marius Aufan\nLevallois-Perret, 92300",
         to: data.destinataire,
         ship_to: data.adresseLivraison,
         currency: "eur",
