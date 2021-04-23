@@ -28,7 +28,7 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                 return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' });
             }else{
                 if(String(process.env.ENV).trim().toLowerCase() !== "test") data = setFormDataTab(data);
-                //console.log(data)
+                console.log(data)
                 let isError = exist(data.sousType) ? textFormat(data.sousType) ? false : true : false;
                 isError = existTab(data.composants) ? tabFormat(data.composants) ? false : true : false;
                 if(isError || !textFormat(data.nom) || !textFormat(data.type) || !numberFormat(data.poids) || !numberFormat(data.longueur) || !numberFormat(data.largeur) || parseFloat(data.taxe) > 1 || parseFloat(data.taxe) < 0 || 
