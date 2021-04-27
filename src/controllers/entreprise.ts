@@ -21,7 +21,7 @@ export const newEntreprise = async (req: Request, res: Response): Promise<void> 
                 return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
             }else{
                 if(isEmptyObject(data) || !textFormat(data.nom)  || !textFormat(data.categorieEntreprise) || !isValidLength(data.siret.trim(), 14, 14) || data.siret.trim().match(/^[0-9]*$/gm) == null ||
-                data.etatAdministratif.toLowerCase() !== 'actif' && data.etatAdministratif.toLowerCase() !== 'ferme' || !isValidLength(data.adresse, 1, 50) || !isValidLength(data.siren.trim(), 9, 9) || !numberFormat(data.categorieJuridique)){
+                data.etatAdministratif.toLowerCase() !== 'actif' && data.etatAdministratif.toLowerCase() !== 'ferme' || !isValidLength(data.adresse, 1, 100) || !isValidLength(data.siren.trim(), 9, 9) || !numberFormat(data.categorieJuridique)){
                     return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
                 }else{
                     if(await EntrepriseModel.countDocuments({ siret: data.siret.trim()}) !== 0){// Email already exist
@@ -117,7 +117,7 @@ export const updateEntreprise = async (req: Request, res: Response): Promise<voi
                         let toUpdate = {
                             nom: exist(data.nom) ? textFormat(data.nom) ? data.nom : (isOnError = true) : entreprise.nom,
                             siren: exist(data.siren) ? isValidLength(data.siren.trim(), 9, 9)  ? data.siren : (isOnError = true) : entreprise.siren,
-                            adresse: exist(data.adresse) ? isValidLength(data.adresse, 1, 50) ? data.adresse : (isOnError = true) : entreprise.adresse,
+                            adresse: exist(data.adresse) ? isValidLength(data.adresse, 1, 100) ? data.adresse : (isOnError = true) : entreprise.adresse,
                             telephone: exist(data.telephone) ? isValidLength(data.telephone, 1, 25) ? data.telephone : (isOnError = true) : entreprise.telephone,
                             categorieEntreprise: exist(data.categorieEntreprise) ? textFormat(data.categorieEntreprise) ? data.categorieEntreprise : (isOnError = true) : entreprise.categorieEntreprise,
                             categorieJuridique: exist(data.categorieJuridique) ? numberFormat(data.categorieJuridique) ? data.categorieJuridique : (isOnError = true) : entreprise.categorieJuridique,
