@@ -281,7 +281,7 @@ export const getAllUsers = async (req: Request, res: Response) : Promise <void> 
                 }else{
                     const roleFind = firstLetterMaj(role)              
                     let filterFind: any = role.trim().toLowerCase() === 'commercial' ? { $or: [{role: roleFind}, {role: 'Administrateur'}] } : { role: roleFind }
-                    filterFind = role.trim().toLowerCase() === 'all' ? {} : { role: roleFind }
+                    filterFind = role.trim().toLowerCase() === 'all' ? {} : filterFind;
                     UserModel.find(filterFind).populate('idEntreprise').populate('idPanier').exec((err: CallbackError, results: UserInterface[]) => {
                         if (err) {
                             return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
