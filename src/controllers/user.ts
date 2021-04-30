@@ -9,6 +9,7 @@ import PanierModel from '../models/PanierModel';
 import EntrepriseModel from '../models/EntrepriseModel';
 import { v4 as uuidv4 } from 'uuid';
 import { CallbackError } from 'mongoose';
+import { roleTypes } from '../types/roleTypes';
 
 /**
  *  Route register user
@@ -270,16 +271,17 @@ export const getAllUsers = async (req: Request, res: Response) : Promise <void> 
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
-            const role: any = req.params.role;
+            const role: string = req.params.role;
             if(!exist(role)){
                 return dataResponse(res, 400, { error: true, message: 'Le role de l\'utilisateur est manquant' })
             }else{
-                if(role.trim().toLowerCase() !== 'administrateur' && role.trim().toLowerCase() !== 'commercial' 
+                if(role.trim().toLowerCase() !== 'administrateur' && role.trim().toLowerCase() !== 'commercial' && role.trim().toLowerCase() !== 'all'
                 && role.trim().toLowerCase() !== 'livreur' && role.trim().toLowerCase() !== 'client' && role.trim().toLowerCase() !== 'prospect'){
                     return dataResponse(res, 409, { error: true, message: 'Le role de l\'utilisateur n\'est pas conforme' })
                 }else{
                     const roleFind = firstLetterMaj(role)              
                     let filterFind: any = role.trim().toLowerCase() === 'commercial' ? { $or: [{role: roleFind}, {role: 'Administrateur'}] } : { role: roleFind }
+                    filterFind = role.trim().toLowerCase() === 'all' ? {} : { role: roleFind }
                     UserModel.find(filterFind).populate('idEntreprise').populate('idPanier').exec((err: CallbackError, results: UserInterface[]) => {
                         if (err) {
                             return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
