@@ -294,6 +294,7 @@ export const getAllUsers = async (req: Request, res: Response) : Promise <void> 
                                     el.idPanier = el.idPanier !== null && el.idPanier !== undefined ? deleteMapper(el.idPanier) : el.idPanier
                                 });
                                 let roleMessage = role.trim().toLowerCase() === 'commercial' ? "commerciaux" : role.trim().toLowerCase().concat('s')
+                                roleMessage = role.trim().toLowerCase() === 'all' ? "utilisateurs" : roleMessage;
                                 return dataResponse(res, 200, {
                                     error: false,
                                     message: "Les " + roleMessage + " ont bien été récupéré",
