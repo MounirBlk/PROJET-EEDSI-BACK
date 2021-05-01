@@ -1,6 +1,6 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
 import UserInterface from '../interfaces/UserInterface';
-import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, firstLetterMaj, getJwtPayload, isEmptyObject, isObjectIdValid, isValidLength, passwordFormat, randChars, randomNumber, textFormat } from '../middlewares';
+import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, firstLetterMaj, getJwtPayload, isEmptyObject, isObjectIdValid, isValidLength, passwordFormat, payloadTokenInterface, randChars, randomNumber, textFormat } from '../middlewares';
 import { mailCheckEmail, mailforgotPw, mailRegister } from '../middlewares/sendMail';
 import UserModel from '../models/UserModel';
 import jwt from 'jsonwebtoken';
@@ -140,10 +140,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
  *  @param {Response} res 
  */ 
 export const deleteUser = async (req: Request, res: Response) : Promise <void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
+            if(payload.role !== "Administrateur") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const id = req.params.id;
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
@@ -186,7 +187,7 @@ export const deleteUser = async (req: Request, res: Response) : Promise <void> =
  *  @param {Response} res 
  */ 
 export const getOwnUser = async (req: Request, res: Response) : Promise <void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
@@ -224,7 +225,7 @@ export const getOwnUser = async (req: Request, res: Response) : Promise <void> =
  *  @param {Response} res 
  */ 
 export const getOneUser = async (req: Request, res: Response) : Promise <void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
@@ -267,10 +268,11 @@ export const getOneUser = async (req: Request, res: Response) : Promise <void> =
  *  @param {Response} res 
  */ 
 export const getAllUsers = async (req: Request, res: Response) : Promise <void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
+            if(payload.role !== "Administrateur" && payload.role !== "Commercial") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const role: string = req.params.role;
             if(!exist(role)){
                 return dataResponse(res, 400, { error: true, message: 'Le role de l\'utilisateur est manquant' })
@@ -322,7 +324,7 @@ export const getAllUsers = async (req: Request, res: Response) : Promise <void> 
  *  @param {Response} res 
  */ 
 export const updateUser = async (req: Request, res: Response) : Promise <void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
@@ -384,7 +386,7 @@ export const updateUser = async (req: Request, res: Response) : Promise <void> =
  *  @param {Response} res 
  */ 
 export const disableUser = async (req: Request, res: Response) : Promise <void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{

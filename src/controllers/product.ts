@@ -1,5 +1,5 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
-import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, existTab, firstLetterMaj, floatFormat, getJwtPayload, isEmptyObject, isObjectIdValid, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, setFormDataTab, tabFormat, textFormat } from '../middlewares';
+import { dataResponse, dateFormatEn, dateFormatFr, deleteMapper, emailFormat, exist, existTab, firstLetterMaj, floatFormat, getJwtPayload, isEmptyObject, isObjectIdValid, isValidLength, numberFormat, passwordFormat, payloadTokenInterface, randChars, randomNumber, setFormDataTab, tabFormat, textFormat } from '../middlewares';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import ProductModel from '../models/ProductModel';
@@ -17,10 +17,11 @@ import ComposantInterface from '../interfaces/ComposantInterface';
  *  @param {Response} res 
  */ 
 export const addProduct = async (req: Request, res: Response): Promise<void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
-        }else{                        
+        }else{       
+            if(payload.role !== "Administrateur" && payload.role !== "Commercial") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });                 
             let data = req.body;      
             if(isEmptyObject(data) || !exist(data.nom) || !exist(data.description) || !exist(data.type) || !exist(data.poids) || !exist(data.longueur) || 
             !exist(data.largeur) || !exist(data.profondeur) || !exist(data.prix) || !exist(data.taxe) || !exist(data.quantite) ||
@@ -28,7 +29,7 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                 return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' });
             }else{
                 if(String(process.env.ENV).trim().toLowerCase() !== "test") data = setFormDataTab(data);
-                console.log(data)
+                //console.log('\n', data)
                 let isError = exist(data.sousType) ? textFormat(data.sousType) ? false : true : false;
                 isError = existTab(data.composants) ? tabFormat(data.composants) ? false : true : false;
                 if(isError || !textFormat(data.nom) || !textFormat(data.type) || !numberFormat(data.poids) || !numberFormat(data.longueur) || !numberFormat(data.largeur) || parseFloat(data.taxe) > 1 || parseFloat(data.taxe) < 0 || 
@@ -101,10 +102,11 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
  *  @param {Response} res 
  */ 
 export const deleteProduct = async (req: Request, res: Response) : Promise <void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
+            if(payload.role !== "Administrateur" && payload.role !== "Commercial") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const id = req.params.id;
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
@@ -209,10 +211,11 @@ export const getAllProducts = async (req: Request, res: Response) : Promise <voi
  *  @param {Response} res 
  */ 
 export const updateProduct = async (req: Request, res: Response): Promise<void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
+            if(payload.role !== "Administrateur" && payload.role !== "Commercial") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const id = req.params.id;
             let data = req.body;      
             if(String(process.env.ENV).trim().toLowerCase() !== "test") data = setFormDataTab(data);

@@ -3,6 +3,7 @@ import UserModel from '../models/UserModel';
 import jwt from 'jsonwebtoken';
 const isOnline = require('is-online');
 import { isValidObjectId, Types } from 'mongoose'
+import { roleTypes } from '../types/roleTypes';
 //import { random } from "lodash";
 
 /**
@@ -361,6 +362,11 @@ const getJwtPayload = async(tokenHeader: string | undefined): Promise < any | nu
         //console.log(err)
         return null;
     }
+}
+//INTERFACE payload token
+export interface payloadTokenInterface {
+    id: string,
+    role: roleTypes
 }
 
 /**
