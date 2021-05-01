@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
-import { dataResponse, deleteMapper, exist, existTab, getJwtPayload, isObjectIdValid, isValidLength, numberFormat, renameKey, tabFormat, textFormat } from '../middlewares';
+import { dataResponse, deleteMapper, exist, existTab, getJwtPayload, isObjectIdValid, isValidLength, numberFormat, payloadTokenInterface, renameKey, tabFormat, textFormat } from '../middlewares';
 import { Application, Request, Response, NextFunction, Errback } from 'express';
 import PanierModel from '../models/PanierModel';
 import PanierInterface from '../interfaces/PanierInterface';
@@ -20,10 +20,11 @@ import { CallbackError, Schema } from 'mongoose';
  *  @param {Response} res 
  */ 
 export const addArticle = async (req: Request, res: Response): Promise<void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
+            if(payload.role !== "Administrateur" && payload.role !== "Client" && payload.role !== "Prospect") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const data = req.body;
             if(!exist(data.idProduct) || !exist(data.matiere) || !exist(data.couleur) || !exist(data.quantite) || !existTab(data.listeComposantsSelected)){
                 return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
@@ -99,10 +100,11 @@ export const addArticle = async (req: Request, res: Response): Promise<void> => 
  *  @param {Response} res 
  */ 
 export const deleteArticle = async (req: Request, res: Response): Promise<void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
+            if(payload.role !== "Administrateur" && payload.role !== "Client" && payload.role !== "Prospect") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const id = req.params.id;
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
@@ -150,10 +152,11 @@ export const deleteArticle = async (req: Request, res: Response): Promise<void> 
  *  @param {Response} res 
  */ 
 export const getArticle = async (req: Request, res: Response): Promise<void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
+            if(payload.role !== "Administrateur" && payload.role !== "Client" && payload.role !== "Prospect") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const id = req.params.id;
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
@@ -200,10 +203,11 @@ export const getArticle = async (req: Request, res: Response): Promise<void> => 
  *  @param {Response} res 
  */ 
 export const getAllArticles = async (req: Request, res: Response): Promise<void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
+            if(payload.role !== "Administrateur" && payload.role !== "Client" && payload.role !== "Prospect") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             UserModel.findOne({ _id: payload.id }).populate('idPanier').exec(async(err: CallbackError, user: any) => {
                 if (err) {
                     return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
@@ -258,10 +262,11 @@ export const getAllArticles = async (req: Request, res: Response): Promise<void>
  *  @param {Response} res 
  */ 
 export const updateArticle = async (req: Request, res: Response): Promise<void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
+            if(payload.role !== "Administrateur" && payload.role !== "Client" && payload.role !== "Prospect") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const id = req.params.id;
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })

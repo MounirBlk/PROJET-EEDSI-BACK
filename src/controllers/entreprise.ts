@@ -1,5 +1,5 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
-import { dataResponse, dateFormatFr, deleteMapper, emailFormat, dateFormatEn, exist, getJwtPayload, isEmptyObject, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, textFormat, isObjectIdValid } from '../middlewares';
+import { dataResponse, dateFormatFr, deleteMapper, emailFormat, dateFormatEn, exist, getJwtPayload, isEmptyObject, isValidLength, numberFormat, passwordFormat, randChars, randomNumber, textFormat, isObjectIdValid, payloadTokenInterface } from '../middlewares';
 import EntrepriseInterface from '../interfaces/EntrepriseInterface';
 import EntrepriseModel from '../models/EntrepriseModel';
 import axios, { AxiosRequestConfig, AxiosResponse, Method } from "axios"
@@ -11,10 +11,11 @@ import axios, { AxiosRequestConfig, AxiosResponse, Method } from "axios"
  *  @param {Response} res 
  */ 
 export const newEntreprise = async (req: Request, res: Response): Promise<void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
+            if(payload.role !== "Administrateur" && payload.role !== "Commercial" && payload.role !== "Prospect") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const data = req.body;
             if(isEmptyObject(data) || !exist(data.nom) || !exist(data.adresse) || !exist(data.siren) || !exist(data.categorieEntreprise) || 
             !exist(data.etatAdministratif) || !exist(data.siret) || !exist(data.categorieJuridique)){
@@ -57,10 +58,11 @@ export const newEntreprise = async (req: Request, res: Response): Promise<void> 
  *  @param {Response} res 
  */ 
 export const newEntrepriseAuto = async (req: Request, res: Response): Promise<void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
+            if(payload.role !== "Administrateur" && payload.role !== "Commercial" && payload.role !== "Prospect") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const data = req.body;
             if(isEmptyObject(data) || !exist(data.siret)){
                 return dataResponse(res, 400, { error: true, message: 'Le siret ne peut pas être vide' })
@@ -97,10 +99,11 @@ export const newEntrepriseAuto = async (req: Request, res: Response): Promise<vo
  *  @param {Response} res 
  */ 
 export const updateEntreprise = async (req: Request, res: Response): Promise<void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
+            if(payload.role !== "Administrateur" && payload.role !== "Commercial" && payload.role !== "Prospect") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const id = req.params.id;
             const data = req.body;
             if(!exist(id)){
@@ -151,10 +154,11 @@ export const updateEntreprise = async (req: Request, res: Response): Promise<voi
  *  @param {Response} res 
  */ 
 export const deleteEntreprise = async (req: Request, res: Response) : Promise <void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
+            if(payload.role !== "Administrateur" && payload.role !== "Commercial" && payload.role !== "Prospect") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const id = req.params.id;
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
@@ -178,10 +182,11 @@ export const deleteEntreprise = async (req: Request, res: Response) : Promise <v
  *  @param {Response} res 
  */ 
 export const getEntreprise = async (req: Request, res: Response) : Promise <void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
+            if(payload.role !== "Administrateur" && payload.role !== "Commercial" && payload.role !== "Prospect") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const id = req.params.id;
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
@@ -226,10 +231,11 @@ export const getEntreprise = async (req: Request, res: Response) : Promise <void
  *  @param {Response} res 
  */ 
 export const getAllEntreprises = async (req: Request, res: Response) : Promise <void> => {
-    await getJwtPayload(req.headers.authorization).then(async (payload) => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
+            if(payload.role !== "Administrateur" && payload.role !== "Commercial") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             await EntrepriseModel.find({}, (err: Error, results: Array<EntrepriseInterface>) => {
                 if (err) {
                     return dataResponse(res, 500, {
