@@ -2,9 +2,13 @@ import mongoose from 'mongoose';
 import bluebird from 'bluebird';
 import fs from 'fs';
 import { Application } from 'express';
+import socket from '../middlewares/socket';
+import * as socketio from "socket.io"
+import { DefaultEventsMap } from "socket.io/dist/typed-events";
+import * as http from 'http'
 //const mongoose = require("mongoose")
 
-const mongooseConnect = async(app: Application) => {
+const mongooseConnect = async(app: Application, httpServer: http.Server, io: socketio.Server<DefaultEventsMap, DefaultEventsMap>) => {
     //const uri: string = String(process.env.ENV).trim() === "PROD" || String(process.env.ENV).trim() === "DEV" || String(process.env.ENV).trim() === "TEST" ? String(process.env.MONGO_URL) : String(process.env.MONGO_URL_LOCAL);// ENV: PROD / DEV / TEST
     const uri: string = String(process.env.MONGO_URL);
     //Perform promise in node
@@ -16,9 +20,10 @@ const mongooseConnect = async(app: Application) => {
         useUnifiedTopology: true,
         useFindAndModify: false,
         useCreateIndex: true
-    }).then(() => { 
+    }).then(async() => { 
         console.log("MongoDB OK !");
-        app.listen(app.get("port"), () => {
+        await socket(io);//socketio
+        httpServer.listen(app.get("port"), () => {
             console.log(`App is running on http://localhost:${app.get("port")}/ in ${String(process.env.ENV).trim() || 'DEV'} mode`);
         });
     }).catch((err: Error) => {
