@@ -1,10 +1,10 @@
-import { Document } from "mongoose"
+import { Document, Schema  } from "mongoose"
 import { statutCommandeTypes } from "../types/statutCommandeTypes";
 
 export default interface CommandeInterface extends Document {
     "refID": string,
-    "clientID": string,
-    "livreurID": string,
+    "clientID": string,//Schema.Types.ObjectId
+    "livreurID": string,//Schema.Types.ObjectId
     "dateLivraison": string,// YYYY-MM-DD hh:mm
     "adresseLivraison": string,
     "statut": statutCommandeTypes,

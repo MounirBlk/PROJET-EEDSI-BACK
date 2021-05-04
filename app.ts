@@ -8,10 +8,15 @@ import { route } from './src/routes';
 import mongooseConnect from './src/db';
 import fs from 'fs';
 import rateLimit from 'express-rate-limit';
-import { initUpload } from "./src/config";
-
+import * as http from 'http'
+import * as socketio from "socket.io"
 
 const app: Application = express();
+
+const httpServer: http.Server = http.createServer(app);
+const io = new socketio.Server(httpServer, { cors: { origin: '*' } });
+
+
 //app.use(json)
 
 // parse application/x-www-form-urlencoded
@@ -30,13 +35,12 @@ app.use(express.json());
 app.use(express.static('public'));
 
 app.use((err: Errback , req: Request, res: Response, next: NextFunction) => {
-    if (err.name === 'UnauthorizedError')
-        res.status(401).send('Missing authentication credentials.');
+    if (err.name === 'UnauthorizedError') res.status(401).send('Missing authentication credentials.');
 });
 
 const limiter: rateLimit.RateLimit = rateLimit({
   windowMs: (60 * 1000) * 1, // 1 min
-  max: 200 //limit for each IP with 200 requests per windowMs
+  max: 300 //limit for each IP with 300 requests per windowMs
 });
 
 app.use(limiter);
@@ -45,11 +49,11 @@ app.set("port", process.env.PORT || 3000);
 
 route(app);
 
+//initUpload();
+mongooseConnect(app, httpServer, io);
+
 app.get('*', (req: Request, res: Response) => {
   res.status(404).sendFile(path.join(__dirname + '/public/error.html'))
 });
-
-//initUpload();
-mongooseConnect(app);
 
 export default app; //export to call app to test spec
