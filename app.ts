@@ -1,7 +1,7 @@
 //require('dotenv').config()
 import { config } from "dotenv"; 
 config(); 
-import express, { Application, Request, Response, NextFunction, Errback } from 'express';
+import express, { Application, Request, Response, NextFunction, Errback, json } from 'express';
 import cors from 'cors';
 import path from 'path';
 import { route } from './src/routes';
@@ -16,9 +16,6 @@ const app: Application = express();
 const httpServer: http.Server = http.createServer(app);
 const io = new socketio.Server(httpServer, { cors: { origin: '*' } });
 
-
-//app.use(json)
-
 // parse application/x-www-form-urlencoded
 app.use((req: Request, res: Response, next: NextFunction) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -30,7 +27,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 app.use(cors());
-app.use(express.urlencoded({ extended: false }))
+app.use(express.urlencoded({ extended: true }))
 app.use(express.json());
 app.use(express.static('public'));
 
