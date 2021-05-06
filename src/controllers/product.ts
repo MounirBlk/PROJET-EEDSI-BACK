@@ -22,14 +22,14 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{       
             if(payload.role !== "Administrateur" && payload.role !== "Commercial") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });                 
-            let data = req.body;      
+            let data = req.body;    
             if(isEmptyObject(data) || !exist(data.nom) || !exist(data.description) || !exist(data.type) || !exist(data.poids) || !exist(data.longueur) || 
             !exist(data.largeur) || !exist(data.profondeur) || !exist(data.prix) || !exist(data.taxe) || !exist(data.quantite) ||
             !existTab(data.matieres) || !existTab(data.couleurs)){
                 return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' });
             }else{
-                if(String(process.env.ENV).trim().toLowerCase() !== "test") data = setFormDataTab(data);
-                //console.log('\n', data)
+                if(String(process.env.ENV).trim().toLowerCase() !== "test") data = setFormDataTab(data);//A RETIRER
+                //console.log(data)
                 let isError = exist(data.sousType) ? textFormat(data.sousType) ? false : true : false;
                 isError = existTab(data.composants) ? tabFormat(data.composants) ? false : true : false;
                 if(isError || !textFormat(data.nom) || !textFormat(data.type) || !numberFormat(data.poids) || !numberFormat(data.longueur) || !numberFormat(data.largeur) || parseFloat(data.taxe) > 1 || parseFloat(data.taxe) < 0 || 
