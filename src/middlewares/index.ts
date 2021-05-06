@@ -253,6 +253,13 @@ const getCurrentDateNextMonth = () => {
 }
 
 /**
+ *  Function qui return une date au hasard entre l'interval à la seconde près aaaa/mm/jj hh:mm
+ */ 
+const randomDateInterval = (start: Date, end: Date) => {
+    return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+}
+
+/**
  *  Function qui return time en hh:mm:ss
  */ 
 const getTimeHourSecMin = (dt: Date = new Date()) => {
@@ -402,5 +409,5 @@ const setFormDataTab = (data: any): any => {
     return data;
 }
 
-export { dataResponse, setFormDataTab, getCurrentDateNextMonth, isObjectIdValid, existTab, tabFormat, dateHourMinuFormatEn, firstLetterMaj, isEmptyObject, checkInternet, getJwtPayload, renameKey, randFileName, randomNumber, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
+export { dataResponse, setFormDataTab, getCurrentDateNextMonth, randomDateInterval, isObjectIdValid, existTab, tabFormat, dateHourMinuFormatEn, firstLetterMaj, isEmptyObject, checkInternet, getJwtPayload, renameKey, randFileName, randomNumber, randChars, getCurrentDate, getTimeHourSecMin, calculHtToTtc, calculTtcToHt, randomFloat, textToBinary, binaryToText, isValidLength, isValidPasswordLength, deleteMapper, exist, dateFormatFr, dateFormatEn, emailFormat, passwordFormat, zipFormat, textFormat, numberFormat, floatFormat, isValidDateCard};
 

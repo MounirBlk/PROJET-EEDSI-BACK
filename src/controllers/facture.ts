@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
-import { dataResponse, dateHourMinuFormatEn, deleteMapper, exist, existTab, firstLetterMaj, getCurrentDate, getCurrentDateNextMonth, getJwtPayload, isEmptyObject, isObjectIdValid, isValidLength, numberFormat, payloadTokenInterface, renameKey, tabFormat, textFormat } from '../middlewares';
+import { dataResponse, dateHourMinuFormatEn, deleteMapper, exist, existTab, firstLetterMaj, getCurrentDate, getCurrentDateNextMonth, getJwtPayload, isEmptyObject, isObjectIdValid, isValidLength, numberFormat, payloadTokenInterface, randomDateInterval, renameKey, tabFormat, textFormat } from '../middlewares';
 import { Application, Request, Response, NextFunction, Errback } from 'express';
 import { CallbackError, FilterQuery, Schema } from 'mongoose';
 import CommandeModel from '../models/CommandeModel';
@@ -81,7 +81,7 @@ export const generateDevisMail = async (req: Request, res: Response): Promise<vo
                                                                 "refID": uuidv4(),
                                                                 "clientID": id,
                                                                 "livreurID": null,
-                                                                "dateLivraison": getCurrentDateNextMonth(), // YYYY-MM-DD hh:mm
+                                                                "dateLivraison": getCurrentDate(randomDateInterval(new Date(), new Date(new Date().getFullYear()+'-12-31T23:59:59'))), // YYYY-MM-DD hh:mm getCurrentDateNextMonth()
                                                                 "adresseLivraison": "70 Rue Marius Aufan, 92300 Levallois-Perret",
                                                                 "statut": "Attente",
                                                                 "articles": articles,
