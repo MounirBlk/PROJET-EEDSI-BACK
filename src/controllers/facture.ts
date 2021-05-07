@@ -32,6 +32,8 @@ export const generateDevisMail = async (req: Request, res: Response): Promise<vo
                     return dataResponse(res, 409, { error: true, message: "L'id n'est pas valide !" })
                 }else{
                     const data = req.body;
+                    if(!existTab(data.articles)) return dataResponse(res, 400, { error: true, message: 'Aucun article n\'est sélectionné' })
+                    if(!tabFormat(data.articles)) return dataResponse(res, 409, { error: true, message: 'Les articles ne sont pas au bon format'})
                     for await (const article of data.articles) {
                         if(!exist(article.idProduct) || !exist(article.matiere) || !exist(article.couleur) || !exist(String(article.quantite)) || !existTab(article.listeComposantsSelected)){
                             return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
