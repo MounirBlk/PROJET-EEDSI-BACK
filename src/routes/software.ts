@@ -13,7 +13,7 @@ export default (app: Application): void => {
     app.route('/entreprises').get(checkInternet, getAllEntreprises);
 
     //Devis
-    app.route('/devis/add/:id').post(checkInternet, generateDevisMail);
+    app.route('/devis/add').post(checkInternet, generateDevisMail);
 
     //Synchronisation
     app.route('/synchro').get(checkInternet, async(req: Request, res: Response): Promise<any> => {

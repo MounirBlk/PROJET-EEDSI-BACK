@@ -9,7 +9,7 @@ export const newDevisSpec = () => {
     it('Test new devis: token incorrect', (done: DoneFn) => {     
         const data = {}             
         request(app)
-            .post('/devis/add/' + randomChars(randNumber(1,5)))
+            .post('/devis/add')
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(randomChars(100), { type: 'bearer' })
@@ -23,14 +23,14 @@ export const newDevisSpec = () => {
     it('Test new devis: id non valide', (done: DoneFn) => { 
         const data = {}             
         request(app)
-            .post('/devis/add/' + randomChars(randNumber(1,5)))
+            .post('/devis/add')
             .send(convertToFormBody(data))
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
-            .expect(409, {
+            .expect(400, {
                 error: true,
-                message: "L'id n'est pas valide !"
+                message: 'Aucun devis n\'est sélectionné'
             }, done);
     }, getTimeout());
 }
