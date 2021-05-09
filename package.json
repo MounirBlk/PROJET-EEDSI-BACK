@@ -28,6 +28,7 @@
     "dependencies": {
         "@types/async": "^3.2.5",
         "@types/cors": "^2.8.10",
+        "@types/cron": "^1.7.2",
         "@types/ejs": "^3.0.6",
         "@types/jsonwebtoken": "^8.5.0",
         "@types/lodash": "^4.14.168",

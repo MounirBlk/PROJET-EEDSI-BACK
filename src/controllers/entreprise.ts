@@ -33,9 +33,11 @@ export const newEntreprise = async (req: Request, res: Response): Promise<void> 
                             siren: data.siren,
                             nom: data.nom,
                             adresse: data.adresse,
-                            categorieEntreprise : data.categorieEntreprise,
-                            etatAdministratif: data.etatAdministratif,
-                            categorieJuridique: data.categorieJuridique
+                            categorieEntreprise : exist(data.categorieEntreprise) ? data.categorieEntreprise : null,
+                            etatAdministratif: exist(data.etatAdministratif) ? data.etatAdministratif : null,
+                            categorieJuridique: exist(data.categorieJuridique) ? data.categorieJuridique : null,
+                            numeroTvaIntra: exist(data.numeroTvaIntra) ? data.numeroTvaIntra : null,
+                            dateCreation: exist(data.dateCreation) ? data.dateCreation : null
                         }
                         let entreprise: EntrepriseInterface = new EntrepriseModel(toInsert);
                         await entreprise.save().then(async(entreprise: EntrepriseInterface) => {
