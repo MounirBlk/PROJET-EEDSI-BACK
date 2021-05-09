@@ -43,7 +43,7 @@ export const addCommande = async (req: Request, res: Response): Promise<void> =>
                             return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
                         } else {
                             if (user) {
-                                ProductSelectedModel.find({ '_id': { $in: user.idPanier.articles }}).populate('idProduct').populate('listeComposantsSelected.idComposant').exec(async(err: CallbackError, articles: any) => {
+                                ProductSelectedModel.find({ '_id': { $in: user.idPanier.articles }}).populate('idProduct').populate('listeComposantsSelected.idComposant').exec(async(err: CallbackError, articles: any[]) => {
                                     if (err) {
                                         return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
                                     }else if (articles === undefined || articles === null){// Si le resultat n'existe pas
@@ -78,10 +78,11 @@ export const addCommande = async (req: Request, res: Response): Promise<void> =>
                                                     }else{
                                                         await PanierModel.findByIdAndUpdate(user.idPanier, { articles: [] });
                                                         if(String(process.env.ENV).trim().toLowerCase() !== "test"){
-                                                            await generateInvoice(getInvoiceData(data), data.refID);// TO FIX INVOICE BUG ATTACHMENT MAIL
+                                                            await generateInvoice(getInvoiceData(data), data.refID);
                                                             //await uploadFirebaseStorage();
                                                             await mailInvoice(data.clientID.email, `${data.clientID.firstname} ${data.clientID.lastname}`, data.refID);
-                                                            //TODO UPDATE QUANTITE DU PRODUIT/COMPOSANT AND PAYMENT CARD/CUSTOMER STRIPE AND GENERATE INVOICE AND STORE TO FIREBASE AND SEND MAIL CLIENT INVOICE
+                                                            await ProductSelectedModel.deleteMany({ '_id': { $in: user.idPanier.articles }});
+                                                            //TODO UPDATE QUANTITE DU PRODUIT/COMPOSANT AND PAYMENT CARD/CUSTOMER STRIPE
                                                         }
                                                         return dataResponse(res, 201, { error: false, message: "La commande a bien été ajouté" });
                                                     }

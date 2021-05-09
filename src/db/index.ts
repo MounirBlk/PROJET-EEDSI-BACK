@@ -6,7 +6,6 @@ import socket from '../middlewares/socket';
 import * as socketio from "socket.io"
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import * as http from 'http'
-//const mongoose = require("mongoose")
 
 const mongooseConnect = async(app: Application, httpServer: http.Server, io: socketio.Server<DefaultEventsMap, DefaultEventsMap>) => {
     //const uri: string = String(process.env.ENV).trim() === "PROD" || String(process.env.ENV).trim() === "DEV" || String(process.env.ENV).trim() === "TEST" ? String(process.env.MONGO_URL) : String(process.env.MONGO_URL_LOCAL);// ENV: PROD / DEV / TEST

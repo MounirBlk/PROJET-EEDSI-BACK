@@ -37,6 +37,11 @@ const ChatSchema = new mongoose.Schema<ChatInterface>({
         type: String,
         required: true
     },
+    isViewed: {
+        type: Boolean,
+        required: false,
+        default: false
+    },
     createdAt: {
         default: new Date(),
         type: Date,

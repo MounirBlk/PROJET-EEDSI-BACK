@@ -118,6 +118,7 @@ export const generateDevisMail = async (req: Request, res: Response): Promise<vo
                                     await generateInvoice(getInvoiceData(response), response.refID);
                                     await mailInvoice(response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID);
                                 }
+                                await ProductSelectedModel.deleteMany({ '_id': { $in: userInfos.idPanier.articles }});
                             }
                         }
                     }

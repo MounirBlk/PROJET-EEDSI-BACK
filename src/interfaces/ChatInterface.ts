@@ -4,7 +4,8 @@ export default interface ChatInterface extends Document {
     "refID": string,
     "userInfos": userInfosInterface,
     "username": string,
-    "message": string
+    "message": string,
+    "isViewed": boolean
 }
 
 interface userInfosInterface {
