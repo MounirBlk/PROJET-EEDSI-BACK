@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
-import { dataResponse, dateHourMinuFormatEn, deleteMapper, exist, existTab, firstLetterMaj, getCurrentDate, getCurrentDateNextMonth, getJwtPayload, isEmptyObject, isObjectIdValid, isValidLength, numberFormat, payloadTokenInterface, randomDateInterval, renameKey, tabFormat, textFormat } from '../middlewares';
+import { dataResponse, dateHourMinuFormatEn, deleteMapper, emailFormat, exist, existTab, firstLetterMaj, getCurrentDate, getCurrentDateNextMonth, getJwtPayload, isEmptyObject, isObjectIdValid, isValidLength, numberFormat, payloadTokenInterface, randomDateInterval, renameKey, tabFormat, textFormat } from '../middlewares';
 import { Application, Request, Response, NextFunction, Errback } from 'express';
 import { CallbackError, FilterQuery, Schema } from 'mongoose';
 import CommandeModel from '../models/CommandeModel';
@@ -24,9 +24,22 @@ export const generateDevisMail = async (req: Request, res: Response): Promise<vo
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
             if(payload.role !== "Administrateur" && payload.role !== "Commercial") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
-            const data = req.body;
+            const data = req.body;  
             if(!existTab(data.devis)) return dataResponse(res, 400, { error: true, message: 'Aucun devis n\'est sélectionné' })
-            if(!tabFormat(data.devis) || data.devis.length === 0) return dataResponse(res, 409, { error: true, message: 'Les devis ne sont pas au bon format'})
+            if(!tabFormat(data.devis) || data.devis.length === 0) return dataResponse(res, 409, { error: true, message: 'Les devis ne sont pas au bon format'})    
+            if(data.optionsDoc.isAdminCommercial){
+                if(existTab(data.optionsDoc.emailAdminCommercial) && tabFormat(data.optionsDoc.emailAdminCommercial)){
+                    for(let i = 0; i < data.optionsDoc.emailAdminCommercial.length; i++){
+                        if(!emailFormat(data.optionsDoc.emailAdminCommercial[i])) return dataResponse(res, 409, { error: true, message: 'La sélection d\'email n\'est pas au bon format' })
+                    }
+                }else{
+                    return dataResponse(res, 409, { error: true, message: "La sélection d'email n'existe pas" })
+                }
+            }
+            if(data.optionsDoc.isUser){
+                if(!exist(data.optionsDoc.emailUser)) return dataResponse(res, 409, { error: true, message: 'L\'email du destinataire suplémentaire est vide' })
+                if(!emailFormat(data.optionsDoc.emailUser)) return dataResponse(res, 409, { error: true, message: 'L\'email du destinataire suplémentaire n\'est pas au bon format' })
+            }        
             for await (const devis of data.devis) {
                 if(!exist(devis.prospectID)){
                     return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
@@ -116,7 +129,7 @@ export const generateDevisMail = async (req: Request, res: Response): Promise<vo
                                 await PanierModel.findByIdAndUpdate(userInfos.idPanier, { articles: [] });
                                 if(String(process.env.ENV).trim().toLowerCase() !== "test"){
                                     await generateInvoice(getInvoiceData(response), response.refID);
-                                    await mailInvoice(response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID);
+                                    await mailInvoice(response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID, data.optionsDoc);
                                 }
                                 await ProductSelectedModel.deleteMany({ '_id': { $in: userInfos.idPanier.articles }});
                             }
