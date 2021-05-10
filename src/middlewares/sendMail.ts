@@ -37,29 +37,34 @@ export const mailRegister = async (email: string, name: string): Promise<void> =
  * @param {string} name 
  * @param {string} refID 
  */
-export const mailInvoice = async (email: string, name: string, refID: string): Promise<void> => {
+export const mailInvoice = async (email: string, name: string, refID: string, optionsDoc?: any): Promise<void> => {
     await templateRenderFile(__dirname + '/templates/invoice.ejs', {
         refID: refID,
         name: name
     }).then((data: unknown) => {
         let transporter: Mail = getTransporterInfos();
-        //console.log(fs.lstatSync(`${process.cwd()}/tmp/${refID}.pdf`))
+        let attachments: Mail.Attachment[] = [{ filename: `${refID}.pdf`, path: `${process.cwd()}/tmp/${refID}.pdf`, cid: 'facture' }]
+        let emails: (string | Mail.Address)[] = [email.toLowerCase()]
+        if(optionsDoc){
+            if(optionsDoc.isCgv) attachments.push({ filename: 'CGV.pdf', path: __dirname + '/templates/CGV.pdf', cid: 'CGV' })
+            if(optionsDoc.isAdminCommercial){
+                optionsDoc.emailAdminCommercial.forEach((email: string) => {
+                    emails.push(email.toLowerCase())
+                });
+            }
+            if(optionsDoc.isUser){
+                emails.push(optionsDoc.emailUser.toLowerCase())
+            }
+        }
+        emails = [...new Set(emails)]// retire les doublons d'emails
         transporter.sendMail({
             from: process.env.GMAIL_EMAIL, // sender address
-            to: email, // list of receivers
+            to: emails, // list of receivers
             subject: "Facture de la commande", // Subject line
             html: String(data),
-            attachments: [{
-                filename: 'CGV.pdf',
-                path: __dirname + '/templates/CGV.pdf',
-                cid: 'CGV',
-            },{
-                filename: `${refID}.pdf`,
-                path: `${process.cwd()}/tmp/${refID}.pdf`,
-                cid: 'facture',
-            }]
+            attachments: attachments
         }, (error, response) => {
-            error ? console.log(error) : null;//console.log(response)
+            error ? console.log(error) : null;
             return transporter.close();
         });
     }).catch((error: Error) => {
