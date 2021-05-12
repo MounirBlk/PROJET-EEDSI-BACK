@@ -108,7 +108,6 @@ export const updateEntreprise = async (req: Request, res: Response): Promise<voi
             if(payload.role !== "Administrateur" && payload.role !== "Commercial" && payload.role !== "Prospect") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const id = req.params.id;
             const data = req.body;
-            console.log(data)
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
