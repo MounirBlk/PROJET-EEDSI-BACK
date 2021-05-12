@@ -33,11 +33,11 @@ export const newEntreprise = async (req: Request, res: Response): Promise<void> 
                             siren: data.siren,
                             nom: data.nom,
                             adresse: data.adresse,
-                            categorieEntreprise : exist(data.categorieEntreprise) ? data.categorieEntreprise : null,
-                            etatAdministratif: exist(data.etatAdministratif) ? data.etatAdministratif : null,
-                            categorieJuridique: exist(data.categorieJuridique) ? data.categorieJuridique : null,
-                            numeroTvaIntra: exist(data.numeroTvaIntra) ? data.numeroTvaIntra : null,
-                            dateCreation: exist(data.dateCreation) ? data.dateCreation : null
+                            categorieEntreprise : exist(data.categorieEntreprise) && data.categorieEntreprise !== 'null' ? data.categorieEntreprise : 'AUTRES',
+                            etatAdministratif: exist(data.etatAdministratif) && data.etatAdministratif !== 'null' ? data.etatAdministratif : '',
+                            categorieJuridique: exist(data.categorieJuridique) && data.categorieJuridique !== 'null' ? data.categorieJuridique : 0,
+                            numeroTvaIntra: exist(data.numeroTvaIntra) && data.numeroTvaIntra !== 'null' ? data.numeroTvaIntra : '',
+                            dateCreation: exist(data.dateCreation) && data.dateCreation !== 'null' ? data.dateCreation : ''
                         }
                         let entreprise: EntrepriseInterface = new EntrepriseModel(toInsert);
                         await entreprise.save().then(async(entreprise: EntrepriseInterface) => {
@@ -108,6 +108,7 @@ export const updateEntreprise = async (req: Request, res: Response): Promise<voi
             if(payload.role !== "Administrateur" && payload.role !== "Commercial" && payload.role !== "Prospect") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const id = req.params.id;
             const data = req.body;
+            console.log(data)
             if(!exist(id)){
                 return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
             }else{
@@ -120,15 +121,15 @@ export const updateEntreprise = async (req: Request, res: Response): Promise<voi
                     }else{
                         let isOnError: boolean = false;
                         let toUpdate = {
-                            nom: exist(data.nom) ? textFormat(data.nom) ? data.nom : (isOnError = true) : entreprise.nom,
-                            siren: exist(data.siren) ? isValidLength(data.siren.trim(), 9, 9)  ? data.siren : (isOnError = true) : entreprise.siren,
-                            adresse: exist(data.adresse) ? isValidLength(data.adresse, 1, 100) ? data.adresse : (isOnError = true) : entreprise.adresse,
-                            telephone: exist(data.telephone) ? isValidLength(data.telephone, 1, 25) ? data.telephone : (isOnError = true) : entreprise.telephone,
-                            categorieEntreprise: exist(data.categorieEntreprise) ? textFormat(data.categorieEntreprise) ? data.categorieEntreprise : (isOnError = true) : entreprise.categorieEntreprise,
-                            categorieJuridique: exist(data.categorieJuridique) ? numberFormat(data.categorieJuridique) ? data.categorieJuridique : (isOnError = true) : entreprise.categorieJuridique,
-                            dateCreation: exist(data.dateCreation) ? dateFormatEn(data.dateCreation) ? data.dateCreation : (isOnError = true) : entreprise.dateCreation,
-                            etatAdministratif: exist(data.etatAdministratif) ? data.etatAdministratif.toLowerCase() === 'actif' || data.etatAdministratif.toLowerCase() === 'ferme' ? data.etatAdministratif : (isOnError = true) : entreprise.etatAdministratif,
-                            numeroTvaIntra: exist(data.numeroTvaIntra) ? textFormat(data.numeroTvaIntra) ? data.numeroTvaIntra : (isOnError = true) : entreprise.numeroTvaIntra,
+                            nom: exist(data.nom) ? textFormat(data.nom) && data.nom !== 'null' ? data.nom : (isOnError = true) : entreprise.nom,
+                            siren: exist(data.siren) ? isValidLength(data.siren.trim(), 9, 9) && data.siren !== 'null' ? data.siren : (isOnError = true) : entreprise.siren,
+                            adresse: exist(data.adresse) ? isValidLength(data.adresse, 1, 100) && data.adresse !== 'null' ? data.adresse : (isOnError = true) : entreprise.adresse,
+                            telephone: exist(data.telephone) ? isValidLength(data.telephone, 1, 25) && data.telephone !== 'null' ? data.telephone : (isOnError = true) : entreprise.telephone,
+                            categorieEntreprise: exist(data.categorieEntreprise) ? textFormat(data.categorieEntreprise) && data.categorieEntreprise !== 'null' ? data.categorieEntreprise : (isOnError = true) : entreprise.categorieEntreprise,
+                            categorieJuridique: exist(data.categorieJuridique) ? numberFormat(data.categorieJuridique) && data.categorieJuridique !== 'null' ? data.categorieJuridique : (isOnError = true) : entreprise.categorieJuridique,
+                            dateCreation: exist(data.dateCreation) ? dateFormatEn(data.dateCreation) && data.dateCreation !== 'null' ? data.dateCreation : (isOnError = true) : entreprise.dateCreation,
+                            etatAdministratif: exist(data.etatAdministratif) ? (data.etatAdministratif.toLowerCase() === 'actif' || data.etatAdministratif.toLowerCase() === 'ferme') && data.etatAdministratif !== 'null' ? data.etatAdministratif : (isOnError = true) : entreprise.etatAdministratif,
+                            numeroTvaIntra: exist(data.numeroTvaIntra) ? textFormat(data.numeroTvaIntra) && data.numeroTvaIntra !== 'null' ? data.numeroTvaIntra : (isOnError = true) : entreprise.numeroTvaIntra,
                         }
                         if(isOnError){
                             return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
@@ -280,15 +281,15 @@ const getInfosEntrepriseOnline = async (res: Response, siret: number): Promise<a
                 if(response !== undefined && response !== null){
                     let dataToReturn = {
                         siret: siret,
-                        nom: exist(response.etablissement.unite_legale.denomination) ? response.etablissement.unite_legale.denomination : null,
-                        adresse: exist(response.etablissement.geo_adresse) ? response.etablissement.geo_adresse : null,
-                        telephone: null,
-                        siren: exist(response.etablissement.siren) ? response.etablissement.siren : null,
-                        categorieEntreprise: exist(response.etablissement.unite_legale.categorie_entreprise) ? response.etablissement.unite_legale.categorie_entreprise : null,
-                        categorieJuridique: exist(response.etablissement.unite_legale.categorie_juridique) ? response.etablissement.unite_legale.categorie_juridique : null,
-                        dateCreation: exist(response.etablissement.unite_legale.date_creation) ? response.etablissement.unite_legale.date_creation : null,
-                        etatAdministratif: exist(response.etablissement.unite_legale.etat_administratif) ? response.etablissement.unite_legale.etat_administratif : null,
-                        numeroTvaIntra: exist(response.etablissement.unite_legale.numero_tva_intra) ? response.etablissement.unite_legale.numero_tva_intra : null,
+                        nom: exist(response.etablissement.unite_legale.denomination) ? response.etablissement.unite_legale.denomination : '',
+                        adresse: exist(response.etablissement.geo_adresse) ? response.etablissement.geo_adresse : '',
+                        telephone: '',
+                        siren: exist(response.etablissement.siren) ? response.etablissement.siren : '',
+                        categorieEntreprise: exist(response.etablissement.unite_legale.categorie_entreprise) ? response.etablissement.unite_legale.categorie_entreprise : 'AUTRES',
+                        categorieJuridique: exist(response.etablissement.unite_legale.categorie_juridique) ? response.etablissement.unite_legale.categorie_juridique : 0,
+                        dateCreation: exist(response.etablissement.unite_legale.date_creation) ? response.etablissement.unite_legale.date_creation : '',
+                        etatAdministratif: exist(response.etablissement.unite_legale.etat_administratif) ? response.etablissement.unite_legale.etat_administratif : '',
+                        numeroTvaIntra: exist(response.etablissement.unite_legale.numero_tva_intra) ? response.etablissement.unite_legale.numero_tva_intra : '',
                     }
                     dataToReturn.etatAdministratif = dataToReturn.etatAdministratif.toLowerCase() === 'a' ? 'Actif' : 'Ferme'
                     resolve(dataToReturn)
