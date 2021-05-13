@@ -138,59 +138,69 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
                                     await generateInvoice(getInvoiceData(response), response.refID, folderName);
                                     await mailInvoice(folderName, response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID, data.optionsDoc);
                                 }
-                                //await ProductSelectedModel.deleteMany({ '_id': { $in: userInfos.idPanier.articles }});
+                                await ProductSelectedModel.deleteMany({ '_id': { $in: userInfos.idPanier.articles }});
                             }
-                            await CommandeModel.deleteOne({ _id: commandeSaved.get('_id')})
+                            //await CommandeModel.deleteOne({ _id: commandeSaved.get('_id')})
                         }
                     }
                 }
                 console.log('ok')
             }
-            let destPath: string = '';
-            if(data.optionsDoc.isDownload){
-                let pdfTab: any[] = []
-                fs.readdirSync(process.cwd() + '/tmpInvoice/' + folderName).forEach((el: string) => {
-                    pdfTab.push(el)
-                });
-                if(pdfTab.length !== 0){
-                    if(!fs.existsSync(`${process.cwd()}/tempDownload/`)) fs.mkdirSync(`${process.cwd()}/tempDownload/`)
-                    if(pdfTab.length === 1 && fs.lstatSync(process.cwd() + '/tmpInvoice/' + folderName + '/' + pdfTab[0]).isFile()){
-                        fs.copyFileSync(process.cwd() + '/tmpInvoice/' + folderName + '/' + pdfTab[0], process.cwd() + '/tempDownload/' + folderName + '-Download.pdf')
-                        destPath = folderName + '-download.pdf';
-                    }else{
-                        const archive: archiver.Archiver = archiver("zip", {
-                            gzip: true,
-                            zlib: { level: 9 } // Sets the compression level ----- 0 no compression ou 1 speed ou 9 best ou -1 default
-                        });
-                        const output: fs.WriteStream = fs.createWriteStream(`./tempDownload/${folderName}-Download.zip`);
-                        destPath = folderName + '-download.zip';
-                        fs.readdirSync(`${process.cwd()}/tmpInvoice/${folderName}/`).forEach((item: string) => {
-                            archive.on("error", (err) => {
-                                throw err;
-                            });
-                            if (fs.lstatSync(`${process.cwd()}/tmpInvoice/${folderName}/${item}`).isFile()) {
-                                archive.append(fs.createReadStream(`${process.cwd()}/tmpInvoice/${folderName}/${item}`), { name: item });
-                            } else {
-                                archive.directory(`${process.cwd()}/tmpInvoice/${folderName}/${item}/`, item + '/');
-                            }
-                        });
-                        archive.pipe(output);
-                        await archive.finalize();
-                        output.on("close", () => {
-                            console.log(archive.pointer() + ' total bytes');
-                        });
-                        output.on('end', () => {
-                            console.log('Data has been drained');
-                        });
-                    }
-                }
-            }
+            const destPath: string = await setupDownload(data.optionsDoc.isDownload, folderName);
             if(fs.existsSync(process.cwd() + '/tmpInvoice/' + folderName)) fs.rmdirSync(process.cwd() + '/tmpInvoice/' + folderName, { recursive: true })
             return dataResponse(res, 201, { error: false, destPath: path.join(destPath), message: data.devis.length === 1 ? "Le devis a bien été envoyé par mail" : "Les devis ont bien été envoyé par mail" });  
         }
     }).catch((error) => {
         throw error;
     });
+}
+
+/**
+ *  Préparation pour le download 
+ *  @param {boolean} isDownload 
+ *  @param {string} folderName 
+ */
+const setupDownload = async(isDownload: boolean, folderName: string): Promise<string> => {
+    let destPath: string = '';
+    if(isDownload){
+        let pdfTab: any[] = []
+        fs.readdirSync(process.cwd() + '/tmpInvoice/' + folderName).forEach((el: string) => {
+            pdfTab.push(el)
+        });
+        if(pdfTab.length !== 0){
+            if(!fs.existsSync(`${process.cwd()}/tempDownload/`)) fs.mkdirSync(`${process.cwd()}/tempDownload/`)
+            if(pdfTab.length === 1 && fs.lstatSync(process.cwd() + '/tmpInvoice/' + folderName + '/' + pdfTab[0]).isFile()){
+                fs.copyFileSync(process.cwd() + '/tmpInvoice/' + folderName + '/' + pdfTab[0], process.cwd() + '/tempDownload/' + folderName + '-Download.pdf')
+                destPath = folderName + '-download.pdf';
+            }else{
+                const archive: archiver.Archiver = archiver("zip", {
+                    gzip: true,
+                    zlib: { level: 9 } // Sets the compression level ----- 0 no compression ou 1 speed ou 9 best ou -1 default
+                });
+                const output: fs.WriteStream = fs.createWriteStream(`./tempDownload/${folderName}-Download.zip`);
+                destPath = folderName + '-download.zip';
+                fs.readdirSync(`${process.cwd()}/tmpInvoice/${folderName}/`).forEach((item: string) => {
+                    archive.on("error", (err) => {
+                        throw err;
+                    });
+                    if (fs.lstatSync(`${process.cwd()}/tmpInvoice/${folderName}/${item}`).isFile()) {
+                        archive.append(fs.createReadStream(`${process.cwd()}/tmpInvoice/${folderName}/${item}`), { name: item });
+                    } else {
+                        archive.directory(`${process.cwd()}/tmpInvoice/${folderName}/${item}/`, item + '/');
+                    }
+                });
+                archive.pipe(output);
+                await archive.finalize();
+                output.on("close", () => {
+                    console.log(archive.pointer() + ' total bytes');
+                });
+                output.on('end', () => {
+                    console.log('Data has been drained');
+                });
+            }
+        }       
+    }
+    return destPath;
 }
 
 /**
@@ -210,15 +220,13 @@ export const download = async (req: Request, res: Response): Promise<void> => {
         const filestream: fs.ReadStream = fs.createReadStream(filePath);
         filestream.pipe(res);
         //res.download(filePath); // Set disposition and send it.
-        if(fs.existsSync(filePath)){
-            if(path.extname(path.basename(filePath)) === "pdf" || path.extname(path.basename(filePath)) === ".pdf" ){
+        setTimeout(() => {
+            if(fs.lstatSync(filePath).isFile()){
                 fs.unlinkSync(filePath)
-                console.log('pdf')
             }else{
-                console.log('zip')
                 fs.rmdirSync(filePath, { recursive: true })
             }
-        } 
+        }, 5000);
     }
 }
 
