@@ -211,15 +211,17 @@ const setupDownload = async(isDownload: boolean, folderName: string): Promise<st
 export const download = async (req: Request, res: Response): Promise<void> => {
     const destPath = req.params.destPath;
     const filePath = path.join('./tempDownload/' + destPath);
+    console.log(fs.existsSync(filePath))
+    console.log(exist(filePath))
     if(!fs.existsSync(filePath) || !exist(filePath)){
         return dataResponse(res, 404, { error: true, message: 'Le fichier n\'existe plus' })
     }else{
-        res.setHeader('Content-disposition', 'attachment; filename=' + path.basename(filePath));
-        res.setHeader('Content-type', mime.lookup(filePath));
-        res.setHeader('Content-Length', fs.statSync(filePath).size);
-        const filestream: fs.ReadStream = fs.createReadStream(filePath);
-        filestream.pipe(res);
-        //res.download(filePath); // Set disposition and send it.
+        //res.setHeader('Content-disposition', 'attachment; filename=' + path.basename(filePath));
+        //res.setHeader('Content-type', mime.lookup(filePath));
+        //res.setHeader('Content-Length', fs.statSync(filePath).size);
+        //const filestream: fs.ReadStream = fs.createReadStream(filePath);
+        //filestream.pipe(res);
+        res.download(filePath); // Set disposition and send it.
         setTimeout(() => {
             if(fs.lstatSync(filePath).isFile()){
                 fs.unlinkSync(filePath)
