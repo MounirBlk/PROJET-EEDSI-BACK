@@ -45,8 +45,8 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
                 if(!emailFormat(data.optionsDoc.emailUser)) return dataResponse(res, 409, { error: true, message: 'L\'email du destinataire suplémentaire n\'est pas au bon format' })
             }     
             const folderName: string = uuidv4();// dossier pour les devis
-            if(!fs.existsSync(`${process.cwd()}/tmpInvoice/`)) fs.mkdirSync(`${process.cwd()}/tmpInvoice/`)
-            if(!fs.existsSync(`${process.cwd()}/tmpInvoice/${folderName}/`)) fs.mkdirSync(`${process.cwd()}/tmpInvoice/${folderName}/`)
+            if(!fs.existsSync(`./tmpInvoice/`)) fs.mkdirSync(`./tmpInvoice/`)
+            if(!fs.existsSync(`./tmpInvoice/${folderName}/`)) fs.mkdirSync(`./tmpInvoice/${folderName}/`)
             for await (const devis of data.devis) {
                 if(!exist(devis.prospectID)){
                     return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
@@ -164,13 +164,13 @@ const setupDownload = async(isDownload: boolean, folderName: string): Promise<st
     let destPath: string = '';
     if(isDownload){
         let pdfTab: any[] = []
-        fs.readdirSync(process.cwd() + '/tmpInvoice/' + folderName).forEach((el: string) => {
+        fs.readdirSync('./tmpInvoice/' + folderName).forEach((el: string) => {
             pdfTab.push(el)
         });
         if(pdfTab.length !== 0){
-            if(!fs.existsSync(`${process.cwd()}/tempDownload/`)) fs.mkdirSync(`${process.cwd()}/tempDownload/`)
-            if(pdfTab.length === 1 && fs.lstatSync(process.cwd() + '/tmpInvoice/' + folderName + '/' + pdfTab[0]).isFile()){
-                fs.copyFileSync(process.cwd() + '/tmpInvoice/' + folderName + '/' + pdfTab[0], process.cwd() + '/tempDownload/' + folderName + '-Download.pdf')
+            if(!fs.existsSync(`./tempDownload/`)) fs.mkdirSync(`./tempDownload/`)
+            if(pdfTab.length === 1 && fs.lstatSync('./tmpInvoice/' + folderName + '/' + pdfTab[0]).isFile()){
+                fs.copyFileSync('./tmpInvoice/' + folderName + '/' + pdfTab[0], './tempDownload/' + folderName + '-Download.pdf')
                 destPath = folderName + '-download.pdf';
             }else{
                 const archive: archiver.Archiver = archiver("zip", {
@@ -179,14 +179,14 @@ const setupDownload = async(isDownload: boolean, folderName: string): Promise<st
                 });
                 const output: fs.WriteStream = fs.createWriteStream(`./tempDownload/${folderName}-Download.zip`);
                 destPath = folderName + '-download.zip';
-                fs.readdirSync(`${process.cwd()}/tmpInvoice/${folderName}/`).forEach((item: string) => {
+                fs.readdirSync(`./tmpInvoice/${folderName}/`).forEach((item: string) => {
                     archive.on("error", (err) => {
                         throw err;
                     });
-                    if (fs.lstatSync(`${process.cwd()}/tmpInvoice/${folderName}/${item}`).isFile()) {
-                        archive.append(fs.createReadStream(`${process.cwd()}/tmpInvoice/${folderName}/${item}`), { name: item });
+                    if (fs.lstatSync(`./tmpInvoice/${folderName}/${item}`).isFile()) {
+                        archive.append(fs.createReadStream(`./tmpInvoice/${folderName}/${item}`), { name: item });
                     } else {
-                        archive.directory(`${process.cwd()}/tmpInvoice/${folderName}/${item}/`, item + '/');
+                        archive.directory(`./tmpInvoice/${folderName}/${item}/`, item + '/');
                     }
                 });
                 archive.pipe(output);
