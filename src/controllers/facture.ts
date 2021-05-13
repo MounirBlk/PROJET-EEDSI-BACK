@@ -136,11 +136,11 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
                                 await PanierModel.findByIdAndUpdate(userInfos.idPanier, { articles: [] });
                                 if(String(process.env.ENV).trim().toLowerCase() !== "test"){
                                     await generateInvoice(getInvoiceData(response), response.refID, folderName);
-                                    await mailInvoice(folderName, response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID, data.optionsDoc);
+                                    //await mailInvoice(folderName, response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID, data.optionsDoc);
                                 }
                                 await ProductSelectedModel.deleteMany({ '_id': { $in: userInfos.idPanier.articles }});
                             }
-                            //await CommandeModel.deleteOne({ _id: commandeSaved.get('_id')})
+                            await CommandeModel.deleteOne({ _id: commandeSaved.get('_id')})
                         }
                     }
                 }
@@ -210,7 +210,7 @@ const setupDownload = async(isDownload: boolean, folderName: string): Promise<st
  */ 
 export const download = async (req: Request, res: Response): Promise<void> => {
     const destPath = req.params.destPath;
-    const filePath = path.join(process.cwd() + '/tempDownload/' + destPath);
+    const filePath = path.join('./tempDownload/' + destPath);
     if(!fs.existsSync(filePath) || !exist(filePath)){
         return dataResponse(res, 404, { error: true, message: 'Le fichier n\'existe plus' })
     }else{
