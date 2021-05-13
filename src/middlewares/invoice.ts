@@ -7,24 +7,22 @@ import https from "https";
 import { ClientRequest, IncomingMessage } from 'http';
 import { exist, getCurrentDate } from '.';
 
-export const generateInvoice = async (invoiceData: any, filename: string): Promise<any> => {
+export const generateInvoice = async (invoiceData: any, filename: string, folderName: string): Promise<any> => {
     return new Promise<any>((resolve, reject) => {
         const postData: string = JSON.stringify(setInvoiceData(invoiceData));
-        if(!fs.existsSync(process.cwd() + '/tmp/')){
-            fs.mkdirSync(process.cwd() + '/tmp/')
+        if(!fs.existsSync(`${process.cwd()}/tmpInvoice/${folderName}/`)){
+            fs.mkdirSync(`${process.cwd()}/tmpInvoice/${folderName}/`)
         }
-        const file: fs.WriteStream = fs.createWriteStream(`tmp/${filename}.pdf`);
+        const file: fs.WriteStream = fs.createWriteStream(path.join(`${process.cwd()}/tmpInvoice/${folderName}/${filename}.pdf`));
         const req: ClientRequest = https.request(getConfigHttps(postData), (res: IncomingMessage) => {
             res.on('data', (chunk) => {
                 file.write(chunk);
             }).on('end', () => {
                 resolve(file.end());
-                //if (typeof success === 'function') success();
-            })
+            });
         });
         req.write(postData);
         req.end();
-        //if (typeof error === 'function') req.on('error', error);
     })
 }
 

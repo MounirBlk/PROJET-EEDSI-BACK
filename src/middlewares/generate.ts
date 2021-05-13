@@ -100,7 +100,7 @@ const generateImgs = async (idProduct: string, filePath: string, destPath: strin
 /**
  * Recuperation des fichiers d'un dossier promise
  */
-const getFiles = (folderPath: string) => {
+export const getFiles = (folderPath: string) => {
     return new Promise((resolve, reject) => {
         fs.readdir(folderPath, (err, files) => {
             if (err) {
@@ -134,7 +134,7 @@ const resizeFile = async(filePath: string) => {
 /**
  * Clean le dossier temp
  */
-const cleanTempFolder = (racinePath: string, contentTemp: Array<any>) => {
+export const cleanTempFolder = (racinePath: string, contentTemp: Array<any>) => {
     contentTemp.forEach((element: string) => {
         fs.rmdirSync(path.join(racinePath + '/temp/' + element), { recursive: true })
     });

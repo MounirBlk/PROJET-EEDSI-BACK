@@ -1,6 +1,6 @@
 import { Application, Request, Response, NextFunction, Errback } from "express";
 import { deleteEntreprise, getAllEntreprises, getEntreprise, newEntrepriseAuto, newEntreprise, updateEntreprise } from "../controllers/entreprise";
-import { generateDevisMail } from "../controllers/facture";
+import { cleanFolder, download, generateDevisMail } from "../controllers/facture";
 import { checkInternet, dataResponse } from "../middlewares";
 import { generateInvoice } from "../middlewares/invoice";
 
@@ -15,8 +15,15 @@ export default (app: Application): void => {
     //Devis
     app.route('/devis/add').post(checkInternet, generateDevisMail);
 
+    //Download
+    app.route('/download/:destPath').get(checkInternet, download);
+
     //Synchronisation
     app.route('/synchro').get(checkInternet, async(req: Request, res: Response): Promise<any> => {
+        const cleanerTempTab : any[] = ['tmp', 'tempInvoice', 'tempDownload']
+        cleanerTempTab.forEach((el: string) => {
+            cleanFolder(`${process.cwd()}/${el}/`)
+        })
         return dataResponse(res, 200, { error: false, message: "SYNCHRO" });
     }); //synchronise les données de la base
 }
