@@ -136,11 +136,11 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
                                 await PanierModel.findByIdAndUpdate(userInfos.idPanier, { articles: [] });
                                 if(String(process.env.ENV).trim().toLowerCase() !== "test"){
                                     await generateInvoice(getInvoiceData(response), response.refID, folderName);
-                                    //await mailInvoice(folderName, response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID, data.optionsDoc);
+                                    await mailInvoice(folderName, response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID, data.optionsDoc);
                                 }
                                 await ProductSelectedModel.deleteMany({ '_id': { $in: userInfos.idPanier.articles }});
                             }
-                            await CommandeModel.deleteOne({ _id: commandeSaved.get('_id')})
+                            //await CommandeModel.deleteOne({ _id: commandeSaved.get('_id')})
                         }
                     }
                 }
@@ -148,7 +148,16 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
             }
             const destPath: string = await setupDownload(data.optionsDoc.isDownload, folderName);
             if(fs.existsSync(process.cwd() + '/tmpInvoice/' + folderName)) fs.rmdirSync(process.cwd() + '/tmpInvoice/' + folderName, { recursive: true })
-            return dataResponse(res, 201, { error: false, destPath: path.join(destPath), message: data.devis.length === 1 ? "Le devis a bien été envoyé par mail" : "Les devis ont bien été envoyé par mail" });  
+            /*res.setHeader('Content-disposition', 'attachment; filename=' + path.basename(`./tempDownload/${destPath}`));
+            res.setHeader('Content-type', mime.lookup(`./tempDownload/${destPath}`));
+            res.setHeader('Content-Length', fs.statSync(`./tempDownload/${destPath}`).size);
+            const filestream: fs.ReadStream = fs.createReadStream(`./tempDownload/${destPath}`);
+            filestream.on('data', (dataChunk) => {
+                console.log("dataChunk")
+            })
+            filestream.pipe(res);*/
+            //return res.redirect('http://localhost:3000/download/' + path.join(destPath))
+            return dataResponse(res, 201, { error: false, fileType: mime.lookup(path.join('./tempDownload/' + destPath)), fileBase: fs.readFileSync(path.join('./tempDownload/' + destPath), { encoding: "base64" }), destPath: path.join(destPath), message: data.devis.length === 1 ? "Le devis a bien été envoyé par mail" : "Les devis ont bien été envoyé par mail" });  
         }
     }).catch((error) => {
         throw error;
@@ -210,22 +219,21 @@ const setupDownload = async(isDownload: boolean, folderName: string): Promise<st
  */ 
 export const download = async (req: Request, res: Response): Promise<void> => {
     const destPath = req.params.destPath;
-    const filePath = path.join('./tempDownload/' + destPath);
-    console.log(fs.existsSync(filePath))
-    console.log(exist(filePath))
+    const filePath = path.join(process.cwd() + '/tempDownload/' + destPath);
+    console.log('fs.existsSync(filePath): ',fs.existsSync(filePath))
     if(!fs.existsSync(filePath) || !exist(filePath)){
         return dataResponse(res, 404, { error: true, message: 'Le fichier n\'existe plus' })
     }else{
-        //res.setHeader('Content-disposition', 'attachment; filename=' + path.basename(filePath));
-        //res.setHeader('Content-type', mime.lookup(filePath));
-        //res.setHeader('Content-Length', fs.statSync(filePath).size);
-        //const filestream: fs.ReadStream = fs.createReadStream(filePath);
-        //filestream.pipe(res);
-        res.download(filePath); // Set disposition and send it.
+        res.setHeader('Content-disposition', 'attachment; filename=' + path.basename(filePath));
+        res.setHeader('Content-type', mime.lookup(filePath));
+        res.setHeader('Content-Length', fs.statSync(filePath).size);
+        const filestream: fs.ReadStream = fs.createReadStream(filePath);
+        filestream.pipe(res);
+        //res.download(filePath); // Set disposition and send it.
         setTimeout(() => {
             if(fs.lstatSync(filePath).isFile()){
                 fs.unlinkSync(filePath)
-            }else{
+            } else{
                 fs.rmdirSync(filePath, { recursive: true })
             }
         }, 5000);
