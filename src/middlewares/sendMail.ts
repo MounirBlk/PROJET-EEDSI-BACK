@@ -37,13 +37,13 @@ export const mailRegister = async (email: string, name: string): Promise<void> =
  * @param {string} name 
  * @param {string} refID 
  */
-export const mailInvoice = async (email: string, name: string, refID: string, optionsDoc?: any): Promise<void> => {
+export const mailInvoice = async (folderName: string, email: string, name: string, refID: string, optionsDoc?: any): Promise<void> => {
     await templateRenderFile(__dirname + '/templates/invoice.ejs', {
         refID: refID,
         name: name
     }).then((data: unknown) => {
         let transporter: Mail = getTransporterInfos();
-        let attachments: Mail.Attachment[] = [{ filename: `${refID}.pdf`, path: `${process.cwd()}/tmp/${refID}.pdf`, cid: 'facture' }]
+        let attachments: Mail.Attachment[] = [{ filename: `${refID}.pdf`, path: `${process.cwd()}/tmpInvoice/${folderName}/${refID}.pdf`, cid: 'facture' }]
         let emails: (string | Mail.Address)[] = [email.toLowerCase()]
         if(optionsDoc){
             if(optionsDoc.isCgv) attachments.push({ filename: 'CGV.pdf', path: __dirname + '/templates/CGV.pdf', cid: 'CGV' })

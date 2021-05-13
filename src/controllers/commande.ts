@@ -68,6 +68,8 @@ export const addCommande = async (req: Request, res: Response): Promise<void> =>
                                                 "articles": articles,
                                                 "prixTotal": prixTotal.toFixed(2)
                                             }
+                                            const folderName: string = uuidv4();// dossier pour les devis
+                                            fs.mkdirSync(`${process.cwd()}/tmpInvoice/${folderName}/`)
                                             let commande: CommandeInterface = new CommandeModel(toInsert);
                                             await commande.save().then(async(commandeSaved: CommandeInterface) => {
                                                 CommandeModel.findOne({ _id: commandeSaved.get('_id')}).populate('clientID').populate('livreurID').populate('articles.idProduct').populate('articles.listeComposantsSelected.idComposant').exec(async(err: CallbackError, data: any) => {
@@ -78,9 +80,9 @@ export const addCommande = async (req: Request, res: Response): Promise<void> =>
                                                     }else{
                                                         await PanierModel.findByIdAndUpdate(user.idPanier, { articles: [] });
                                                         if(String(process.env.ENV).trim().toLowerCase() !== "test"){
-                                                            await generateInvoice(getInvoiceData(data), data.refID);
+                                                            await generateInvoice(getInvoiceData(data), data.refID, folderName);
                                                             //await uploadFirebaseStorage();
-                                                            await mailInvoice(data.clientID.email, `${data.clientID.firstname} ${data.clientID.lastname}`, data.refID);
+                                                            await mailInvoice(folderName, data.clientID.email, `${data.clientID.firstname} ${data.clientID.lastname}`, data.refID);
                                                             await ProductSelectedModel.deleteMany({ '_id': { $in: user.idPanier.articles }});
                                                             //TODO UPDATE QUANTITE DU PRODUIT/COMPOSANT AND PAYMENT CARD/CUSTOMER STRIPE
                                                         }

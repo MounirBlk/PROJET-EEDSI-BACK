@@ -11,8 +11,9 @@ lib-cov
 pids
 logs
 results
-tmp
+tmpInvoice
 temp
+tempDownload
 
 # Build
 public/css/main.css

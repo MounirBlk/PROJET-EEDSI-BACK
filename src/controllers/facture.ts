@@ -12,13 +12,17 @@ import ProductModel from '../models/ProductModel';
 import ProductSelectedModel from '../models/ProductSelectedModel';
 import UserModel from '../models/UserModel';
 import CommandeInterface from '../interfaces/CommandeInterface';
+import archiver from 'archiver';
+import { cleanTempFolder, getFiles } from '../middlewares/generate';
+import path from 'path';
+import mime from 'mime';
 
 /**
  *  Route envoie devis par mail
  *  @param {Request} req 
  *  @param {Response} res 
  */ 
-export const generateDevisMail = async (req: Request, res: Response): Promise<void> => {
+export const generateDevisMail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
@@ -39,7 +43,10 @@ export const generateDevisMail = async (req: Request, res: Response): Promise<vo
             if(data.optionsDoc.isUser){
                 if(!exist(data.optionsDoc.emailUser)) return dataResponse(res, 409, { error: true, message: 'L\'email du destinataire suplémentaire est vide' })
                 if(!emailFormat(data.optionsDoc.emailUser)) return dataResponse(res, 409, { error: true, message: 'L\'email du destinataire suplémentaire n\'est pas au bon format' })
-            }        
+            }     
+            const folderName: string = uuidv4();// dossier pour les devis
+            if(!fs.existsSync(`${process.cwd()}/tmpInvoice/`)) fs.mkdirSync(`${process.cwd()}/tmpInvoice/`)
+            if(!fs.existsSync(`${process.cwd()}/tmpInvoice/${folderName}/`)) fs.mkdirSync(`${process.cwd()}/tmpInvoice/${folderName}/`)
             for await (const devis of data.devis) {
                 if(!exist(devis.prospectID)){
                     return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
@@ -128,18 +135,99 @@ export const generateDevisMail = async (req: Request, res: Response): Promise<vo
                             }else{
                                 await PanierModel.findByIdAndUpdate(userInfos.idPanier, { articles: [] });
                                 if(String(process.env.ENV).trim().toLowerCase() !== "test"){
-                                    await generateInvoice(getInvoiceData(response), response.refID);
-                                    await mailInvoice(response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID, data.optionsDoc);
+                                    await generateInvoice(getInvoiceData(response), response.refID, folderName);
+                                    await mailInvoice(folderName, response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID, data.optionsDoc);
                                 }
-                                await ProductSelectedModel.deleteMany({ '_id': { $in: userInfos.idPanier.articles }});
+                                //await ProductSelectedModel.deleteMany({ '_id': { $in: userInfos.idPanier.articles }});
                             }
+                            await CommandeModel.deleteOne({ _id: commandeSaved.get('_id')})
                         }
                     }
                 }
+                console.log('ok')
             }
-            return dataResponse(res, 201, { error: false, message: data.devis.length === 1 ? "Le devis a bien été envoyé par mail" : "Les devis ont bien été envoyé par mail" });
+            let destPath: string = '';
+            if(data.optionsDoc.isDownload){
+                let pdfTab: any[] = []
+                fs.readdirSync(process.cwd() + '/tmpInvoice/' + folderName).forEach((el: string) => {
+                    pdfTab.push(el)
+                });
+                if(pdfTab.length !== 0){
+                    if(!fs.existsSync(`${process.cwd()}/tempDownload/`)) fs.mkdirSync(`${process.cwd()}/tempDownload/`)
+                    if(pdfTab.length === 1 && fs.lstatSync(process.cwd() + '/tmpInvoice/' + folderName + '/' + pdfTab[0]).isFile()){
+                        fs.copyFileSync(process.cwd() + '/tmpInvoice/' + folderName + '/' + pdfTab[0], process.cwd() + '/tempDownload/' + folderName + '-Download.pdf')
+                        destPath = folderName + '-download.pdf';
+                    }else{
+                        const archive: archiver.Archiver = archiver("zip", {
+                            gzip: true,
+                            zlib: { level: 9 } // Sets the compression level ----- 0 no compression ou 1 speed ou 9 best ou -1 default
+                        });
+                        const output: fs.WriteStream = fs.createWriteStream(`./tempDownload/${folderName}-Download.zip`);
+                        destPath = folderName + '-download.zip';
+                        fs.readdirSync(`${process.cwd()}/tmpInvoice/${folderName}/`).forEach((item: string) => {
+                            archive.on("error", (err) => {
+                                throw err;
+                            });
+                            if (fs.lstatSync(`${process.cwd()}/tmpInvoice/${folderName}/${item}`).isFile()) {
+                                archive.append(fs.createReadStream(`${process.cwd()}/tmpInvoice/${folderName}/${item}`), { name: item });
+                            } else {
+                                archive.directory(`${process.cwd()}/tmpInvoice/${folderName}/${item}/`, item + '/');
+                            }
+                        });
+                        archive.pipe(output);
+                        await archive.finalize();
+                        output.on("close", () => {
+                            console.log(archive.pointer() + ' total bytes');
+                        });
+                        output.on('end', () => {
+                            console.log('Data has been drained');
+                        });
+                    }
+                }
+            }
+            if(fs.existsSync(process.cwd() + '/tmpInvoice/' + folderName)) fs.rmdirSync(process.cwd() + '/tmpInvoice/' + folderName, { recursive: true })
+            return dataResponse(res, 201, { error: false, destPath: path.join(destPath), message: data.devis.length === 1 ? "Le devis a bien été envoyé par mail" : "Les devis ont bien été envoyé par mail" });  
         }
     }).catch((error) => {
         throw error;
+    });
+}
+
+/**
+ *  Download file/zip
+ *  @param {Request} req 
+ *  @param {Response} res 
+ */ 
+export const download = async (req: Request, res: Response): Promise<void> => {
+    const destPath = req.params.destPath;
+    const filePath = path.join(process.cwd() + '/tempDownload/' + destPath);
+    if(!fs.existsSync(filePath) || !exist(filePath)){
+        return dataResponse(res, 404, { error: true, message: 'Le fichier n\'existe plus' })
+    }else{
+        res.setHeader('Content-disposition', 'attachment; filename=' + path.basename(filePath));
+        res.setHeader('Content-type', mime.lookup(filePath));
+        res.setHeader('Content-Length', fs.statSync(filePath).size);
+        const filestream: fs.ReadStream = fs.createReadStream(filePath);
+        filestream.pipe(res);
+        //res.download(filePath); // Set disposition and send it.
+        if(fs.existsSync(filePath)){
+            if(path.extname(path.basename(filePath)) === "pdf" || path.extname(path.basename(filePath)) === ".pdf" ){
+                fs.unlinkSync(filePath)
+                console.log('pdf')
+            }else{
+                console.log('zip')
+                fs.rmdirSync(filePath, { recursive: true })
+            }
+        } 
+    }
+}
+
+export const cleanFolder = (path: string) => {
+    fs.readdirSync(path).forEach((el: string) => {
+        if(fs.lstatSync(path).isFile()){
+            fs.rmSync(path + el)
+        }else{
+            fs.rmdirSync(path + el, { recursive: true })
+        }
     });
 }
