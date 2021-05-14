@@ -43,3 +43,4 @@ dist/**/*
 yarn.lock
 
 serviceAccountKey.json
+.vercel
