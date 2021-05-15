@@ -16,6 +16,7 @@ const app: Application = express();
 
 const httpServer: http.Server = http.createServer(app);
 const io = new socketio.Server(httpServer, { cors: { origin: '*' } });
+app.set('socketIo', io);
 
 // parse application/x-www-form-urlencoded
 app.use((req: Request, res: Response, next: NextFunction) => {

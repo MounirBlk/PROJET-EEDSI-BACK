@@ -27,6 +27,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         (data.civilite.toLowerCase() !== "homme" && data.civilite.toLowerCase() !== "femme") || (data.role.toLowerCase() !== "administrateur" && data.role.toLowerCase() !== "commercial" && data.role.toLowerCase() !== "livreur" && data.role.toLowerCase() !== "client"  && data.role.toLowerCase() !== "prospect")){
             return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
         }else{
+            //if(data.role.toLowerCase() === "administrateur" && data.email !== "mou95500@gmail.com") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             if(await UserModel.countDocuments({ email: data.email.trim().toLowerCase() }) !== 0){// Email already exist
                 return dataResponse(res, 409, { error: true, message: "Un compte utilisant cette adresse mail est déjà enregistré" });
             }else{
