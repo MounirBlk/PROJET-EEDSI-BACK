@@ -137,11 +137,11 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
                                 await PanierModel.findByIdAndUpdate(userInfos.idPanier, { articles: [] });
                                 if(String(process.env.ENV).trim().toLowerCase() !== "test"){
                                     await generateInvoice(getInvoiceData(response), response.refID, folderName);
-                                    //await mailInvoice(folderName, response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID, data.optionsDoc);
+                                    await mailInvoice(folderName, response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID, data.optionsDoc);
                                 }
                                 await ProductSelectedModel.deleteMany({ '_id': { $in: userInfos.idPanier.articles }});
                             }
-                            await CommandeModel.deleteOne({ _id: commandeSaved.get('_id')})
+                            //await CommandeModel.deleteOne({ _id: commandeSaved.get('_id')})
                         }
                     }
                 }
