@@ -61,7 +61,7 @@ export const addComposant = async (req: Request, res: Response): Promise<void> =
                             imgObj = null;
                         }else{
                             let files: any = req.files;
-                            let imgFile = fs.readFileSync(process.cwd() + '/temp/' + files[0].originalname/*, { encoding: "base64"}*/);//import img from form/data
+                            let imgFile = fs.readFileSync('./temp/' + files[0].originalname/*, { encoding: "base64"}*/);//import img from form/data
                             imgObj = {//import img from form/data
                                 imgFile: imgFile,
                                 imgName: files[0].originalname
@@ -74,7 +74,7 @@ export const addComposant = async (req: Request, res: Response): Promise<void> =
                             let composant: ComposantInterface = new ComposantModel(toInsert);
                             await composant.save().then(async(respComp: ComposantInterface) => {
                                 if(imgObj !== null && imgObj !== undefined){
-                                    await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, respComp.get("_id"), imgObj, data.couleurs, false, false)
+                                    await generateAllImagesColors('.', './temp/' + imgObj.imgName, respComp.get("_id"), imgObj, data.couleurs, false, false)
                                 }
                                 return dataResponse(res, 201, { error: false, message: "Le composant a bien été créé avec succès" });
                             }).catch(() => {
@@ -249,7 +249,7 @@ export const updateComposant = async (req: Request, res: Response): Promise<void
                                 imgObj = null;
                             }else{
                                 let files: any = req.files;
-                                let imgFile = fs.readFileSync(process.cwd() + '/temp/' + files[0].originalname/*, { encoding: "base64"}*/);//import img from form/data
+                                let imgFile = fs.readFileSync('./temp/' + files[0].originalname/*, { encoding: "base64"}*/);//import img from form/data
                                 imgObj = {//import img from form/data
                                     imgFile: imgFile,
                                     imgName: files[0].originalname
@@ -262,7 +262,7 @@ export const updateComposant = async (req: Request, res: Response): Promise<void
                                         return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
                                     } else {
                                         if(imgObj !== null && imgObj !== undefined){
-                                            await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, composant.get("_id"), imgObj, toUpdate.couleurs, false, true)
+                                            await generateAllImagesColors('.', './temp/' + imgObj.imgName, composant.get("_id"), imgObj, toUpdate.couleurs, false, true)
                                         }
                                         return dataResponse(res, 200, { error: false, message: "Le composant a bien été mise à jour" })
                                     }

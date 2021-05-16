@@ -17,6 +17,7 @@ import { cleanTempFolder, getFiles } from '../middlewares/generate';
 import path from 'path';
 import mime from 'mime';
 import AdmZip from 'adm-zip';
+import { setupCommande, setupDownload } from './commande';
 
 /**
  *  Route envoie devis par mail
@@ -30,6 +31,7 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
         }else{
             if(payload.role !== "Administrateur" && payload.role !== "Commercial") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const data = req.body;  
+            const socket = req.app.get('socketIo')
             if(!existTab(data.devis)) return dataResponse(res, 400, { error: true, message: 'Aucun devis n\'est sélectionné' })
             if(!tabFormat(data.devis) || data.devis.length === 0) return dataResponse(res, 409, { error: true, message: 'Les devis ne sont pas au bon format'})    
             if(data.optionsDoc.isAdminCommercial){
@@ -48,6 +50,7 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
             const folderName: string = uuidv4();// dossier pour les devis
             if(!fs.existsSync(`./tmpInvoice/`)) fs.mkdirSync(`./tmpInvoice/`)
             if(!fs.existsSync(`./tmpInvoice/${folderName}/`)) fs.mkdirSync(`./tmpInvoice/${folderName}/`)
+            let counter = 0;
             for await (const devis of data.devis) {
                 if(!exist(devis.prospectID)){
                     return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
@@ -130,26 +133,15 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
                             }
                             const commande: CommandeInterface = new CommandeModel(commandeToInsert);
                             const commandeSaved: CommandeInterface = await commande.save();
-                            const response: any = await CommandeModel.findOne({ _id: commandeSaved.get('_id')}).populate('clientID').populate('livreurID').populate('articles.idProduct').populate('articles.listeComposantsSelected.idComposant');
-                            if (response === undefined || response === null){// Si le resultat n'existe pas
-                                return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
-                            }else{
-                                await PanierModel.findByIdAndUpdate(userInfos.idPanier, { articles: [] });
-                                if(String(process.env.ENV).trim().toLowerCase() !== "test"){
-                                    await generateInvoice(getInvoiceData(response), response.refID, folderName);
-                                    await mailInvoice(folderName, response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID, data.optionsDoc);
-                                }
-                                await ProductSelectedModel.deleteMany({ '_id': { $in: userInfos.idPanier.articles }});
-                            }
-                            //await CommandeModel.deleteOne({ _id: commandeSaved.get('_id')})
+                            await setupCommande(res, data, commandeSaved.get('_id'), userInfos, folderName, true, true);
                         }
                     }
                 }
+                counter++
+                socket.emit('traitement', data.devis.length, counter)
                 console.log('ok')
             }
             console.log('end')
-            //let socket = req.app.get('socketIo')
-            //socket.emit('hello', 'world')
             if(data.optionsDoc.isDownload){
                 const destPath: string = await setupDownload(folderName);
                 res.set({
@@ -158,57 +150,19 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
                     'Content-Length': fs.statSync(`./tempDownload/${destPath}`).size
                 })
                 const filestream: fs.ReadStream = fs.createReadStream(`./tempDownload/${destPath}`);
-                filestream.on('data', (dataChunk) => {
-                    //console.log("dataChunk", dataChunk)
-                })
+                filestream.on('data', (dataChunk) => { /*console.log("dataChunk", dataChunk)*/ })
                 filestream.pipe(res);
-                if(fs.existsSync(process.cwd() + '/tmpInvoice/' + folderName)) fs.rmdirSync(process.cwd() + '/tmpInvoice/' + folderName, { recursive: true })
-                cleanOneFileFolder(`./tempDownload/${destPath}`)
+                setTimeout(() => {
+                    if(fs.existsSync(path.join('./tmpInvoice/' + folderName + '/'))) cleanOneFileFolder(`./tmpInvoice/${folderName}`)
+                    if(fs.existsSync(path.join('./tempDownload/' + destPath + '/'))) cleanOneFileFolder(`./tempDownload/${destPath}`)
+                }, 5000);
             }else{
-                if(fs.existsSync(process.cwd() + '/tmpInvoice/' + folderName)) fs.rmdirSync(process.cwd() + '/tmpInvoice/' + folderName, { recursive: true })
+                if(fs.existsSync('./tmpInvoice/' + folderName)) fs.rmdirSync('./tmpInvoice/' + folderName, { recursive: true })
                 return dataResponse(res, 201, { error: false, message: data.devis.length === 1 ? "Le devis a bien été envoyé par mail" : "Les devis ont bien été envoyé par mail" });  
             }
         }
     }).catch((error) => {
         throw error;
-    });
-}
-
-/**
- *  Préparation pour le download 
- *  @param {string} folderName 
- */
-const setupDownload = async(folderName: string): Promise<string> => {
-    return new Promise<any>(async(resolve, reject) => {
-        let pdfTab: any[] = []
-        fs.readdirSync('./tmpInvoice/' + folderName).forEach((el: string) => {
-            pdfTab.push(el)
-        });
-        let destPath: string = '';
-        if(pdfTab.length !== 0){
-            if(!fs.existsSync(`./tempDownload/`)) fs.mkdirSync(`./tempDownload/`)
-            if(pdfTab.length === 1 && fs.lstatSync('./tmpInvoice/' + folderName + '/' + pdfTab[0]).isFile()){
-                fs.copyFileSync('./tmpInvoice/' + folderName + '/' + pdfTab[0], './tempDownload/' + folderName + '-download.pdf')
-                destPath = folderName + '-download.pdf';
-            }else{
-                const isAdmZip = true;// true pour utiliser AdmZip package et false pour utiliser archiver package
-                if(isAdmZip){
-                    const zip = new AdmZip();
-                    destPath = folderName + '-download.zip';
-                    fs.readdirSync(`./tmpInvoice/${folderName}/`).forEach((fileName: string) => {
-                        if(fs.lstatSync(`./tmpInvoice/${folderName}/${fileName}`).isFile()){
-                            zip.addLocalFile(`./tmpInvoice/${folderName}/${fileName}`);
-                        }else{
-                            zip.addLocalFolder(`./tmpInvoice/${folderName}/${fileName}/`, fileName + '/')
-                        }
-                    });
-                    zip.writeZip(`./tempDownload/${destPath}`);
-                }else{
-                    destPath = await archivageZip(destPath, folderName)// package archiver
-                }
-            }
-        }      
-        resolve(destPath);
     });
 }
 
@@ -219,7 +173,7 @@ const setupDownload = async(folderName: string): Promise<string> => {
  */ 
 export const download = async (req: Request, res: Response): Promise<void> => {
     const destPath = req.params.destPath;
-    const filePath = path.join(process.cwd() + '/tempDownload/' + destPath);
+    const filePath = path.join('./tempDownload/' + destPath);
     if(!fs.existsSync(filePath) || !exist(filePath)){
         return dataResponse(res, 404, { error: true, message: 'Le fichier n\'existe plus' })
     }else{
@@ -233,39 +187,6 @@ export const download = async (req: Request, res: Response): Promise<void> => {
     }
 }
 
-/**
- * Archivage
- */
-const archivageZip = async(destPath: string, folderName: string): Promise<string> => {
-    return new Promise<any>(async(resolve, reject) => {
-        const archive: archiver.Archiver = archiver("zip", {
-            gzip: true,
-            zlib: { level: 9 } // Sets the compression level ----- 0 no compression ou 1 speed ou 9 best ou -1 default
-        });
-        const output: fs.WriteStream = fs.createWriteStream(`./tempDownload/${folderName}-download.zip`);
-        destPath = folderName + '-download.zip';                
-        fs.readdirSync(`./tmpInvoice/${folderName}/`).forEach((item: string) => {
-            archive.on("error", (err) => {
-                reject(err);
-            });
-            if (fs.lstatSync(`./tmpInvoice/${folderName}/${item}`).isFile()) {
-                archive.append(fs.createReadStream(`./tmpInvoice/${folderName}/${item}`), { name: item });
-            } else {
-                archive.directory(`./tmpInvoice/${folderName}/${item}/`, item + '/');
-            }
-        });
-        archive.pipe(output);
-        await archive.finalize();
-        output.on("close", () => {
-            console.log(archive.pointer() + ' total bytes');
-        });
-        output.on('end', () => {
-            console.log('Data has been drained');
-        });
-        resolve(destPath)
-    });
-}
-
 export const cleanFolder = (path: string) => {
     fs.readdirSync(path).forEach((el: string) => {
         if(fs.lstatSync(path).isFile()){
@@ -276,7 +197,7 @@ export const cleanFolder = (path: string) => {
     });
 }
 
-const cleanOneFileFolder = (path: string) => {
+export const cleanOneFileFolder = (path: string) => {
     if(fs.lstatSync(path).isFile()){
         fs.unlinkSync(path)
     } else{

@@ -64,7 +64,7 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                             imgObj = null;
                         }else{
                             let files: any = req.files;
-                            let imgFile = fs.readFileSync(process.cwd() + '/temp/' + files[0].originalname/*, { encoding: "base64"}*/);//import img from form/data
+                            let imgFile = fs.readFileSync('./temp/' + files[0].originalname/*, { encoding: "base64"}*/);//import img from form/data
                             imgObj = {//import img from form/data
                                 imgFile: imgFile,
                                 imgName: files[0].originalname
@@ -77,7 +77,7 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
                             let product: ProductInterface = new ProductModel(toInsert);
                             await product.save().then(async(produit: ProductInterface) => {
                                 if(imgObj !== null && imgObj !== undefined){
-                                    await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, produit.get("_id"), imgObj, data.couleurs, true, false)
+                                    await generateAllImagesColors('.', './temp/' + imgObj.imgName, produit.get("_id"), imgObj, data.couleurs, true, false)
                                 }
                                 return dataResponse(res, 201, { error: false, message: "Le produit a bien été créé avec succès" });
                             }).catch((error: any) => {
@@ -254,7 +254,7 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
                                 imgObj = null;
                             }else{
                                 let files: any = req.files;
-                                let imgFile = fs.readFileSync(process.cwd() + '/temp/' + files[0].originalname/*, { encoding: "base64"}*/);//import img from form/data
+                                let imgFile = fs.readFileSync('./temp/' + files[0].originalname/*, { encoding: "base64"}*/);//import img from form/data
                                 imgObj = {//import img from form/data
                                     imgFile: imgFile,
                                     imgName: files[0].originalname
@@ -267,7 +267,7 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
                                         return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
                                     } else {                                
                                         if(imgObj !== null && imgObj !== undefined){
-                                            await generateAllImagesColors(process.cwd(), process.cwd() + '/temp/' + imgObj.imgName, product.get("_id"), imgObj, toUpdate.couleurs, true, true)
+                                            await generateAllImagesColors('.', './temp/' + imgObj.imgName, product.get("_id"), imgObj, toUpdate.couleurs, true, true)
                                         }
                                         return dataResponse(res, 200, { error: false, message: "Le produit a bien été mise à jour" })
                                     }

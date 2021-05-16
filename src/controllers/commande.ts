@@ -15,6 +15,11 @@ import { getInvoiceData, generateInvoice } from '../middlewares/invoice';
 import { mailInvoice } from '../middlewares/sendMail';
 import { uploadFirebaseStorage } from '../middlewares/firebase';
 import PanierModel from '../models/PanierModel';
+import mime from 'mime';
+import path from 'path';
+import AdmZip from 'adm-zip';
+import archiver from 'archiver';
+import { cleanOneFileFolder } from './facture';
 
 /**
  *  Route new commande
@@ -69,26 +74,15 @@ export const addCommande = async (req: Request, res: Response): Promise<void> =>
                                                 "prixTotal": prixTotal.toFixed(2)
                                             }
                                             const folderName: string = uuidv4();// dossier pour les devis
-                                            fs.mkdirSync(`${process.cwd()}/tmpInvoice/${folderName}/`)
+                                            if(!fs.existsSync(`./tmpInvoice/`)) fs.mkdirSync(`./tmpInvoice/`)
+                                            if(!fs.existsSync(`./tmpInvoice/${folderName}/`)) fs.mkdirSync(`./tmpInvoice/${folderName}/`)
                                             let commande: CommandeInterface = new CommandeModel(toInsert);
                                             await commande.save().then(async(commandeSaved: CommandeInterface) => {
-                                                CommandeModel.findOne({ _id: commandeSaved.get('_id')}).populate('clientID').populate('livreurID').populate('articles.idProduct').populate('articles.listeComposantsSelected.idComposant').exec(async(err: CallbackError, data: any) => {
-                                                    if (err) {
-                                                        return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" });
-                                                    }else if (data === undefined || data === null){// Si le resultat n'existe pas
-                                                        return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });
-                                                    }else{
-                                                        await PanierModel.findByIdAndUpdate(user.idPanier, { articles: [] });
-                                                        if(String(process.env.ENV).trim().toLowerCase() !== "test"){
-                                                            await generateInvoice(getInvoiceData(data), data.refID, folderName);
-                                                            //await uploadFirebaseStorage();
-                                                            await mailInvoice(folderName, data.clientID.email, `${data.clientID.firstname} ${data.clientID.lastname}`, data.refID);
-                                                            await ProductSelectedModel.deleteMany({ '_id': { $in: user.idPanier.articles }});
-                                                            //TODO UPDATE QUANTITE DU PRODUIT/COMPOSANT AND PAYMENT CARD/CUSTOMER STRIPE
-                                                        }
-                                                        return dataResponse(res, 201, { error: false, message: "La commande a bien été ajouté" });
-                                                    }
-                                                });
+                                                await setupCommande(res, data, commandeSaved.get('_id'), user, folderName, true, true)
+                                                setTimeout(() => {
+                                                    if(fs.existsSync(path.join('./tmpInvoice/' + folderName + '/'))) cleanOneFileFolder(`./tmpInvoice/${folderName}`)
+                                                }, 5000);
+                                                return dataResponse(res, 201, { error: false, message: "La commande a bien été ajouté" });
                                             }).catch((err: any) => {
                                                 throw err;
                                             });
@@ -388,5 +382,134 @@ export const updateCommande = async (req: Request, res: Response): Promise<void>
         }
     }).catch((error) => {
         throw error;
+    });
+}
+
+/**
+ *  Route download commande
+ *  @param {Request} req 
+ *  @param {Response} res 
+ */ 
+export const downloadCommande = async (req: Request, res: Response): Promise<void> => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
+        if(payload === null || payload === undefined){
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
+        }else{
+            const data = req.body;
+            if(data.commande){
+                if(data.commande.clientID === null || data.commande.clientID === undefined){
+                    return dataResponse(res, 400, { error: true, message: 'Le client n\'existe pas' })
+                } else {
+                    const folderName: string = uuidv4();// dossier pour les devis
+                    if(!fs.existsSync(`./tmpInvoice/`)) fs.mkdirSync(`./tmpInvoice/`)
+                    if(!fs.existsSync(`./tmpInvoice/${folderName}/`)) fs.mkdirSync(`./tmpInvoice/${folderName}/`)
+                    const userInfos: any = await UserModel.findOne({ _id: data.commande.clientID._id }).populate('idEntreprise').populate('idPanier');
+                    await setupCommande(res, data, data.commande._id, userInfos, folderName, false, false);
+                    const destPath: string = await setupDownload(folderName);
+                    res.set({
+                        'Content-disposition': 'attachment; filename=' + path.basename(`./tempDownload/${destPath}`),
+                        'Content-type': mime.lookup(`./tempDownload/${destPath}`),
+                        'Content-Length': fs.statSync(`./tempDownload/${destPath}`).size
+                    })
+                    const filestream: fs.ReadStream = fs.createReadStream(`./tempDownload/${destPath}`);
+                    filestream.on('data', (dataChunk) => { /*console.log("dataChunk", dataChunk)*/ })
+                    filestream.pipe(res);
+                    setTimeout(() => {
+                        if(fs.existsSync(path.join('./tmpInvoice/' + folderName + '/'))) cleanOneFileFolder(`./tmpInvoice/${folderName}`)
+                        if(fs.existsSync(path.join('./tempDownload/' + destPath + '/'))) cleanOneFileFolder(`./tempDownload/${destPath}`)
+                    }, 5000);
+                }
+            }else{
+                return dataResponse(res, 400, { error: true, message: 'La commande n\'existe pas' })
+            }
+        }
+    }).catch((error) => {
+        throw error;
+    });
+}
+
+export const setupCommande = async(res: Response, data: any, idCommande: string, userInfos: any, folderName: string, isNewCommande: boolean, isMail: boolean): Promise<void> => {
+    const response: any = await CommandeModel.findOne({ _id: idCommande }).populate('clientID').populate('livreurID').populate('articles.idProduct').populate('articles.listeComposantsSelected.idComposant');
+    if (response === undefined || response === null){// Si le resultat n'existe pas
+        return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });//TO UPDATE
+    }else{
+        if(isNewCommande) await PanierModel.findByIdAndUpdate(userInfos.idPanier, { articles: [] });
+        if(String(process.env.ENV).trim().toLowerCase() !== "test"){
+            await generateInvoice(getInvoiceData(response), response.refID, folderName);
+            if(isMail) await mailInvoice(folderName, response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID, data.optionsDoc);
+        }
+        if(isNewCommande) await ProductSelectedModel.deleteMany({ '_id': { $in: userInfos.idPanier.articles }});
+    }
+    //await CommandeModel.deleteOne({ _id: idCommande })//TO REMOVE
+}
+
+/**
+ *  Préparation pour le download 
+ *  @param {string} folderName 
+ */
+export const setupDownload = async(folderName: string): Promise<string> => {
+    return new Promise<any>(async(resolve, reject) => {
+        let pdfTab: any[] = []
+        fs.readdirSync('./tmpInvoice/' + folderName).forEach((el: string) => {
+            pdfTab.push(el)
+        });
+        let destPath: string = '';
+        if(pdfTab.length !== 0){
+            if(!fs.existsSync(`./tempDownload/`)) fs.mkdirSync(`./tempDownload/`)
+            if(pdfTab.length === 1 && fs.lstatSync('./tmpInvoice/' + folderName + '/' + pdfTab[0]).isFile()){
+                fs.copyFileSync('./tmpInvoice/' + folderName + '/' + pdfTab[0], './tempDownload/' + folderName + '-download.pdf')
+                destPath = folderName + '-download.pdf';
+            }else{
+                const isAdmZip = true;// true pour utiliser AdmZip package et false pour utiliser archiver package
+                if(isAdmZip){
+                    const zip = new AdmZip();
+                    destPath = folderName + '-download.zip';
+                    fs.readdirSync(`./tmpInvoice/${folderName}/`).forEach((fileName: string) => {
+                        if(fs.lstatSync(`./tmpInvoice/${folderName}/${fileName}`).isFile()){
+                            zip.addLocalFile(`./tmpInvoice/${folderName}/${fileName}`);
+                        }else{
+                            zip.addLocalFolder(`./tmpInvoice/${folderName}/${fileName}/`, fileName + '/')
+                        }
+                    });
+                    zip.writeZip(`./tempDownload/${destPath}`);
+                }else{
+                    destPath = await archivageZip(destPath, folderName)// package archiver
+                }
+            }
+        }      
+        resolve(destPath);
+    });
+}
+
+/**
+ * Archivage
+ */
+const archivageZip = async(destPath: string, folderName: string): Promise<string> => {
+    return new Promise<any>(async(resolve, reject) => {
+        const archive: archiver.Archiver = archiver("zip", {
+            gzip: true,
+            zlib: { level: 9 } // Sets the compression level ----- 0 no compression ou 1 speed ou 9 best ou -1 default
+        });
+        const output: fs.WriteStream = fs.createWriteStream(`./tempDownload/${folderName}-download.zip`);
+        destPath = folderName + '-download.zip';                
+        fs.readdirSync(`./tmpInvoice/${folderName}/`).forEach((item: string) => {
+            archive.on("error", (err) => {
+                reject(err);
+            });
+            if (fs.lstatSync(`./tmpInvoice/${folderName}/${item}`).isFile()) {
+                archive.append(fs.createReadStream(`./tmpInvoice/${folderName}/${item}`), { name: item });
+            } else {
+                archive.directory(`./tmpInvoice/${folderName}/${item}/`, item + '/');
+            }
+        });
+        archive.pipe(output);
+        await archive.finalize();
+        output.on("close", () => {
+            console.log(archive.pointer() + ' total bytes');
+        });
+        output.on('end', () => {
+            console.log('Data has been drained');
+        });
+        resolve(destPath)
     });
 }

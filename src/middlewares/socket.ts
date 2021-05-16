@@ -13,6 +13,7 @@ export default async(io: socketio.Server<DefaultEventsMap, DefaultEventsMap>): P
     let messages: any[] = [];
     console.log('SocketIO OK !')
     io.on("connection", (socket: socketio.Socket<DefaultEventsMap, DefaultEventsMap> | any) => {
+        /* Chat box */
         socket.emit('loggedIn', {
             users: users.map(s => s.username),//all users logged -> socket
             //messages: socket.messages
