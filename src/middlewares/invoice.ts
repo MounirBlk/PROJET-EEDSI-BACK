@@ -10,10 +10,10 @@ import { exist, getCurrentDate } from '.';
 export const generateInvoice = async (invoiceData: any, filename: string, folderName: string): Promise<any> => {
     return new Promise<any>((resolve, reject) => {
         const postData: string = JSON.stringify(setInvoiceData(invoiceData));
-        if(!fs.existsSync(`${process.cwd()}/tmpInvoice/${folderName}/`)){
-            fs.mkdirSync(`${process.cwd()}/tmpInvoice/${folderName}/`)
+        if(!fs.existsSync(`./tmpInvoice/${folderName}/`)){
+            fs.mkdirSync(`./tmpInvoice/${folderName}/`)
         }
-        const file: fs.WriteStream = fs.createWriteStream(path.join(`${process.cwd()}/tmpInvoice/${folderName}/${filename}.pdf`));
+        const file: fs.WriteStream = fs.createWriteStream(path.join(`./tmpInvoice/${folderName}/${filename}.pdf`));
         const req: ClientRequest = https.request(getConfigHttps(postData), (res: IncomingMessage) => {
             res.on('data', (chunk) => {
                 file.write(chunk);

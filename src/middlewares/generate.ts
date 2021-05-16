@@ -19,7 +19,7 @@ import ComposantModel from '../models/ComposantModel';
  */ 
 export const generateAllImagesColors = async (racinePath: string, filePath: string, id: string, imgObj: any, selectionColors: Array<string>, isProduct: boolean, isEdit: boolean): Promise<void> => {
     if(!fs.existsSync(racinePath + '/temp/')) fs.mkdirSync(racinePath + '/temp/');//add temp folder
-    let destPath: string = racinePath + `/temp/${id}/`;// process.cwd()
+    let destPath: string = racinePath + `/temp/${id}/`;
     if(!fs.existsSync(destPath)){
         fs.mkdirSync(destPath);//add destPath folder in temp
     }

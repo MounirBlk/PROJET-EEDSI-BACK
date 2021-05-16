@@ -43,7 +43,7 @@ export const mailInvoice = async (folderName: string, email: string, name: strin
         name: name
     }).then((data: unknown) => {
         let transporter: Mail = getTransporterInfos();
-        let attachments: Mail.Attachment[] = [{ filename: `${refID}.pdf`, path: `${process.cwd()}/tmpInvoice/${folderName}/${refID}.pdf`, cid: 'facture' }]
+        let attachments: Mail.Attachment[] = [{ filename: `${refID}.pdf`, path: `./tmpInvoice/${folderName}/${refID}.pdf`, cid: 'facture' }]
         let emails: (string | Mail.Address)[] = [email.toLowerCase()]
         if(optionsDoc){
             if(optionsDoc.isCgv) attachments.push({ filename: 'CGV.pdf', path: __dirname + '/templates/CGV.pdf', cid: 'CGV' })
