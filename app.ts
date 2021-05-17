@@ -15,7 +15,7 @@ import { CronJob } from "cron"
 const app: Application = express();
 
 const httpServer: http.Server = http.createServer(app);
-const io = new socketio.Server(httpServer, { cors: { origin: '*' } });
+const io = new socketio.Server(httpServer, { cors: { origin: '*' }, serveClient: false });
 app.set('socketIo', io);
 
 // parse application/x-www-form-urlencoded
@@ -39,7 +39,7 @@ app.use((err: Errback , req: Request, res: Response, next: NextFunction) => {
 
 const limiter: rateLimit.RateLimit = rateLimit({
   windowMs: (60 * 1000) * 1, // 1 min
-  max: 300 //limit for each IP with 300 requests per windowMs
+  max: 400 //limit for each IP with 400 requests per windowMs
 });
 
 app.use(limiter);
