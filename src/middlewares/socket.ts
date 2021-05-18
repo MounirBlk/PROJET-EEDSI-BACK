@@ -5,7 +5,7 @@ import ChatModel from "../models/ChatModel";
 import { v4 as uuidv4 } from 'uuid';
 import { CallbackError } from "mongoose";
 import ChatInterface from "../interfaces/ChatInterface";
-import { getJwtPayload, payloadTokenInterface, dataResponse, deleteMapper } from ".";
+import { getJwtPayload, payloadTokenInterface, dataResponse, deleteMapper, exist } from ".";
 import UserModel from "../models/UserModel";
 
 export default async(io: socketio.Server<DefaultEventsMap, DefaultEventsMap>): Promise<void> => {
@@ -65,9 +65,11 @@ export default async(io: socketio.Server<DefaultEventsMap, DefaultEventsMap>): P
 
         //Disconnect
         socket.on("disconnect", () => {
-            console.log(`${socket.username} has left the party.`);
-            io.emit('userLeft', socket.username)
-            users.splice(users.indexOf(socket), 1);
+            if(exist(socket.username)){
+                console.log(`${socket.username} has left the party.`);
+                io.emit('userLeft', socket.username)
+                users.splice(users.indexOf(socket), 1);
+            }
         });
     });
 }
