@@ -25,11 +25,12 @@ import { setupCommande, setupDownload } from './commande';
  *  @param {Response} res 
  */ 
 export const generateDevisMail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    req.setTimeout(0);
     await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
-            req.setTimeout(0);
+            console.log(1)
             if(payload.role !== "Administrateur" && payload.role !== "Commercial") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const data = req.body;  
             const socket = req.app.get('socketIo')
