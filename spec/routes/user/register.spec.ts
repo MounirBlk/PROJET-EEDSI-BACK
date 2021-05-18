@@ -9,7 +9,7 @@ export const registerUserTest = (selectedRole: string) => {
     return (done: DoneFn) => {
         const data = {
             email: randomChars(4) + randomFileName() +'@gmail.com',
-            password: randomChars(randNumber(5,10)).concat('*') + randNumber(1,100),
+            password: randomChars(randNumber(5,10)) + String(randNumber(1,100)) + '*',
             firstname: randomChars(randNumber(5,10)),
             lastname: randomChars(randNumber(5,10)),
             civilite: randNumber(0,1) === 0 ? "Homme" : "Femme",
