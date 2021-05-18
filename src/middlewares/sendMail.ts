@@ -33,9 +33,11 @@ export const mailRegister = async (email: string, name: string): Promise<void> =
 
 /**
  * SEND MAIL template invoice
+ * @param {string} folderName 
  * @param {string} email 
  * @param {string} name 
  * @param {string} refID 
+ * @param {any} optionsDoc? 
  */
 export const mailInvoice = async (folderName: string, email: string, name: string, refID: string, optionsDoc?: any): Promise<void> => {
     await templateRenderFile(__dirname + '/templates/invoice.ejs', {
