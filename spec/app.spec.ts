@@ -31,17 +31,18 @@ for(let i = 0; i < iteratorTest; i++){
         //beforeEach(() => console.log(__dirname));
         //afterEach(() => console.log('Test passed'))
 
-        /*for(let i = 0; i < 300; i++){
+        /*for(let i = 0; i < 200; i++){
             it('REGISTER PROSPECTS', (done: DoneFn) => {
                 const data = {
-                    email: randomChars(5) + '.' + randomChars(randNumber(5,10)) + String(randNumber(1,100)) +'@gmail.com',
+                    email: 'test.' + randomChars(5) + '.' + randomChars(randNumber(5,10)) + String(randNumber(1,100)) +'@gmail.com',
                     password: randomChars(randNumber(5,10)) + String(randNumber(1,100)) + '*',
                     firstname: randomChars(randNumber(5,10)),
                     lastname: randomChars(randNumber(5,10)),
                     civilite: randNumber(0, 1) === 0 ? "Homme" : "Femme",
                     dateNaissance: randomDateEn(),
                     portable: randNumber(0, 1) === 0 ? '06' + String(randNumber(10000000,99999999)) : '07' + String(randNumber(10000000,99999999)),
-                    role: i > 150 ? 'Client' : 'Livreur',
+                    role: 'Prospect', // i > 150 ? 'Client' : 'Livreur'
+                    idEntreprise: ''
                 }     
                 request(app)
                     .post('/register')
