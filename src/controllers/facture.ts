@@ -30,7 +30,7 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
-            console.log(1)
+            console.log('start')
             if(payload.role !== "Administrateur" && payload.role !== "Commercial") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const data = req.body;  
             const socket = req.app.get('socketIo')
