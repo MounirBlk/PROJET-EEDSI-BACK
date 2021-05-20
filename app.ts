@@ -1,7 +1,7 @@
 //require('dotenv').config()
 import { config } from "dotenv"; 
 config(); 
-import express, { Application, Request, Response, NextFunction, Errback, json } from 'express';
+import express, { Application, Request, Response, NextFunction, Errback } from 'express';
 import cors from 'cors';
 import path from 'path';
 import { route } from './src/routes';

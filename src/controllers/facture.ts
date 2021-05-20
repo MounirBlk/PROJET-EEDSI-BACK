@@ -30,7 +30,6 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
-            console.log('start')
             if(payload.role !== "Administrateur" && payload.role !== "Commercial") return dataResponse(res, 401, { error: true, message: 'Vous n\'avez pas l\'autorisation d\'effectuer cette action' });
             const data = req.body;  
             const socket = req.app.get('socketIo')
@@ -52,8 +51,10 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
             const folderName: string = uuidv4();// dossier pour les devis
             if(!fs.existsSync(`./tmpInvoice/`)) fs.mkdirSync(`./tmpInvoice/`)
             if(!fs.existsSync(`./tmpInvoice/${folderName}/`)) fs.mkdirSync(`./tmpInvoice/${folderName}/`)
+            console.log('start')
             let counter = 0;
             for await (const devis of data.devis) {
+                socket.emit('traitementStatut', true)
                 if(!exist(devis.prospectID)){
                     return dataResponse(res, 400, { error: true, message: "L'id est manquant !" })
                 }else{
@@ -143,6 +144,7 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
                 socket.emit('traitement', data.devis.length, counter)
                 console.log('ok')
             }
+            socket.emit('traitement', data.devis.length, 0)
             console.log('end')
             if(data.optionsDoc.isDownload){
                 const destPath: string = await setupDownload(folderName);
@@ -154,12 +156,14 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
                 const filestream: fs.ReadStream = fs.createReadStream(`./tempDownload/${destPath}`);
                 filestream.on('data', (dataChunk) => { /*console.log("dataChunk", dataChunk)*/ })
                 filestream.pipe(res);
+                socket.emit('traitementStatut', false)
                 setTimeout(() => {
                     if(fs.existsSync(path.join('./tmpInvoice/' + folderName + '/'))) cleanOneFileFolder(`./tmpInvoice/${folderName}`)
                     if(fs.existsSync(path.join('./tempDownload/' + destPath + '/'))) cleanOneFileFolder(`./tempDownload/${destPath}`)
                 }, 5000);
             }else{
                 if(fs.existsSync('./tmpInvoice/' + folderName)) fs.rmdirSync('./tmpInvoice/' + folderName, { recursive: true })
+                socket.emit('traitementStatut', false)
                 return dataResponse(res, 201, { error: false, message: data.devis.length === 1 ? "Le devis a bien été envoyé par mail" : "Les devis ont bien été envoyé par mail" });  
             }
         }
