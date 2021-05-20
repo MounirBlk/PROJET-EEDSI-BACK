@@ -31,7 +31,7 @@ for(let i = 0; i < iteratorTest; i++){
         //beforeEach(() => console.log(__dirname));
         //afterEach(() => console.log('Test passed'))
 
-        /*for(let i = 0; i < 200; i++){
+        /*for(let i = 0; i < 100; i++){
             it('REGISTER PROSPECTS', (done: DoneFn) => {
                 const data = {
                     email: 'test.' + randomChars(5) + '.' + randomChars(randNumber(5,10)) + String(randNumber(1,100)) +'@gmail.com',
