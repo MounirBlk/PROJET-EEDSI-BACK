@@ -39,8 +39,8 @@ export default async(io: socketio.Server<DefaultEventsMap, DefaultEventsMap>): P
         socket.on('newMessage', (message: string) => {
             let messageToSave = new ChatModel({
                 refID: uuidv4(),
-                username: socket.username,
-                userInfos: socket.userInfos,
+                username: exist(socket.username) ? socket.username : 'Utilisateur Utilisateur' ,
+                userInfos: socket.userInfos !== null && socket.userInfos !== undefined ? socket.userInfos : { role: 'Commercial', firstname: 'Utilisateur', lastname: 'Utilisateur' },
                 message: message,
                 createdAt: new Date(),
                 isViewed: false,
