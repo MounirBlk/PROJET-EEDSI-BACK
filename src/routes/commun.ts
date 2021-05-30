@@ -1,7 +1,7 @@
 import { Application, Request, Response, NextFunction, Errback } from "express";
 import { addComposant, deleteComposant, getComposant, getAllComposants, updateComposant } from "../controllers/composant";
 import { addProduct, deleteProduct, getAllProducts, getProduct, updateProduct } from "../controllers/product";
-import { checkEmail, deleteUser, disableUser, forgotPassword, getAllUsers, getOneUser, getOwnUser, login, register, updateUser } from "../controllers/user";
+import { checkEmail, deleteUser, disableUser, editPassword, forgotPassword, getAllUsers, getOneUser, getOwnUser, login, register, updateUser } from "../controllers/user";
 import { checkInternet, dataResponse } from "../middlewares";
 import multer from "multer";
 import { initUpload } from "../config";
@@ -19,7 +19,8 @@ export default (app: Application): void => {
     app.route('/user/disable/:id').put(checkInternet, disableUser);
     app.route('/user/forgot').put(checkInternet, forgotPassword);
     app.route('/user/check/:token').get(checkInternet, checkEmail);
-    
+    app.route('/user/password').put(checkInternet, editPassword);
+
     //PRODUCT
     app.route('/product/add').post(checkInternet, multer(initUpload()).any(), addProduct);
     app.route('/product/delete/:id').delete(checkInternet, deleteProduct);
