@@ -352,14 +352,16 @@ export const updateUser = async (req: Request, res: Response) : Promise <void> =
                             }else{
                                 idEntreprise = user.idEntreprise
                             }
-                            let toUpdate = {
+                            let toUpdate: any = {
                                 firstname: exist(data.firstname) ? !textFormat(data.firstname) ? (isOnError = true) : firstLetterMaj(data.firstname) : user.firstname,
                                 lastname: exist(data.lastname) ? !textFormat(data.lastname) ? (isOnError = true) : firstLetterMaj(data.lastname) : user.lastname,
                                 civilite: exist(data.civilite) ? (data.civilite.toLowerCase() !== "homme" && data.civilite.toLowerCase() !== "femme") ? (isOnError = true) : data.civilite : user.civilite,
                                 dateNaissance: exist(data.dateNaissance) ? !dateFormatEn(data.dateNaissance) ? (isOnError = true) : data.dateNaissance : user.dateNaissance,
                                 portable: exist(data.portable) ? data.portable : user.portable,
+                                password: exist(data.password) ? !passwordFormat(data.password) ? (isOnError = true) : data.password : null,
                                 idEntreprise: idEntreprise
                             }
+                            if(!exist(toUpdate.password)) delete toUpdate.password;
                             if(isOnError){
                                 return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
                             }else{
@@ -458,7 +460,7 @@ export const forgotPassword = async (req: Request, res: Response) : Promise <voi
  */ 
 export const checkEmail = async (req: Request, res: Response) : Promise <void> => {
     const token = `Bearer ${req.params.token}`;
-    await getJwtPayload(token).then(async (payload) => {
+    await getJwtPayload(token).then(async (payload: payloadTokenInterface | null) => {
         if(payload === null || payload === undefined){
             return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
         }else{
@@ -469,6 +471,47 @@ export const checkEmail = async (req: Request, res: Response) : Promise <void> =
                     return dataResponse(res, 200, { error: false, message: "L'email a bien été confirmé"})
                 }
             });
+        }
+    }).catch((error) => {
+        throw error;
+    });
+}
+
+/**
+ *  Route edit password
+ *  @param {Request} req 
+ *  @param {Response} res 
+ */ 
+export const editPassword = async (req: Request, res: Response) : Promise <void> => {
+    await getJwtPayload(req.headers.authorization).then(async (payload: payloadTokenInterface | null) => {
+        if(payload === null || payload === undefined){
+            return dataResponse(res, 401, { error: true, message: 'Votre token n\'est pas correct' })
+        }else{
+            const data = req.body;
+            if(!exist(data.oldPassword) || !exist(data.newPassword)){
+                return dataResponse(res, 400, { error: true, message: 'Une ou plusieurs données obligatoire sont manquantes' })
+            }else{
+                if(!passwordFormat(data.oldPassword) || !passwordFormat(data.newPassword)){
+                    return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
+                }else{
+                    const user: UserInterface | null = await UserModel.findById(payload.id);
+                    if(user === null || user === undefined){
+                        return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
+                    }else{
+                        if (<UserInterface>await user.verifyPasswordSync(data.oldPassword)){
+                            await UserModel.findByIdAndUpdate(payload.id, { password:  data.newPassword}, null, (err: Error, resp: any) => {
+                                if (err) {
+                                    return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
+                                } else {
+                                    return dataResponse(res, 200, { error: false, message: "Le mot de passe a bien été mise à jour" })
+                                }
+                            });
+                        }else{
+                            return dataResponse(res, 400, { error: true, message: "Erreur sur le mot de passe actuel"}) 
+                        }
+                    }
+                }
+            }
         }
     }).catch((error) => {
         throw error;
