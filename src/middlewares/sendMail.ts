@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import ejs from 'ejs';
-import Mail from 'nodemailer/lib/mailer';
+import Mail, { Address } from 'nodemailer/lib/mailer';
 import path from 'path';
 import fs from 'fs';
 import mime from "mime-types";
@@ -17,7 +17,7 @@ export const mailRegister = async (email: string, name: string): Promise<void> =
     }).then((data: unknown) => {
         let transporter = getTransporterInfos();
         transporter.sendMail({
-            from: process.env.GMAIL_EMAIL, // sender address
+            from: <string | Address>process.env.GMAIL_EMAIL, // sender address
             to: email, // list of receivers
             subject: "Inscription à la plateforme", // Subject line
             html: String(data)
@@ -60,7 +60,7 @@ export const mailInvoice = async (folderName: string, email: string, name: strin
         }
         emails = [...new Set(emails)]// retire les doublons d'emails
         transporter.sendMail({
-            from: process.env.GMAIL_EMAIL, // sender address
+            from: <string | Address>process.env.GMAIL_EMAIL, // sender address
             to: emails, // list of receivers
             subject: "Facture de la commande", // Subject line
             html: String(data),
@@ -110,7 +110,7 @@ export const mailCheckEmail = async (checkData: any): Promise<void> => {
     }).then((data: unknown) => {
         let transporter = getTransporterInfos();
         transporter.sendMail({
-            from: process.env.GMAIL_EMAIL, // sender address
+            from: <string | Address>process.env.GMAIL_EMAIL, // sender address
             to: checkData.email, // list of receivers
             subject: "Vérification de l'email", // Subject line
             html: String(data)
