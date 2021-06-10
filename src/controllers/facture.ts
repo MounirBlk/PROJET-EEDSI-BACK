@@ -165,6 +165,9 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
                         if(fs.existsSync(path.join('./tempDownload/' + destPath + '/'))) cleanOneFileFolder(`./tempDownload/${destPath}`)
                     }, 5000);
                 });
+                fileStream.on('error', (err) => {
+                    throw err;
+                });
             }else{
                 if(fs.existsSync('./tmpInvoice/' + folderName)) fs.rmdirSync('./tmpInvoice/' + folderName, { recursive: true })
                 socket.emit('traitementStatut', false)

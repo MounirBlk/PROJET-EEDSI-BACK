@@ -403,15 +403,15 @@ export const downloadCommande = async (req: Request, res: Response): Promise<voi
                     const folderName: string = uuidv4();// dossier pour les devis
                     if(!fs.existsSync(`./tmpInvoice/`)) fs.mkdirSync(`./tmpInvoice/`)
                     if(!fs.existsSync(`./tmpInvoice/${folderName}/`)) fs.mkdirSync(`./tmpInvoice/${folderName}/`)
-                    const userInfos: any = await UserModel.findOne({ _id: data.commande.clientID._id }).populate('idEntreprise').populate('idPanier');
-                    await setupCommande(res, data, data.commande._id, userInfos, folderName, false, false);
+                    const user: any = await UserModel.findOne({ _id: data.commande.clientID._id }).populate('idEntreprise').populate('idPanier');
+                    await setupCommande(res, data, data.commande._id, user, folderName, false, false);
                     const destPath: string = await setupDownload(folderName);
                     res.set({
                         'Content-disposition': 'attachment; filename=' + path.basename(`./tempDownload/${destPath}`),
                         'Content-type': mime.lookup(`./tempDownload/${destPath}`),
                         'Content-Length': fs.statSync(`./tempDownload/${destPath}`).size
-                    })
-                    /*const fileStream: fs.ReadStream = fs.createReadStream(`./tempDownload/${destPath}`);
+                    });
+                    const fileStream: fs.ReadStream = fs.createReadStream(`./tempDownload/${destPath}`);
                     console.log(1)
                     fileStream.on('data', (dataChunk) => { 
                         console.log(`Received ${dataChunk.length} bytes of data.`)
@@ -424,14 +424,18 @@ export const downloadCommande = async (req: Request, res: Response): Promise<voi
                         setTimeout(() => {
                             if(fs.existsSync(path.join('./tmpInvoice/' + folderName + '/'))) cleanOneFileFolder(`./tmpInvoice/${folderName}`)
                             if(fs.existsSync(path.join('./tempDownload/' + destPath + '/'))) cleanOneFileFolder(`./tempDownload/${destPath}`)
-                        }, 10000);
+                        }, 5000);
                     });
                     console.log(5)
                     fileStream.on('error', (err) => {
                         throw err;
                     });
-                    console.log(6)*/
-                    res.download(`./tempDownload/${destPath}`)
+                    console.log(6)
+                    /*res.download(`./tempDownload/${destPath}`);
+                    setTimeout(() => {
+                        if(fs.existsSync(path.join('./tmpInvoice/' + folderName + '/'))) cleanOneFileFolder(`./tmpInvoice/${folderName}`)
+                        if(fs.existsSync(path.join('./tempDownload/' + destPath + '/'))) cleanOneFileFolder(`./tempDownload/${destPath}`)
+                    }, 5000);*/
                 }
             }else{
                 return dataResponse(res, 400, { error: true, message: 'La commande n\'existe pas' })
@@ -442,17 +446,27 @@ export const downloadCommande = async (req: Request, res: Response): Promise<voi
     });
 }
 
-export const setupCommande = async(res: Response, data: any, idCommande: string, userInfos: any, folderName: string, isNewCommande: boolean, isMail: boolean): Promise<void> => {
+/**
+ *  Préparation pour la commande 
+ *  @param {Response} res 
+ *  @param {any} data 
+ *  @param {string} idCommande 
+ *  @param {any} user 
+ *  @param {string} folderName 
+ *  @param {boolean} isNewCommande 
+ *  @param {boolean} isMail 
+ */
+export const setupCommande = async(res: Response, data: any, idCommande: string, user: any, folderName: string, isNewCommande: boolean, isMail: boolean): Promise<void> => {
     const response: any = await CommandeModel.findOne({ _id: idCommande }).populate('clientID').populate('livreurID').populate('articles.idProduct').populate('articles.listeComposantsSelected.idComposant');
     if (response === undefined || response === null){// Si le resultat n'existe pas
         return dataResponse(res, 400, { error: true, message: "Aucun résultat pour la requête" });//TO UPDATE
     }else{
-        if(isNewCommande) await PanierModel.findByIdAndUpdate(userInfos.idPanier, { articles: [] });
+        if(isNewCommande) await PanierModel.findByIdAndUpdate(user.idPanier, { articles: [] });
         if(String(process.env.ENV).trim().toLowerCase() !== "test"){
             await generateInvoice(getInvoiceData(response), response.refID, folderName);
             if(isMail) await mailInvoice(folderName, response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID, data.optionsDoc);
         }
-        if(isNewCommande) await ProductSelectedModel.deleteMany({ '_id': { $in: userInfos.idPanier.articles }});
+        if(isNewCommande) await ProductSelectedModel.deleteMany({ '_id': { $in: user.idPanier.articles }});
     }
     //await CommandeModel.deleteOne({ _id: idCommande })//TO REMOVE
 }
