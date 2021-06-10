@@ -153,10 +153,12 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
                     'Content-type': mime.lookup(`./tempDownload/${destPath}`),
                     'Content-Length': fs.statSync(`./tempDownload/${destPath}`).size
                 })
-                const filestream: fs.ReadStream = fs.createReadStream(`./tempDownload/${destPath}`);
-                filestream.on('data', (dataChunk) => { /*console.log("dataChunk", dataChunk)*/ })
-                filestream.pipe(res);
-                filestream.on('end', () => {
+                const fileStream: fs.ReadStream = fs.createReadStream(`./tempDownload/${destPath}`);
+                fileStream.on('data', (dataChunk) => { 
+                    console.log(`Received ${dataChunk.length} bytes of data.`) 
+                });
+                fileStream.pipe(res);
+                fileStream.on('end', () => {
                     socket.emit('traitementStatut', false)
                     setTimeout(() => {
                         if(fs.existsSync(path.join('./tmpInvoice/' + folderName + '/'))) cleanOneFileFolder(`./tmpInvoice/${folderName}`)

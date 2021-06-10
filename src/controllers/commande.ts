@@ -411,17 +411,27 @@ export const downloadCommande = async (req: Request, res: Response): Promise<voi
                         'Content-type': mime.lookup(`./tempDownload/${destPath}`),
                         'Content-Length': fs.statSync(`./tempDownload/${destPath}`).size
                     })
-                    const fileStream: fs.ReadStream = fs.createReadStream(`./tempDownload/${destPath}`);
+                    /*const fileStream: fs.ReadStream = fs.createReadStream(`./tempDownload/${destPath}`);
+                    console.log(1)
                     fileStream.on('data', (dataChunk) => { 
                         console.log(`Received ${dataChunk.length} bytes of data.`)
-                    })
-                    fileStream.pipe(res, { end: false });
+                    });
+                    console.log(2)
+                    fileStream.pipe(res);//{ end: false }
+                    console.log(3)
                     fileStream.on('end', () => {
+                        console.log(4)
                         setTimeout(() => {
                             if(fs.existsSync(path.join('./tmpInvoice/' + folderName + '/'))) cleanOneFileFolder(`./tmpInvoice/${folderName}`)
                             if(fs.existsSync(path.join('./tempDownload/' + destPath + '/'))) cleanOneFileFolder(`./tempDownload/${destPath}`)
                         }, 10000);
                     });
+                    console.log(5)
+                    fileStream.on('error', (err) => {
+                        throw err;
+                    });
+                    console.log(6)*/
+                    res.download(`./tempDownload/${destPath}`)
                 }
             }else{
                 return dataResponse(res, 400, { error: true, message: 'La commande n\'existe pas' })
@@ -472,12 +482,12 @@ export const setupDownload = async(folderName: string): Promise<string> => {
                         if(fs.lstatSync(`./tmpInvoice/${folderName}/${fileName}`).isFile()){
                             zip.addLocalFile(`./tmpInvoice/${folderName}/${fileName}`);
                         }else{
-                            zip.addLocalFolder(`./tmpInvoice/${folderName}/${fileName}/`, fileName + '/')
+                            zip.addLocalFolder(`./tmpInvoice/${folderName}/${fileName}/`, fileName + '/');
                         }
                     });
                     zip.writeZip(`./tempDownload/${destPath}`);
                 }else{
-                    destPath = await archivageZip(destPath, folderName)// package archiver
+                    destPath = await archivageZip(destPath, folderName);// package archiver
                 }
             }
         }      
