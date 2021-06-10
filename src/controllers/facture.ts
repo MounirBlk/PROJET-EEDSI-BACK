@@ -156,11 +156,13 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
                 const filestream: fs.ReadStream = fs.createReadStream(`./tempDownload/${destPath}`);
                 filestream.on('data', (dataChunk) => { /*console.log("dataChunk", dataChunk)*/ })
                 filestream.pipe(res);
-                socket.emit('traitementStatut', false)
-                setTimeout(() => {
-                    if(fs.existsSync(path.join('./tmpInvoice/' + folderName + '/'))) cleanOneFileFolder(`./tmpInvoice/${folderName}`)
-                    if(fs.existsSync(path.join('./tempDownload/' + destPath + '/'))) cleanOneFileFolder(`./tempDownload/${destPath}`)
-                }, 5000);
+                filestream.on('end', () => {
+                    socket.emit('traitementStatut', false)
+                    setTimeout(() => {
+                        if(fs.existsSync(path.join('./tmpInvoice/' + folderName + '/'))) cleanOneFileFolder(`./tmpInvoice/${folderName}`)
+                        if(fs.existsSync(path.join('./tempDownload/' + destPath + '/'))) cleanOneFileFolder(`./tempDownload/${destPath}`)
+                    }, 5000);
+                });
             }else{
                 if(fs.existsSync('./tmpInvoice/' + folderName)) fs.rmdirSync('./tmpInvoice/' + folderName, { recursive: true })
                 socket.emit('traitementStatut', false)
@@ -188,8 +190,10 @@ export const download = async (req: Request, res: Response): Promise<void> => {
         res.setHeader('Content-Length', fs.statSync(filePath).size);
         const filestream: fs.ReadStream = fs.createReadStream(filePath);
         filestream.pipe(res);
-        //res.download(filePath); // Set disposition and send it.
-        cleanOneFileFolder(filePath)
+        filestream.on('end', () => {
+            //res.download(filePath); // Set disposition and send it.
+            cleanOneFileFolder(filePath)        
+        });
     }
 }
 

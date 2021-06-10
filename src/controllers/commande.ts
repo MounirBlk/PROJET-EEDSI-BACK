@@ -414,10 +414,12 @@ export const downloadCommande = async (req: Request, res: Response): Promise<voi
                     const filestream: fs.ReadStream = fs.createReadStream(`./tempDownload/${destPath}`);
                     filestream.on('data', (dataChunk) => { /*console.log("dataChunk", dataChunk)*/ })
                     filestream.pipe(res);
-                    setTimeout(() => {
-                        if(fs.existsSync(path.join('./tmpInvoice/' + folderName + '/'))) cleanOneFileFolder(`./tmpInvoice/${folderName}`)
-                        if(fs.existsSync(path.join('./tempDownload/' + destPath + '/'))) cleanOneFileFolder(`./tempDownload/${destPath}`)
-                    }, 5000);
+                    filestream.on('end', () => {
+                        setTimeout(() => {
+                            if(fs.existsSync(path.join('./tmpInvoice/' + folderName + '/'))) cleanOneFileFolder(`./tmpInvoice/${folderName}`)
+                            if(fs.existsSync(path.join('./tempDownload/' + destPath + '/'))) cleanOneFileFolder(`./tempDownload/${destPath}`)
+                        }, 10000);
+                    })
                 }
             }else{
                 return dataResponse(res, 400, { error: true, message: 'La commande n\'existe pas' })
