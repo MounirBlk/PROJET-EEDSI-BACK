@@ -411,15 +411,17 @@ export const downloadCommande = async (req: Request, res: Response): Promise<voi
                         'Content-type': mime.lookup(`./tempDownload/${destPath}`),
                         'Content-Length': fs.statSync(`./tempDownload/${destPath}`).size
                     })
-                    const filestream: fs.ReadStream = fs.createReadStream(`./tempDownload/${destPath}`);
-                    filestream.on('data', (dataChunk) => { /*console.log("dataChunk", dataChunk)*/ })
-                    filestream.pipe(res);
-                    filestream.on('end', () => {
+                    const fileStream: fs.ReadStream = fs.createReadStream(`./tempDownload/${destPath}`);
+                    fileStream.on('data', (dataChunk) => { 
+                        console.log(`Received ${dataChunk.length} bytes of data.`)
+                    })
+                    fileStream.pipe(res, { end: false });
+                    fileStream.on('end', () => {
                         setTimeout(() => {
                             if(fs.existsSync(path.join('./tmpInvoice/' + folderName + '/'))) cleanOneFileFolder(`./tmpInvoice/${folderName}`)
                             if(fs.existsSync(path.join('./tempDownload/' + destPath + '/'))) cleanOneFileFolder(`./tempDownload/${destPath}`)
                         }, 10000);
-                    })
+                    });
                 }
             }else{
                 return dataResponse(res, 400, { error: true, message: 'La commande n\'existe pas' })
