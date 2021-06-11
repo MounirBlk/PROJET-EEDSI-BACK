@@ -415,22 +415,20 @@ export const downloadCommande = async (req: Request, res: Response): Promise<voi
                     console.log(1)
                     fileStream.on('data', (dataChunk) => { 
                         console.log(`Received ${dataChunk.length} bytes of data.`)
-                    });
-                    console.log(2)
-                    fileStream.pipe(res);//{ end: false }
-                    console.log(3)
+                    });                    
                     fileStream.on('end', () => {
-                        console.log(4)
+                        console.log('end')
                         setTimeout(() => {
                             if(fs.existsSync(path.join('./tmpInvoice/' + folderName + '/'))) cleanOneFileFolder(`./tmpInvoice/${folderName}`)
                             if(fs.existsSync(path.join('./tempDownload/' + destPath + '/'))) cleanOneFileFolder(`./tempDownload/${destPath}`)
                         }, 5000);
                     });
-                    console.log(5)
+                    console.log(2)
                     fileStream.on('error', (err) => {
                         throw err;
                     });
-                    console.log(6)
+                    console.log(3)
+                    fileStream.pipe(res, { end: false });
                     /*res.download(`./tempDownload/${destPath}`);
                     setTimeout(() => {
                         if(fs.existsSync(path.join('./tmpInvoice/' + folderName + '/'))) cleanOneFileFolder(`./tmpInvoice/${folderName}`)
