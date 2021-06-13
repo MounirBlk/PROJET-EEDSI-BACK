@@ -1,7 +1,7 @@
 import { Application, Request, Response, NextFunction, Errback } from 'express';
 import UserModel from '../models/UserModel';
 import jwt from 'jsonwebtoken';
-const isOnline = require('is-online');
+import isOnline from 'is-online';
 import { isValidObjectId, Types } from 'mongoose'
 import { roleTypes } from '../types/roleTypes';
 //import { random } from "lodash";
