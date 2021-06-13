@@ -459,9 +459,9 @@ export const setupCommande = async(res: Response, data: any, idCommande: string,
         if(isNewCommande) await PanierModel.findByIdAndUpdate(user.idPanier, { articles: [] });
         if(String(process.env.ENV).trim().toLowerCase() !== "test"){
             await generateInvoice(getInvoiceData(response), response.refID, folderName);
-            /*if(isMail)*/ await mailInvoice(folderName, response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID, data.optionsDoc);
+            if(isMail) await mailInvoice(folderName, response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID, data.optionsDoc);
         }
-        /*if(isNewCommande) */await ProductSelectedModel.deleteMany({ '_id': { $in: user.idPanier.articles }});
+        /*if(isNewCommande)*/ await ProductSelectedModel.deleteMany({ '_id': { $in: user.idPanier.articles }});
     }
     //await CommandeModel.deleteOne({ _id: idCommande })//TO REMOVE
 }
