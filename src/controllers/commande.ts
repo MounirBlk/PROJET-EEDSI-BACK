@@ -412,10 +412,10 @@ export const downloadCommande = async (req: Request, res: Response): Promise<voi
                         'Content-Length': fs.statSync(`./tempDownload/${destPath}`).size
                     });
                     const fileStream: fs.ReadStream = fs.createReadStream(`./tempDownload/${destPath}`);
-                    console.log(1)
                     fileStream.on('data', (dataChunk) => { 
                         console.log(`Received ${dataChunk.length} bytes of data.`)
-                    });                    
+                    });          
+                    fileStream.pipe(res);          
                     fileStream.on('end', () => {
                         console.log('end')
                         setTimeout(() => {
@@ -423,12 +423,9 @@ export const downloadCommande = async (req: Request, res: Response): Promise<voi
                             if(fs.existsSync(path.join('./tempDownload/' + destPath + '/'))) cleanOneFileFolder(`./tempDownload/${destPath}`)
                         }, 5000);
                     });
-                    console.log(2)
                     fileStream.on('error', (err) => {
                         throw err;
                     });
-                    console.log(3)
-                    fileStream.pipe(res, { end: false });
                     /*res.download(`./tempDownload/${destPath}`);
                     setTimeout(() => {
                         if(fs.existsSync(path.join('./tmpInvoice/' + folderName + '/'))) cleanOneFileFolder(`./tmpInvoice/${folderName}`)
@@ -462,9 +459,9 @@ export const setupCommande = async(res: Response, data: any, idCommande: string,
         if(isNewCommande) await PanierModel.findByIdAndUpdate(user.idPanier, { articles: [] });
         if(String(process.env.ENV).trim().toLowerCase() !== "test"){
             await generateInvoice(getInvoiceData(response), response.refID, folderName);
-            if(isMail) await mailInvoice(folderName, response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID, data.optionsDoc);
+            /*if(isMail)*/ await mailInvoice(folderName, response.clientID.email, `${response.clientID.firstname} ${response.clientID.lastname}`, response.refID, data.optionsDoc);
         }
-        if(isNewCommande) await ProductSelectedModel.deleteMany({ '_id': { $in: user.idPanier.articles }});
+        /*if(isNewCommande) */await ProductSelectedModel.deleteMany({ '_id': { $in: user.idPanier.articles }});
     }
     //await CommandeModel.deleteOne({ _id: idCommande })//TO REMOVE
 }
