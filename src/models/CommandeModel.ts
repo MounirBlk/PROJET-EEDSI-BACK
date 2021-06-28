@@ -53,6 +53,20 @@ const CommandeSchema = new mongoose.Schema<CommandeInterface>({
         type: Number,
         required: true
     },
+    coordinate : {
+        type: {
+            "latitude": {
+                type: Number,
+                required: false,
+                default: null
+            } ,
+            "longitude": {
+                type: Number,
+                required: false,
+                default: null
+            }
+        }
+    },
     articles:{
         type: [{ 
             "idProduct": {

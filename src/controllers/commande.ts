@@ -21,6 +21,7 @@ import AdmZip from 'adm-zip';
 import archiver from 'archiver';
 import { cleanOneFileFolder } from './facture';
 import isOnline from 'is-online';
+import { getCoordByAdress } from './map';
 
 /**
  *  Route new commande
@@ -64,6 +65,7 @@ export const addCommande = async (req: Request, res: Response): Promise<void> =>
                                                 });
                                             });
                                             prixTotal = prixTotal + 10 + (prixTotal * 0.05) //Frais de livraison de 10 € + 5% du total (taxe/impôt)
+                                            const coordinateData: any = await getCoordByAdress(data.adresseLivraison);
                                             let toInsert = {
                                                 "refID": uuidv4(),
                                                 "clientID": payload.id,
@@ -72,7 +74,11 @@ export const addCommande = async (req: Request, res: Response): Promise<void> =>
                                                 "adresseLivraison": data.adresseLivraison,
                                                 "statut": "Attente",
                                                 "articles": articles,
-                                                "prixTotal": prixTotal.toFixed(2)
+                                                "prixTotal": prixTotal.toFixed(2),
+                                                "coordinate" : {
+                                                    "latitude": coordinateData.features.length > 0 ? coordinateData.features[0].geometry.coordinates[1] : 0,
+                                                    "longitude": coordinateData.features.length > 0 ? coordinateData.features[0].geometry.coordinates[0] : 0
+                                                }
                                             }
                                             const folderName: string = uuidv4();// dossier pour les devis
                                             if(!fs.existsSync(`./tmpInvoice/`)) fs.mkdirSync(`./tmpInvoice/`)
@@ -356,16 +362,23 @@ export const updateCommande = async (req: Request, res: Response): Promise<void>
                             let toUpdate = {
                                 livreurID: exist(data.livreurID) ? isObjectIdValid(data.livreurID) && isVerifLivreur ? data.livreurID : (isError = true) : commande.livreurID,
                                 dateLivraison: exist(data.dateLivraison) ? dateHourMinuFormatEn(data.dateLivraison) ? data.dateLivraison : (isError = true) : commande.dateLivraison,
-                                adresseLivraison: exist(data.adresseLivraison) ? isValidLength(data.adresseLivraison,1,100) ? data.adresseLivraison : (isError = true) : commande.adresseLivraison,
+                                adresseLivraison: exist(data.adresseLivraison) ? isValidLength(data.adresseLivraison, 1, 100) ? data.adresseLivraison : (isError = true) : commande.adresseLivraison,
                                 statut: exist(data.statut) ? textFormat(data.statut) && isValidStatut ? firstLetterMaj(data.statut) : (isError = true) : commande.statut,
-                                objetSignalement: exist(data.objetSignalement) ? isValidLength(data.objetSignalement,1,200) && isValidStatut ? data.objetSignalement : (isError = true) : commande.objetSignalement,
+                                objetSignalement: exist(data.objetSignalement) ? isValidLength(data.objetSignalement, 1, 200) && isValidStatut ? data.objetSignalement : (isError = true) : commande.objetSignalement,
                                 typeSignalement: exist(data.typeSignalement) ? textFormat(data.typeSignalement) && isValidStatut ? data.typeSignalement : (isError = true) : commande.typeSignalement,
                                 cheminSignature: exist(data.cheminSignature) ? isValidLength(data.cheminSignature, 1, 500) && isValidStatut ? data.cheminSignature : (isError = true) : commande.cheminSignature,
+                                coordinate : {
+                                    latitude: 0,
+                                    longitude: 0
+                                }
                             }
                             //TODO SEND MAIL IF DATELIVRAISON/ADRESSELIVRAISON/LIVREURDID/STATUT UPDATED
                             if(isError){
                                 return dataResponse(res, 409, { error: true, message: "Une ou plusieurs données sont erronées"}) 
                             }else{
+                                const coordinateData: any = await getCoordByAdress(toUpdate.adresseLivraison);
+                                toUpdate.coordinate.latitude = coordinateData.features.length > 0 ? coordinateData.features[0].geometry.coordinates[1] : 0;
+                                toUpdate.coordinate.longitude = coordinateData.features.length > 0 ? coordinateData.features[0].geometry.coordinates[0] : 0;
                                 //toUpdate.statut = commande.statut.trim().toLowerCase() === "attente" && isObjectIdValid(data.livreurID) && isVerifLivreur ? "Livraison" : toUpdate.statut;
                                 //toUpdate.statut = commande.statut.trim().toLowerCase() === "termine" ? commande.statut : toUpdate.statut;
                                 await CommandeModel.findByIdAndUpdate(id, toUpdate, null, (err: any, resp: CommandeInterface | null) => {
