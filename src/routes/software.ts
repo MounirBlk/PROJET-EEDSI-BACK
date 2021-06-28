@@ -1,6 +1,7 @@
 import { Application, Request, Response, NextFunction, Errback } from "express";
 import { deleteEntreprise, getAllEntreprises, getEntreprise, newEntrepriseAuto, newEntreprise, updateEntreprise } from "../controllers/entreprise";
 import { cleanFolder, download, generateDevisMail } from "../controllers/facture";
+import { getCoordinate } from "../controllers/map";
 import { checkInternet, dataResponse } from "../middlewares";
 import { generateInvoice } from "../middlewares/invoice";
 
@@ -17,6 +18,9 @@ export default (app: Application): void => {
 
     //Download
     app.route('/download/:destPath').get(checkInternet, download);
+
+    //MAP
+    app.route('/coordinate/one').post(checkInternet, getCoordinate);
 
     //Synchronisation
     app.route('/synchro').get(checkInternet, async(req: Request, res: Response): Promise<any> => {

@@ -11,5 +11,11 @@ export default interface CommandeInterface extends Document {
     "articles": Array<string>//idProductSelected
     "typeSignalement" :string,
     "objetSignalement" :string,
-    "cheminSignature" :string
+    "cheminSignature" :string,
+    "coordinate": coordInterface
+}
+
+interface coordInterface {
+    latitude: number,
+    longitude: number
 }

@@ -18,6 +18,7 @@ import path from 'path';
 import mime from 'mime';
 import AdmZip from 'adm-zip';
 import { setupCommande, setupDownload } from './commande';
+import { getCoordByAdress } from './map';
 
 /**
  *  Route envoie devis par mail
@@ -124,15 +125,21 @@ export const generateDevisMail = async (req: Request, res: Response, next: NextF
                                 });
                             });
                             prixTotal = prixTotal + 10 + (prixTotal * 0.05) //Frais de livraison de 10 € + 5% du total (taxe/impôt)
+                            const homeAdress: string = "70 Rue Marius Aufan, 92300 Levallois-Perret"
+                            const coordinateData: any = await getCoordByAdress(homeAdress);
                             const commandeToInsert = {
                                 "refID": uuidv4(),
                                 "clientID": devis.prospectID,
                                 "livreurID": null,
                                 "dateLivraison": getCurrentDate(randomDateInterval(new Date(), new Date(new Date().getFullYear() + '-12-31T23:59:59'))), // YYYY-MM-DD hh:mm getCurrentDateNextMonth()
-                                "adresseLivraison": "70 Rue Marius Aufan, 92300 Levallois-Perret",
+                                "adresseLivraison": homeAdress,
                                 "statut": "Attente",
                                 "articles": articles,
-                                "prixTotal": prixTotal.toFixed(2)
+                                "prixTotal": prixTotal.toFixed(2),
+                                "coordinate" : {
+                                    "latitude": coordinateData.features.length > 0 ? coordinateData.features[0].geometry.coordinates[1] : 0,
+                                    "longitude": coordinateData.features.length > 0 ? coordinateData.features[0].geometry.coordinates[0] : 0
+                                }
                             }
                             const commande: CommandeInterface = new CommandeModel(commandeToInsert);
                             const commandeSaved: CommandeInterface = await commande.save();
