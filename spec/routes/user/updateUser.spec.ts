@@ -75,9 +75,18 @@ export const updateUserSpec = () => {
             .set('Accept', 'application/json')
             .auth(globalThis.tokenInfos, { type: 'bearer' })
             .expect('Content-Type', /json/)
-            .expect(200, {
-                error: false,
-                message: "L'utilisateur a bien été mise à jour"
-            }, done);
+            .expect(200)
+            .then((response: any) => {
+                expect(response.status).toEqual(200)
+                expect(response.body).toEqual({
+                    error: false,
+                    message: "L'utilisateur a bien été mis à jour",
+                    user: response.body.user
+                })
+                return done();
+            })
+            .catch(err => {
+                throw err;
+            })
     }, getTimeout());
 }

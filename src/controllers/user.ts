@@ -369,7 +369,7 @@ export const updateUser = async (req: Request, res: Response) : Promise <void> =
                                     if (err) {
                                         return dataResponse(res, 500, { error: true, message: "Erreur dans la requête !" })
                                     } else {
-                                        return dataResponse(res, 200, { error: false, message: "L'utilisateur a bien été mise à jour" })
+                                        return dataResponse(res, 200, { error: false, message: "L'utilisateur a bien été mis à jour", user: deleteMapper(resp) })
                                     }
                                 });
                             }

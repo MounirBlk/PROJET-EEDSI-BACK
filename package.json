@@ -71,7 +71,8 @@
         "socket.io": "^4.0.1",
         "stripe": "^8.140.0",
         "uuid": "^8.3.2",
-        "validator": "^13.6.0"
+        "validator": "^13.6.0",
+        "winston": "^3.3.3"
     },
     "devDependencies": {
         "@types/bluebird": "^3.5.33",
@@ -83,6 +84,7 @@
         "@types/passport": "^1.0.6",
         "@types/shelljs": "^0.8.8",
         "@types/supertest": "^2.0.10",
+        "@types/winston": "^2.4.4",
         "axios": "^0.21.1",
         "cron": "^1.8.2",
         "jasmine": "^3.6.4",
